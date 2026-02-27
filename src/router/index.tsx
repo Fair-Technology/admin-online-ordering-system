@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
+import { RequireAuth } from '../components/auth/RequireAuth';
+import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { ShopsPage } from '../pages/ShopsPage';
 import { CreateShopPage } from '../pages/CreateShopPage';
@@ -11,18 +13,24 @@ import { CreateProductPage } from '../pages/CreateProductPage';
 import { EditProductPage } from '../pages/EditProductPage';
 
 export const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
   {
-    element: <Layout />,
+    element: <RequireAuth />,
     children: [
-      { path: '/', element: <DashboardPage /> },
-      { path: '/shops', element: <ShopsPage /> },
-      { path: '/shops/new', element: <CreateShopPage /> },
-      { path: '/shops/:shopId', element: <ShopDetailPage /> },
-      { path: '/shops/:shopId/categories', element: <CategoriesPage /> },
-      { path: '/shops/:shopId/categories/new', element: <CreateCategoryPage /> },
-      { path: '/shops/:shopId/products', element: <ProductsPage /> },
-      { path: '/shops/:shopId/products/new', element: <CreateProductPage /> },
-      { path: '/shops/:shopId/products/:productId', element: <EditProductPage /> },
+      {
+        element: <Layout />,
+        children: [
+          { path: '/', element: <DashboardPage /> },
+          { path: '/shops', element: <ShopsPage /> },
+          { path: '/shops/new', element: <CreateShopPage /> },
+          { path: '/shops/:shopId', element: <ShopDetailPage /> },
+          { path: '/shops/:shopId/categories', element: <CategoriesPage /> },
+          { path: '/shops/:shopId/categories/new', element: <CreateCategoryPage /> },
+          { path: '/shops/:shopId/products', element: <ProductsPage /> },
+          { path: '/shops/:shopId/products/new', element: <CreateProductPage /> },
+          { path: '/shops/:shopId/products/:productId', element: <EditProductPage /> },
+        ],
+      },
     ],
   },
 ]);
