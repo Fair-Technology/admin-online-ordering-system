@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useGetShopsQuery } from '../store/api/shopsApi';
+import { useGetMyShopsQuery } from '../store/api/generatedApi';
 
 export function ShopsPage() {
-  const { data, isLoading, isError } = useGetShopsQuery();
+  const { data, isLoading, isError } = useGetMyShopsQuery();
 
   if (isLoading) return <p className="text-gray-500">Loading shops...</p>;
   if (isError) return <p className="text-red-500">Failed to load shops.</p>;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCreateProductMutation } from '../store/api/productsApi';
+import { useCreateProductMutation } from '../store/api/generatedApi';
 
 export function CreateProductPage() {
   const { shopId } = useParams<{ shopId: string }>();
@@ -13,10 +13,12 @@ export function CreateProductPage() {
     e.preventDefault();
     try {
       const product = await createProduct({
-        shopId: shopId!,
-        name: form.name,
-        description: form.description,
-        price: Math.round(Number(form.price) * 100),
+        createProductRequest: {
+          shopId: shopId!,
+          name: form.name,
+          description: form.description,
+          price: Math.round(Number(form.price) * 100),
+        },
       }).unwrap();
       navigate(`/shops/${shopId}/products/${product.id}`);
     } catch {

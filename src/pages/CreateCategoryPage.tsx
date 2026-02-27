@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCreateCategoryMutation } from '../store/api/categoriesApi';
+import { useCreateCategoryMutation } from '../store/api/generatedApi';
 
 export function CreateCategoryPage() {
   const { shopId } = useParams<{ shopId: string }>();
@@ -15,7 +15,7 @@ export function CreateCategoryPage() {
     try {
       await createCategory({
         shopId: shopId!,
-        body: { name, sortOrder: sortOrder ? Number(sortOrder) : undefined },
+        createCategoryRequest: { name, sortOrder: sortOrder ? Number(sortOrder) : undefined },
       }).unwrap();
       navigate(`/shops/${shopId}/categories`);
     } catch {

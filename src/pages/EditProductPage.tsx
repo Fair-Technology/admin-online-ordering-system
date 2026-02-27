@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGetProductByIdQuery, useUpdateProductMutation } from '../store/api/productsApi';
+import { useGetProductByIdQuery, useUpdateProductMutation } from '../store/api/generatedApi';
 
 export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
@@ -16,9 +16,9 @@ export function EditProductPage() {
   useEffect(() => {
     if (product) {
       setForm({
-        name: product.name,
-        description: product.description,
-        price: (product.price / 100).toFixed(2),
+        name: product.name ?? '',
+        description: product.description ?? '',
+        price: ((product.price ?? 0) / 100).toFixed(2),
       });
     }
   }, [product]);
@@ -30,7 +30,7 @@ export function EditProductPage() {
     e.preventDefault();
     await updateProduct({
       productId: productId!,
-      body: {
+      updateProductRequest: {
         shopId: shopId!,
         name: form.name,
         description: form.description,

@@ -6,7 +6,7 @@ import { msalInstance, loginRequest } from '../../auth/msalConfig';
 // Until then, the access token from openid/profile scopes may not be accepted by Azure Functions.
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: '/api',
+  baseUrl: import.meta.env.VITE_API_BASE_URL,
   prepareHeaders: async (headers) => {
     const account = msalInstance.getActiveAccount() ?? msalInstance.getAllAccounts()[0];
     if (account) {

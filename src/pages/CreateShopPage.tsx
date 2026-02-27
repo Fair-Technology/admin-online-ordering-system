@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCreateShopMutation } from '../store/api/shopsApi';
-import type { CreateShopRequest } from '../types/api';
+import { useCreateShopMutation } from '../store/api/generatedApi';
+import type { CreateShopRequest } from '../store/api/generatedApi';
 
 export function CreateShopPage() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export function CreateShopPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const shop = await createShop(form as CreateShopRequest).unwrap();
+      const shop = await createShop({ createShopRequest: form as CreateShopRequest }).unwrap();
       navigate(`/shops/${shop.id}`);
     } catch {
       // error shown below

@@ -12,7 +12,10 @@ export function Header() {
       </div>
       <div className="flex items-center gap-4">
         {user && (
-          <span className="text-sm text-gray-700">{user.name ?? user.username}</span>
+          <div className="flex flex-col items-end">
+            <span className="text-sm text-gray-700">{user.name ?? user.username}</span>
+            <span className="text-xs text-gray-400">{user.localAccountId}</span>
+          </div>
         )}
         <button
           onClick={() => instance.logoutRedirect()}

@@ -1,16 +1,16 @@
 import { useParams, Link } from 'react-router-dom';
-import { useGetShopByIdQuery, useUpdateShopMutation } from '../store/api/shopsApi';
+import { useGetShopByIdQuery, useUpdateShopMutation } from '../store/api/generatedApi';
 
 export function ShopDetailPage() {
   const { shopId } = useParams<{ shopId: string }>();
-  const { data: shop, isLoading, isError } = useGetShopByIdQuery(shopId!);
+  const { data: shop, isLoading, isError } = useGetShopByIdQuery({ shopId: shopId! });
   const [updateShop, { isLoading: isUpdating }] = useUpdateShopMutation();
 
   if (isLoading) return <p className="text-gray-500">Loading shop...</p>;
   if (isError || !shop) return <p className="text-red-500">Failed to load shop.</p>;
 
   const handleToggleOrders = async () => {
-    await updateShop({ shopId: shopId!, body: { acceptingOrders: !shop.acceptingOrders } });
+    await updateShop({ shopId: shopId!, updateShopRequest: { acceptingOrders: !(shop as { acceptingOrders?: boolean }).acceptingOrders } });
   };
 
   return (

@@ -1,11 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { baseApi } from './api/baseApi';
 
-// Import injected APIs to ensure their endpoints are registered
-import './api/shopsApi';
-import './api/categoriesApi';
-import './api/productsApi';
-import './api/imagesApi';
+// Import generated API to ensure endpoints are registered
+import './api/generatedApi';
 
 export const store = configureStore({
   reducer: {

@@ -1,9 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
-import { useGetProductsByShopQuery } from '../store/api/productsApi';
+import { useGetProductsByShopQuery } from '../store/api/generatedApi';
 
 export function ProductsPage() {
   const { shopId } = useParams<{ shopId: string }>();
-  const { data: products, isLoading, isError } = useGetProductsByShopQuery(shopId!);
+  const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
 
   if (isLoading) return <p className="text-gray-500">Loading products...</p>;
   if (isError) return <p className="text-red-500">Failed to load products.</p>;
@@ -27,7 +27,7 @@ export function ProductsPage() {
           <div key={product.id} className="p-4 flex items-center justify-between">
             <div>
               <p className="font-medium text-gray-900">{product.name}</p>
-              <p className="text-sm text-gray-500">${(product.price / 100).toFixed(2)}</p>
+              <p className="text-sm text-gray-500">${((product.price ?? 0) / 100).toFixed(2)}</p>
             </div>
             <Link
               to={`/shops/${shopId}/products/${product.id}`}

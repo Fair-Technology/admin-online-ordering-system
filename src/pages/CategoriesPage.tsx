@@ -1,9 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
-import { useGetCategoriesByShopQuery } from '../store/api/categoriesApi';
+import { useGetCategoriesByShopQuery } from '../store/api/generatedApi';
 
 export function CategoriesPage() {
   const { shopId } = useParams<{ shopId: string }>();
-  const { data: categories, isLoading, isError } = useGetCategoriesByShopQuery(shopId!);
+  const { data: categories, isLoading, isError } = useGetCategoriesByShopQuery({ shopId: shopId! });
 
   if (isLoading) return <p className="text-gray-500">Loading categories...</p>;
   if (isError) return <p className="text-red-500">Failed to load categories.</p>;
