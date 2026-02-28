@@ -9,6 +9,13 @@ import { router } from './router'
 import { msalInstance } from './auth/msalConfig'
 
 ;(async () => {
+  console.log('[env]', {
+    VITE_MSAL_CLIENT_ID: import.meta.env.VITE_MSAL_CLIENT_ID,
+    VITE_MSAL_TENANT_ID: import.meta.env.VITE_MSAL_TENANT_ID,
+    VITE_MSAL_TENANT_NAME: import.meta.env.VITE_MSAL_TENANT_NAME,
+    VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  });
+
   await msalInstance.initialize();
 
   createRoot(document.getElementById('root')!).render(
