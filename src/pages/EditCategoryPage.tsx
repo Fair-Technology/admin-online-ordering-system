@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetCategoryByIdQuery, useUpdateCategoryMutation } from '../store/api/generatedApi';
+import { useGetCategoryByIdQuery, useUpdateCategoryMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { Breadcrumb } from '../components/ui/Breadcrumb';
 
 export function EditCategoryPage() {
   const { shopId, categoryId } = useParams<{ shopId: string; categoryId: string }>();
   const navigate = useNavigate();
 
+  const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: category, isLoading, isError } = useGetCategoryByIdQuery({
     shopId: shopId!,
     categoryId: categoryId!,
@@ -48,6 +51,12 @@ export function EditCategoryPage() {
 
   return (
     <div className="max-w-lg space-y-5">
+      <Breadcrumb items={[
+        { label: 'Shops', to: '/shops' },
+        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
+        { label: 'Categories', to: `/shops/${shopId}/categories` },
+        { label: 'Edit Category' },
+      ]} />
       <h1 className="text-2xl font-semibold text-white">Edit Category</h1>
 
       {isUpdateError && (

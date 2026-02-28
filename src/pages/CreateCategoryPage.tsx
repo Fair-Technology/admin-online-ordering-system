@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCreateCategoryMutation } from '../store/api/generatedApi';
+import { useCreateCategoryMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
+import { Breadcrumb } from '../components/ui/Breadcrumb';
 
 export function CreateCategoryPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
+  const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const [createCategory, { isLoading, isError, error }] = useCreateCategoryMutation();
 
   const [name, setName] = useState('');
@@ -28,6 +30,11 @@ export function CreateCategoryPage() {
 
   return (
     <div className="max-w-lg space-y-5">
+      <Breadcrumb items={[
+        { label: 'Shops', to: '/shops' },
+        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
+        { label: 'New Category' },
+      ]} />
       <h1 className="text-2xl font-semibold text-white">Create Category</h1>
 
       {isError && (

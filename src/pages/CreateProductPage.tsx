@@ -5,15 +5,18 @@ import {
   useGetCategoriesByShopQuery,
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
+  useGetShopByIdQuery,
 } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
+import { Breadcrumb } from '../components/ui/Breadcrumb';
 
 export function CreateProductPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
 
+  const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const [createProduct, { isLoading, isError, error }] = useCreateProductMutation();
   const [generateUploadUrl] = useGenerateUploadUrlMutation();
   const [addProductImage] = useAddProductImageMutation();
@@ -79,6 +82,11 @@ export function CreateProductPage() {
 
   return (
     <div className="max-w-lg space-y-5">
+      <Breadcrumb items={[
+        { label: 'Shops', to: '/shops' },
+        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
+        { label: 'New Product' },
+      ]} />
       <h1 className="text-2xl font-semibold text-white">Create Product</h1>
 
       {isError && (

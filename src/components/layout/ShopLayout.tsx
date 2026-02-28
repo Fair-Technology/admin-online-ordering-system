@@ -1,6 +1,7 @@
 import { useParams, NavLink, Outlet } from 'react-router-dom';
 import { useGetShopByIdQuery } from '../../store/api/generatedApi';
 import { GlassSpinner } from '../ui/GlassSpinner';
+import { Breadcrumb } from '../ui/Breadcrumb';
 
 export function ShopLayout() {
   const { shopId } = useParams<{ shopId: string }>();
@@ -18,6 +19,7 @@ export function ShopLayout() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: 'Shops', to: '/shops' }, { label: shop.name ?? 'Shop' }]} />
       <h1 className="text-2xl font-semibold text-white mb-4">{shop.name}</h1>
 
       <div className="flex gap-2 mb-6">

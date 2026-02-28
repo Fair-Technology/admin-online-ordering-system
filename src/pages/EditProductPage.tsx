@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGetProductByIdQuery, useUpdateProductMutation } from '../store/api/generatedApi';
+import { useGetProductByIdQuery, useUpdateProductMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { Breadcrumb } from '../components/ui/Breadcrumb';
 
 export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
+  const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: product, isLoading, isError } = useGetProductByIdQuery({
     productId: productId!,
     shopId: shopId!,
@@ -45,6 +47,12 @@ export function EditProductPage() {
 
   return (
     <div className="max-w-lg space-y-5">
+      <Breadcrumb items={[
+        { label: 'Shops', to: '/shops' },
+        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
+        { label: 'Products', to: `/shops/${shopId}` },
+        { label: product.name ?? 'Product' },
+      ]} />
       <h1 className="text-2xl font-semibold text-white">Edit Product</h1>
 
       {isUpdateError && (
