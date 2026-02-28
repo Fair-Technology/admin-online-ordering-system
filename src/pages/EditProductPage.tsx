@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   useGetProductByIdQuery,
   useUpdateProductMutation,
@@ -16,6 +16,7 @@ import { X } from 'lucide-react';
 
 export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
+  const navigate = useNavigate();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: product, isLoading, isError } = useGetProductByIdQuery({
     productId: productId!,
@@ -173,9 +174,20 @@ export function EditProductPage() {
             />
           </div>
 
-          <GlassButton type="submit" disabled={isUpdating || isUploading} className="w-full">
-            {isUpdating ? 'Saving...' : isUploading ? 'Uploading image...' : 'Save Changes'}
-          </GlassButton>
+          <div className="flex gap-3">
+            <GlassButton
+              type="button"
+              variant="ghost"
+              className="flex-1"
+              disabled={isUpdating || isUploading}
+              onClick={() => navigate(-1)}
+            >
+              Cancel
+            </GlassButton>
+            <GlassButton type="submit" disabled={isUpdating || isUploading} className="flex-1">
+              {isUpdating ? 'Saving...' : isUploading ? 'Uploading image...' : 'Save Changes'}
+            </GlassButton>
+          </div>
         </form>
       </GlassCard>
     </div>
