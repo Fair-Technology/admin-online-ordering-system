@@ -12,6 +12,7 @@ import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
+import { X } from 'lucide-react';
 
 export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
@@ -144,7 +145,14 @@ export function EditProductPage() {
                 <div className="flex items-start gap-4">
                   {currentUrl && (
                     <div className="flex flex-col gap-1 items-center">
-                      <img src={currentUrl} alt="Current" className="w-24 h-24 rounded-xl object-cover" />
+                      <div className="relative">
+                        <img src={currentUrl} alt="Current" className={`w-24 h-24 rounded-xl object-cover ${previewUrl ? 'opacity-50' : ''}`} />
+                        {previewUrl && (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-xl">
+                            <X className="w-8 h-8 text-white/80" strokeWidth={2.5} />
+                          </div>
+                        )}
+                      </div>
                       <span className="text-xs text-white/35">Current</span>
                     </div>
                   )}
