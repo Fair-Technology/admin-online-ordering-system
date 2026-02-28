@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-import { Header } from './Header';
 import bgImage from '../../assets/background-image.jpg';
 
 export function Layout() {
@@ -19,8 +18,7 @@ export function Layout() {
       <Sidebar />
 
       <div className="relative flex flex-col flex-1 min-w-0">
-        <Header />
-        <main className="flex flex-col flex-1 overflow-y-auto backdrop-blur-xl bg-white/10 border-t border-white/10 p-6">
+        <main className="flex flex-col flex-1 overflow-y-auto backdrop-blur-xl bg-white/10 p-6">
           <Outlet />
         </main>
       </div>

@@ -15,6 +15,7 @@
     "@azure/msal-react": "^5.0.5",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.1",
+    "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-redux": "^9.2.0",
@@ -22,8 +23,8 @@
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
-    "@rtk-query/codegen-openapi": "^2.0.0",
     "@eslint/js": "^9.39.1",
+    "@rtk-query/codegen-openapi": "^2.0.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
