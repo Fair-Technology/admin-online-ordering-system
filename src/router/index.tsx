@@ -9,6 +9,7 @@ import { CreateShopPage } from '../pages/CreateShopPage';
 import { ShopSettingsPage } from '../pages/ShopSettingsPage';
 import { CategoriesPage } from '../pages/CategoriesPage';
 import { CreateCategoryPage } from '../pages/CreateCategoryPage';
+import { EditCategoryPage } from '../pages/EditCategoryPage';
 import { ProductsPage } from '../pages/ProductsPage';
 import { CreateProductPage } from '../pages/CreateProductPage';
 import { EditProductPage } from '../pages/EditProductPage';
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
             ],
           },
           { path: '/shops/:shopId/categories/new', element: <CreateCategoryPage /> },
+          { path: '/shops/:shopId/categories/:categoryId/edit', element: <EditCategoryPage /> },
           { path: '/shops/:shopId/products/new', element: <CreateProductPage /> },
           { path: '/shops/:shopId/products/:productId', element: <EditProductPage /> },
         ],

@@ -23,20 +23,28 @@ export function ShopsPage() {
           <p className="p-5 text-white/40 text-sm">No shops yet.</p>
         )}
         {data?.shops.map((shop, i) => (
-          <div
+          <Link
             key={shop.id}
-            className={`flex items-center justify-between px-5 py-4 ${
+            to={`/shops/${shop.id}`}
+            className={`flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition-colors ${
               i > 0 ? 'border-t border-white/8' : ''
             }`}
           >
-            <div>
-              <p className="font-medium text-white">{shop.name}</p>
-              <p className="text-sm text-white/40 mt-0.5">/{shop.slug}</p>
-            </div>
-            <Link to={`/shops/${shop.id}`} className={glassButtonClass('secondary', 'sm')}>
-              Manage
-            </Link>
-          </div>
+            {shop.logoUrl ? (
+              <img
+                src={shop.logoUrl}
+                alt={shop.name}
+                className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-semibold text-sm">
+                  {shop.name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <p className="font-medium text-white">{shop.name}</p>
+          </Link>
         ))}
       </GlassCard>
     </div>

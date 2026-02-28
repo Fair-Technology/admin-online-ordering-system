@@ -17,8 +17,7 @@ export function ShopLayout() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-white mb-0.5">{shop.name}</h1>
-      <p className="text-sm text-white/40 mb-4">/{shop.slug}</p>
+      <h1 className="text-2xl font-semibold text-white mb-4">{shop.name}</h1>
 
       <div className="flex gap-2 mb-6">
         <NavLink to={`/shops/${shopId}`} end className={tabClass}>

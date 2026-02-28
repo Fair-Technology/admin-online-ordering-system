@@ -33,6 +33,12 @@ export function CategoriesPage() {
               <p className="font-medium text-white">{cat.name}</p>
               <p className="text-sm text-white/40 mt-0.5">Sort: {cat.sortOrder ?? '—'}</p>
             </div>
+            <Link
+              to={`/shops/${shopId}/categories/${cat.id}/edit`}
+              className={glassButtonClass('secondary', 'sm')}
+            >
+              Edit
+            </Link>
           </div>
         ))}
       </GlassCard>

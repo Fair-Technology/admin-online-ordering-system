@@ -1,10 +1,11 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useGetProductsByShopQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
 
 export function ProductsPage() {
   const { shopId } = useParams<{ shopId: string }>();
+  const navigate = useNavigate();
   const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
 
   if (isLoading) return <p className="text-white/50">Loading products...</p>;
@@ -25,7 +26,8 @@ export function ProductsPage() {
         {products?.map((product, i) => (
           <div
             key={product.id}
-            className={`flex items-center justify-between px-5 py-4 ${
+            onClick={() => navigate(`/shops/${shopId}/products/${product.id}`)}
+            className={`flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-white/5 transition-colors ${
               i > 0 ? 'border-t border-white/8' : ''
             }`}
           >
@@ -38,6 +40,7 @@ export function ProductsPage() {
             <Link
               to={`/shops/${shopId}/products/${product.id}`}
               className={glassButtonClass('secondary', 'sm')}
+              onClick={(e) => e.stopPropagation()}
             >
               Edit
             </Link>
