@@ -89,6 +89,7 @@ export function EditProductPage() {
         setIsUploading(false);
         setImageFile(null);
       }
+      navigate(-1);
     } catch {
       setIsUploading(false);
     }
