@@ -30,9 +30,9 @@ export function ShopsPage() {
               i > 0 ? 'border-t border-white/8' : ''
             }`}
           >
-            {shop.logoUrl ? (
+            {shop.branding?.logoUrl ? (
               <img
-                src={shop.logoUrl}
+                src={shop.branding.logoUrl}
                 alt={shop.name}
                 className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
               />
