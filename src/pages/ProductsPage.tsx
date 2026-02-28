@@ -2,13 +2,14 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useGetProductsByShopQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function ProductsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
   const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-white/50">Loading products...</p>;
+  if (isLoading) return <GlassSpinner label="Loading products..." />;
   if (isError) return <p className="text-red-400">Failed to load products.</p>;
 
   return (

@@ -1,11 +1,12 @@
 import { useParams, NavLink, Outlet } from 'react-router-dom';
 import { useGetShopByIdQuery } from '../../store/api/generatedApi';
+import { GlassSpinner } from '../ui/GlassSpinner';
 
 export function ShopLayout() {
   const { shopId } = useParams<{ shopId: string }>();
   const { data: shop, isLoading, isError } = useGetShopByIdQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-white/50">Loading shop...</p>;
+  if (isLoading) return <GlassSpinner label="Loading shop..." />;
   if (isError || !shop) return <p className="text-red-400">Failed to load shop.</p>;
 
   const tabClass = ({ isActive }: { isActive: boolean }) =>

@@ -1,12 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useGetShopByIdQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function ShopSettingsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { data: shop, isLoading, isError } = useGetShopByIdQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-white/50">Loading...</p>;
+  if (isLoading) return <GlassSpinner label="Loading settings..." />;
   if (isError || !shop) return <p className="text-red-400">Failed to load shop.</p>;
 
   const rows = [

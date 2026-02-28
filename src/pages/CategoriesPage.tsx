@@ -2,12 +2,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useGetCategoriesByShopQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function CategoriesPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { data: categories, isLoading, isError } = useGetCategoriesByShopQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-white/50">Loading categories...</p>;
+  if (isLoading) return <GlassSpinner label="Loading categories..." />;
   if (isError) return <p className="text-red-400">Failed to load categories.</p>;
 
   return (

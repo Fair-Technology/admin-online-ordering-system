@@ -4,6 +4,7 @@ import { useGetProductByIdQuery, useUpdateProductMutation } from '../store/api/g
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
@@ -26,7 +27,7 @@ export function EditProductPage() {
     }
   }, [product]);
 
-  if (isLoading) return <p className="text-white/50">Loading product...</p>;
+  if (isLoading) return <GlassSpinner label="Loading product..." />;
   if (isError || !product) return <p className="text-red-400">Failed to load product.</p>;
 
   const handleSubmit = async (e: React.FormEvent) => {

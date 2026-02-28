@@ -26,7 +26,7 @@ export function EditCategoryPage() {
     }
   }, [category]);
 
-  if (isLoading) return <p className="text-white/50">Loading category...</p>;
+  if (isLoading) return <GlassSpinner label="Loading category..." />;
   if (isError || !category) return <p className="text-red-400">Failed to load category.</p>;
 
   const handleSubmit = async (e: React.FormEvent) => {

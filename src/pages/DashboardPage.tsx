@@ -1,13 +1,18 @@
 import { useMsal } from '@azure/msal-react';
 import { useGetMyShopsQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function DashboardPage() {
-  const { data, isLoading } = useGetMyShopsQuery();
+  const { data, isFetching } = useGetMyShopsQuery();
   const { accounts } = useMsal();
   const user = accounts[0];
   const shopCount = data?.shops.length ?? 0;
   const firstName = user?.name?.split(' ')[0] ?? null;
+
+  if (isFetching) {
+    return <GlassSpinner label="Loading dashboard..." />;
+  }
 
   return (
     <div className="space-y-6">
@@ -23,11 +28,11 @@ export function DashboardPage() {
       <div className="grid grid-cols-3 gap-4">
         <GlassCard className="p-5">
           <p className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">Total Shops</p>
-          <p className="text-4xl font-semibold text-white">{isLoading ? '—' : shopCount}</p>
+          <p className="text-4xl font-semibold text-white">{shopCount}</p>
         </GlassCard>
         <GlassCard className="p-5">
           <p className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">Active</p>
-          <p className="text-4xl font-semibold text-white">{isLoading ? '—' : shopCount}</p>
+          <p className="text-4xl font-semibold text-white">{shopCount}</p>
         </GlassCard>
         <GlassCard className="p-5">
           <p className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">Status</p>

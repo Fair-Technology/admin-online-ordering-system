@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom';
 import { useGetMyShopsQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
+import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function ShopsPage() {
   const { data, isLoading, isError } = useGetMyShopsQuery();
 
-  if (isLoading) return <p className="text-white/50">Loading shops...</p>;
+  if (isLoading) return <GlassSpinner label="Loading shops..." />;
   if (isError) return <p className="text-red-400">Failed to load shops.</p>;
 
   return (
