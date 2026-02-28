@@ -10,8 +10,7 @@ export function CategoriesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+      <div className="flex justify-end mb-6">
         <Link
           to={`/shops/${shopId}/categories/new`}
           className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
