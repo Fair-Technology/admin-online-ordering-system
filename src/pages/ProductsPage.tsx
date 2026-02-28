@@ -25,7 +25,7 @@ export function ProductsPage() {
           <p className="p-5 text-white/40 text-sm">No products yet.</p>
         )}
         {products?.map((product, i) => {
-          const imageUrl = product.images?.find((img) => img.isPrimary)?.url ?? product.images?.[0]?.url;
+          const imageUrl = product.images?.length ? product.images[product.images.length - 1].url : undefined;
           return (
           <div
             key={product.id}

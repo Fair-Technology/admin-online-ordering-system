@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGetProductByIdQuery, useUpdateProductMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
+import {
+  useGetProductByIdQuery,
+  useUpdateProductMutation,
+  useGetShopByIdQuery,
+  useGenerateUploadUrlMutation,
+  useAddProductImageMutation,
+} from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
@@ -16,8 +22,20 @@ export function EditProductPage() {
   });
   const [updateProduct, { isLoading: isUpdating, isError: isUpdateError }] =
     useUpdateProductMutation();
+  const [generateUploadUrl] = useGenerateUploadUrlMutation();
+  const [addProductImage] = useAddProductImageMutation();
 
   const [form, setForm] = useState({ name: '', description: '', price: '' });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (!imageFile) { setPreviewUrl(null); return; }
+    const url = URL.createObjectURL(imageFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
 
   useEffect(() => {
     if (product) {
@@ -34,15 +52,44 @@ export function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateProduct({
-      productId: productId!,
-      updateProductRequest: {
-        shopId: shopId!,
-        name: form.name,
-        description: form.description,
-        price: Math.round(Number(form.price) * 100),
-      },
-    });
+    try {
+      await updateProduct({
+        productId: productId!,
+        updateProductRequest: {
+          shopId: shopId!,
+          name: form.name,
+          description: form.description,
+          price: Math.round(Number(form.price) * 100),
+        },
+      }).unwrap();
+
+      if (imageFile) {
+        setIsUploading(true);
+        const contentType = imageFile.type as 'image/jpeg' | 'image/png' | 'image/webp';
+        const uploadData = await generateUploadUrl({
+          shopId: shopId!,
+          productId: productId!,
+          generateImageUploadUrlRequest: { contentType, fileName: imageFile.name },
+        }).unwrap();
+
+        await fetch(uploadData.uploadUrl, {
+          method: 'PUT',
+          headers: { 'x-ms-blob-type': 'BlockBlob', 'Content-Type': contentType },
+          body: imageFile,
+        });
+
+        await addProductImage({
+          shopId: shopId!,
+          productId: productId!,
+          addProductImageRequest: { imageId: uploadData.imageId, url: uploadData.blobUrl },
+        }).unwrap();
+
+        setIsUploading(false);
+        setImageFile(null);
+      }
+    } catch {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -86,8 +133,40 @@ export function EditProductPage() {
             value={form.price}
             onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
           />
-          <GlassButton type="submit" disabled={isUpdating} className="w-full">
-            {isUpdating ? 'Saving...' : 'Save Changes'}
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+              Product Image
+            </p>
+            {(() => {
+              const currentUrl = product.images?.find((img) => img.isPrimary)?.url ?? product.images?.[0]?.url;
+              return (currentUrl || previewUrl) ? (
+                <div className="flex items-start gap-4">
+                  {currentUrl && (
+                    <div className="flex flex-col gap-1 items-center">
+                      <img src={currentUrl} alt="Current" className="w-24 h-24 rounded-xl object-cover" />
+                      <span className="text-xs text-white/35">Current</span>
+                    </div>
+                  )}
+                  {previewUrl && (
+                    <div className="flex flex-col gap-1 items-center">
+                      <img src={previewUrl} alt="New" className="w-24 h-24 rounded-xl object-cover" />
+                      <span className="text-xs text-white/35">New</span>
+                    </div>
+                  )}
+                </div>
+              ) : null;
+            })()}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-sm text-white/45 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-white/15 file:text-white/75 hover:file:bg-white/20 cursor-pointer"
+            />
+          </div>
+
+          <GlassButton type="submit" disabled={isUpdating || isUploading} className="w-full">
+            {isUpdating ? 'Saving...' : isUploading ? 'Uploading image...' : 'Save Changes'}
           </GlassButton>
         </form>
       </GlassCard>
