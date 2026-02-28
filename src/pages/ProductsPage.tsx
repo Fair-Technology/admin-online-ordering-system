@@ -1,42 +1,49 @@
 import { useParams, Link } from 'react-router-dom';
 import { useGetProductsByShopQuery } from '../store/api/generatedApi';
+import { GlassCard } from '../components/ui/GlassCard';
+import { glassButtonClass } from '../components/ui/GlassButton';
 
 export function ProductsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-gray-500">Loading products...</p>;
-  if (isError) return <p className="text-red-500">Failed to load products.</p>;
+  if (isLoading) return <p className="text-white/50">Loading products...</p>;
+  if (isError) return <p className="text-red-400">Failed to load products.</p>;
 
   return (
-    <div>
-      <div className="flex justify-end mb-6">
-        <Link
-          to={`/shops/${shopId}/products/new`}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-        >
-          Add a product
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Link to={`/shops/${shopId}/products/new`} className={glassButtonClass()}>
+          + Add Product
         </Link>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+
+      <GlassCard>
         {products?.length === 0 && (
-          <p className="p-4 text-gray-500">No products yet.</p>
+          <p className="p-5 text-white/40 text-sm">No products yet.</p>
         )}
-        {products?.map((product) => (
-          <div key={product.id} className="p-4 flex items-center justify-between">
+        {products?.map((product, i) => (
+          <div
+            key={product.id}
+            className={`flex items-center justify-between px-5 py-4 ${
+              i > 0 ? 'border-t border-white/8' : ''
+            }`}
+          >
             <div>
-              <p className="font-medium text-gray-900">{product.name}</p>
-              <p className="text-sm text-gray-500">${((product.price ?? 0) / 100).toFixed(2)}</p>
+              <p className="font-medium text-white">{product.name}</p>
+              <p className="text-sm text-white/40 mt-0.5">
+                ${((product.price ?? 0) / 100).toFixed(2)}
+              </p>
             </div>
             <Link
               to={`/shops/${shopId}/products/${product.id}`}
-              className="text-sm text-blue-600 hover:underline"
+              className={glassButtonClass('secondary', 'sm')}
             >
               Edit
             </Link>
           </div>
         ))}
-      </div>
+      </GlassCard>
     </div>
   );
 }

@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateShopMutation } from '../store/api/generatedApi';
 import type { CreateShopRequest } from '../store/api/generatedApi';
+import { GlassCard } from '../components/ui/GlassCard';
+import { GlassButton } from '../components/ui/GlassButton';
+import { GlassInput } from '../components/ui/GlassInput';
 
 export function CreateShopPage() {
   const navigate = useNavigate();
@@ -28,32 +31,32 @@ export function CreateShopPage() {
   };
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Shop</h1>
+    <div className="max-w-lg space-y-5">
+      <h1 className="text-2xl font-semibold text-white">Create Shop</h1>
+
       {isError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          {(error as { data?: { error?: string } })?.data?.error ?? 'Failed to create shop.'}
-        </div>
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">
+            {(error as { data?: { error?: string } })?.data?.error ?? 'Failed to create shop.'}
+          </p>
+        </GlassCard>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
-          <input
+
+      <GlassCard className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <GlassInput
+            label="Shop Name"
             type="text"
             required
+            placeholder="My Shop"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-        </div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isLoading ? 'Creating...' : 'Create Shop'}
-        </button>
-      </form>
+          <GlassButton type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? 'Creating...' : 'Create Shop'}
+          </GlassButton>
+        </form>
+      </GlassCard>
     </div>
   );
 }

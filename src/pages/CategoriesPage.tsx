@@ -1,36 +1,41 @@
 import { useParams, Link } from 'react-router-dom';
 import { useGetCategoriesByShopQuery } from '../store/api/generatedApi';
+import { GlassCard } from '../components/ui/GlassCard';
+import { glassButtonClass } from '../components/ui/GlassButton';
 
 export function CategoriesPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { data: categories, isLoading, isError } = useGetCategoriesByShopQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-gray-500">Loading categories...</p>;
-  if (isError) return <p className="text-red-500">Failed to load categories.</p>;
+  if (isLoading) return <p className="text-white/50">Loading categories...</p>;
+  if (isError) return <p className="text-red-400">Failed to load categories.</p>;
 
   return (
-    <div>
-      <div className="flex justify-end mb-6">
-        <Link
-          to={`/shops/${shopId}/categories/new`}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-        >
-          New Category
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Link to={`/shops/${shopId}/categories/new`} className={glassButtonClass()}>
+          + New Category
         </Link>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+
+      <GlassCard>
         {categories?.length === 0 && (
-          <p className="p-4 text-gray-500">No categories yet.</p>
+          <p className="p-5 text-white/40 text-sm">No categories yet.</p>
         )}
-        {categories?.map((cat) => (
-          <div key={cat.id} className="p-4 flex items-center justify-between">
+        {categories?.map((cat, i) => (
+          <div
+            key={cat.id}
+            className={`flex items-center justify-between px-5 py-4 ${
+              i > 0 ? 'border-t border-white/8' : ''
+            }`}
+          >
             <div>
-              <p className="font-medium text-gray-900">{cat.name}</p>
-              <p className="text-sm text-gray-500">Sort: {cat.sortOrder ?? '—'}</p>
+              <p className="font-medium text-white">{cat.name}</p>
+              <p className="text-sm text-white/40 mt-0.5">Sort: {cat.sortOrder ?? '—'}</p>
             </div>
           </div>
         ))}
-      </div>
+      </GlassCard>
     </div>
   );
 }

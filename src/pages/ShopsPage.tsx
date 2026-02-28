@@ -1,42 +1,44 @@
 import { Link } from 'react-router-dom';
 import { useGetMyShopsQuery } from '../store/api/generatedApi';
+import { GlassCard } from '../components/ui/GlassCard';
+import { glassButtonClass } from '../components/ui/GlassButton';
 
 export function ShopsPage() {
   const { data, isLoading, isError } = useGetMyShopsQuery();
 
-  if (isLoading) return <p className="text-gray-500">Loading shops...</p>;
-  if (isError) return <p className="text-red-500">Failed to load shops.</p>;
+  if (isLoading) return <p className="text-white/50">Loading shops...</p>;
+  if (isError) return <p className="text-red-400">Failed to load shops.</p>;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Shops</h1>
-        <Link
-          to="/shops/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-        >
-          New Shop
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-white">Shops</h1>
+        <Link to="/shops/new" className={glassButtonClass()}>
+          + New Shop
         </Link>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
+
+      <GlassCard>
         {data?.shops.length === 0 && (
-          <p className="p-4 text-gray-500">No shops yet.</p>
+          <p className="p-5 text-white/40 text-sm">No shops yet.</p>
         )}
-        {data?.shops.map((shop) => (
-          <div key={shop.id} className="p-4 flex items-center justify-between">
+        {data?.shops.map((shop, i) => (
+          <div
+            key={shop.id}
+            className={`flex items-center justify-between px-5 py-4 ${
+              i > 0 ? 'border-t border-white/8' : ''
+            }`}
+          >
             <div>
-              <p className="font-medium text-gray-900">{shop.name}</p>
-              <p className="text-sm text-gray-500">/{shop.slug}</p>
+              <p className="font-medium text-white">{shop.name}</p>
+              <p className="text-sm text-white/40 mt-0.5">/{shop.slug}</p>
             </div>
-            <Link
-              to={`/shops/${shop.id}`}
-              className="text-sm text-blue-600 hover:underline"
-            >
+            <Link to={`/shops/${shop.id}`} className={glassButtonClass('secondary', 'sm')}>
               Manage
             </Link>
           </div>
         ))}
-      </div>
+      </GlassCard>
     </div>
   );
 }

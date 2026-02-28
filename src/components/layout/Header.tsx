@@ -5,21 +5,19 @@ export function Header() {
   const user = accounts[0];
 
   return (
-    <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-6">
-      <div className="text-sm text-gray-500">
-        {/* Breadcrumb placeholder */}
-        Admin Dashboard
-      </div>
+    <header className="relative z-10 h-14 backdrop-blur-xl bg-white/8 border-b border-white/15 flex items-center justify-between px-6">
+      <div className="text-sm text-white/45">Admin Dashboard</div>
+
       <div className="flex items-center gap-4">
         {user && (
           <div className="flex flex-col items-end">
-            <span className="text-sm text-gray-700">{user.name ?? user.username}</span>
-            <span className="text-xs text-gray-400">{user.localAccountId}</span>
+            <span className="text-sm text-white">{user.name ?? user.username}</span>
+            <span className="text-xs text-white/35">{user.localAccountId}</span>
           </div>
         )}
         <button
           onClick={() => instance.logoutRedirect()}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-white/45 hover:text-white transition-colors"
         >
           Sign out
         </button>

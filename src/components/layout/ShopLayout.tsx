@@ -5,20 +5,22 @@ export function ShopLayout() {
   const { shopId } = useParams<{ shopId: string }>();
   const { data: shop, isLoading, isError } = useGetShopByIdQuery({ shopId: shopId! });
 
-  if (isLoading) return <p className="text-gray-500">Loading shop...</p>;
-  if (isError || !shop) return <p className="text-red-500">Failed to load shop.</p>;
+  if (isLoading) return <p className="text-white/50">Loading shop...</p>;
+  if (isError || !shop) return <p className="text-red-400">Failed to load shop.</p>;
 
   const tabClass = ({ isActive }: { isActive: boolean }) =>
-    isActive
-      ? 'px-4 py-2 text-sm font-medium border-b-2 border-blue-600 text-blue-600'
-      : 'px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+    `px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 ${
+      isActive
+        ? 'bg-white/20 text-white backdrop-blur-md border border-white/20'
+        : 'text-white/50 hover:text-white hover:bg-white/10'
+    }`;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">{shop.name}</h1>
-      <p className="text-sm text-gray-500 mb-4">ID: {shop.id} · /{shop.slug}</p>
+      <h1 className="text-2xl font-semibold text-white mb-0.5">{shop.name}</h1>
+      <p className="text-sm text-white/40 mb-4">/{shop.slug}</p>
 
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex gap-2 mb-6">
         <NavLink to={`/shops/${shopId}`} end className={tabClass}>
           Products
         </NavLink>
