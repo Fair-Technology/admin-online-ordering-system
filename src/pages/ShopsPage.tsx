@@ -1,27 +1,29 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGetMyShopsQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function ShopsPage() {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useGetMyShopsQuery();
 
-  if (isLoading) return <GlassSpinner label="Loading shops..." />;
-  if (isError) return <p className="text-red-400">Failed to load shops.</p>;
+  if (isLoading) return <GlassSpinner label={t('shops.loading')} />;
+  if (isError) return <p className="text-red-400">{t('shops.loadError')}</p>;
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-white">Shops</h1>
+        <h1 className="text-2xl font-semibold text-white">{t('shops.title')}</h1>
         <Link to="/shops/new" className={glassButtonClass()}>
-          + New Shop
+          {t('shops.addShop')}
         </Link>
       </div>
 
       <GlassCard>
         {data?.shops.length === 0 && (
-          <p className="p-5 text-white/40 text-sm">No shops yet.</p>
+          <p className="p-5 text-white/40 text-sm">{t('shops.empty')}</p>
         )}
         {data?.shops.map((shop, i) => (
           <Link

@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGetProductsByShopQuery } from '../store/api/generatedApi';
 import type { ProductResponse } from '../store/api/generatedApi';
 import { glassButtonClass } from '../components/ui/GlassButton';
@@ -44,10 +45,11 @@ function ProductGrid({ products, shopId }: { products: ProductResponse[]; shopId
 
 export function ProductsPage() {
   const { shopId } = useParams<{ shopId: string }>();
+  const { t } = useTranslation();
   const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
 
-  if (isLoading) return <GlassSpinner label="Loading products..." />;
-  if (isError) return <p className="text-red-400">Failed to load products.</p>;
+  if (isLoading) return <GlassSpinner label={t('products.loading')} />;
+  if (isError) return <p className="text-red-400">{t('products.loadError')}</p>;
 
   // Collect unique categories from all products, sorted by sortOrder then name
   const categoryMap = new Map<string, { id: string; name: string; sortOrder: number }>();
@@ -84,11 +86,11 @@ export function ProductsPage() {
     <div className="space-y-8">
       <div className="flex justify-end">
         <Link to={`/shops/${shopId}/products/new`} className={glassButtonClass()}>
-          + Add Product
+          {t('products.addProduct')}
         </Link>
       </div>
 
-      {isEmpty && <p className="text-white/40 text-sm">No products yet.</p>}
+      {isEmpty && <p className="text-white/40 text-sm">{t('products.empty')}</p>}
 
       {sortedCategories.map((cat) => (
         <section key={cat.id}>
@@ -102,7 +104,7 @@ export function ProductsPage() {
       {uncategorized.length > 0 && (
         <section>
           <h2 className="text-white/70 text-sm font-semibold uppercase tracking-widest mb-3">
-            Uncategorized
+            {t('products.uncategorized')}
           </h2>
           <ProductGrid products={uncategorized} shopId={shopId!} />
         </section>

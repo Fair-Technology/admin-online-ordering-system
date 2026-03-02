@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCreateCategoryMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
@@ -9,6 +10,7 @@ import { Breadcrumb } from '../components/ui/Breadcrumb';
 export function CreateCategoryPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const [createCategory, { isLoading, isError, error }] = useCreateCategoryMutation();
 
@@ -31,16 +33,16 @@ export function CreateCategoryPage() {
   return (
     <div className="max-w-lg space-y-5">
       <Breadcrumb items={[
-        { label: 'Shops', to: '/shops' },
-        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
-        { label: 'New Category' },
+        { label: t('nav.shops'), to: '/shops' },
+        { label: shop?.name ?? t('shops.shop'), to: `/shops/${shopId}` },
+        { label: t('categories.newCategory') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">Create Category</h1>
+      <h1 className="text-2xl font-semibold text-white">{t('categories.createTitle')}</h1>
 
       {isError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
           <p className="text-sm text-red-300">
-            {(error as { data?: { error?: string } })?.data?.error ?? 'Failed to create category.'}
+            {(error as { data?: { error?: string } })?.data?.error ?? t('categories.failedToCreate')}
           </p>
         </GlassCard>
       )}
@@ -48,22 +50,22 @@ export function CreateCategoryPage() {
       <GlassCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <GlassInput
-            label="Name"
+            label={t('categories.name')}
             type="text"
             required
-            placeholder="Category name"
+            placeholder={t('categories.namePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <GlassInput
-            label="Sort Order"
+            label={t('categories.sortOrder')}
             type="number"
             placeholder="0"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
           />
           <GlassButton type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Creating...' : 'Create Category'}
+            {isLoading ? t('categories.creating') : t('categories.create')}
           </GlassButton>
         </form>
       </GlassCard>

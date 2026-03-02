@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useCreateProductMutation,
   useGetCategoriesByShopQuery,
@@ -15,6 +16,7 @@ import { Breadcrumb } from '../components/ui/Breadcrumb';
 export function CreateProductPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const [createProduct, { isLoading, isError, error }] = useCreateProductMutation();
@@ -78,21 +80,25 @@ export function CreateProductPage() {
   };
 
   const isBusy = isLoading || isUploading;
-  const buttonLabel = isLoading ? 'Creating...' : isUploading ? 'Uploading image...' : 'Create Product';
+  const buttonLabel = isLoading
+    ? t('products.creating')
+    : isUploading
+      ? t('products.uploadingImage')
+      : t('products.create');
 
   return (
     <div className="max-w-lg space-y-5">
       <Breadcrumb items={[
-        { label: 'Shops', to: '/shops' },
-        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
-        { label: 'New Product' },
+        { label: t('nav.shops'), to: '/shops' },
+        { label: shop?.name ?? t('shops.shop'), to: `/shops/${shopId}` },
+        { label: t('products.newProduct') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">Create Product</h1>
+      <h1 className="text-2xl font-semibold text-white">{t('products.createTitle')}</h1>
 
       {isError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
           <p className="text-sm text-red-300">
-            {(error as { data?: { error?: string } })?.data?.error ?? 'Failed to create product.'}
+            {(error as { data?: { error?: string } })?.data?.error ?? t('products.failedToCreate')}
           </p>
         </GlassCard>
       )}
@@ -100,23 +106,23 @@ export function CreateProductPage() {
       <GlassCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <GlassInput
-            label="Name"
+            label={t('products.name')}
             type="text"
             required
-            placeholder="Product name"
+            placeholder={t('products.namePlaceholder')}
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           />
           <GlassTextarea
-            label="Description"
+            label={t('products.description')}
             required
-            placeholder="Describe your product..."
+            placeholder={t('products.descriptionPlaceholder')}
             rows={3}
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
           <GlassInput
-            label="Price ($)"
+            label={t('products.price')}
             type="number"
             required
             min="0"
@@ -128,7 +134,7 @@ export function CreateProductPage() {
 
           {categories && categories.length > 0 && (
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium text-white/50 uppercase tracking-wide">Categories</p>
+              <p className="text-xs font-medium text-white/50 uppercase tracking-wide">{t('products.categories')}</p>
               <div className="space-y-2">
                 {categories.map((cat) => (
                   <label
@@ -150,8 +156,8 @@ export function CreateProductPage() {
 
           <div className="flex flex-col gap-1.5">
             <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
-              Product Image{' '}
-              <span className="text-white/25 normal-case font-normal">(optional)</span>
+              {t('products.image')}{' '}
+              <span className="text-white/25 normal-case font-normal">{t('products.imageOptionalNote')}</span>
             </p>
             <input
               type="file"

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCreateShopMutation } from '../store/api/generatedApi';
 import type { CreateShopRequest } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -9,6 +10,7 @@ import { Breadcrumb } from '../components/ui/Breadcrumb';
 
 export function CreateShopPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [createShop, { isLoading, isError, error }] = useCreateShopMutation();
 
   const [form, setForm] = useState<Partial<CreateShopRequest>>({
@@ -33,13 +35,13 @@ export function CreateShopPage() {
 
   return (
     <div className="max-w-lg space-y-5">
-      <Breadcrumb items={[{ label: 'Shops', to: '/shops' }, { label: 'New Shop' }]} />
-      <h1 className="text-2xl font-semibold text-white">Create Shop</h1>
+      <Breadcrumb items={[{ label: t('nav.shops'), to: '/shops' }, { label: t('shops.newShop') }]} />
+      <h1 className="text-2xl font-semibold text-white">{t('shops.createTitle')}</h1>
 
       {isError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
           <p className="text-sm text-red-300">
-            {(error as { data?: { error?: string } })?.data?.error ?? 'Failed to create shop.'}
+            {(error as { data?: { error?: string } })?.data?.error ?? t('shops.failedToCreate')}
           </p>
         </GlassCard>
       )}
@@ -47,15 +49,15 @@ export function CreateShopPage() {
       <GlassCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <GlassInput
-            label="Shop Name"
+            label={t('shops.shopName')}
             type="text"
             required
-            placeholder="My Shop"
+            placeholder={t('shops.shopNamePlaceholder')}
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           />
           <GlassButton type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Creating...' : 'Create Shop'}
+            {isLoading ? t('shops.creating') : t('shops.create')}
           </GlassButton>
         </form>
       </GlassCard>

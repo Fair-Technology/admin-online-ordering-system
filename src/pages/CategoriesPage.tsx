@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGetCategoriesByShopQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
@@ -6,22 +7,23 @@ import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function CategoriesPage() {
   const { shopId } = useParams<{ shopId: string }>();
+  const { t } = useTranslation();
   const { data: categories, isLoading, isError } = useGetCategoriesByShopQuery({ shopId: shopId! });
 
-  if (isLoading) return <GlassSpinner label="Loading categories..." />;
-  if (isError) return <p className="text-red-400">Failed to load categories.</p>;
+  if (isLoading) return <GlassSpinner label={t('categories.loading')} />;
+  if (isError) return <p className="text-red-400">{t('categories.loadError')}</p>;
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <Link to={`/shops/${shopId}/categories/new`} className={glassButtonClass()}>
-          + New Category
+          {t('categories.addCategory')}
         </Link>
       </div>
 
       <GlassCard>
         {categories?.length === 0 && (
-          <p className="p-5 text-white/40 text-sm">No categories yet.</p>
+          <p className="p-5 text-white/40 text-sm">{t('categories.empty')}</p>
         )}
         {categories?.map((cat, i) => (
           <div
@@ -32,13 +34,13 @@ export function CategoriesPage() {
           >
             <div>
               <p className="font-medium text-white">{cat.name}</p>
-              <p className="text-sm text-white/40 mt-0.5">Sort: {cat.sortOrder ?? '—'}</p>
+              <p className="text-sm text-white/40 mt-0.5">{t('categories.sort')} {cat.sortOrder ?? '—'}</p>
             </div>
             <Link
               to={`/shops/${shopId}/categories/${cat.id}/edit`}
               className={glassButtonClass('secondary', 'sm')}
             >
-              Edit
+              {t('categories.edit')}
             </Link>
           </div>
         ))}

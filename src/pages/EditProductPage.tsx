@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useGetProductByIdQuery,
   useUpdateProductMutation,
@@ -17,6 +18,7 @@ import { X } from 'lucide-react';
 export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: product, isLoading, isError } = useGetProductByIdQuery({
     productId: productId!,
@@ -49,8 +51,8 @@ export function EditProductPage() {
     }
   }, [product]);
 
-  if (isLoading) return <GlassSpinner label="Loading product..." />;
-  if (isError || !product) return <p className="text-red-400">Failed to load product.</p>;
+  if (isLoading) return <GlassSpinner label={t('products.loadingProduct')} />;
+  if (isError || !product) return <p className="text-red-400">{t('products.failedToLoad')}</p>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,37 +100,37 @@ export function EditProductPage() {
   return (
     <div className="max-w-lg space-y-5">
       <Breadcrumb items={[
-        { label: 'Shops', to: '/shops' },
-        { label: shop?.name ?? 'Shop', to: `/shops/${shopId}` },
-        { label: 'Products', to: `/shops/${shopId}` },
-        { label: product.name ?? 'Product' },
+        { label: t('nav.shops'), to: '/shops' },
+        { label: shop?.name ?? t('shops.shop'), to: `/shops/${shopId}` },
+        { label: t('nav.products'), to: `/shops/${shopId}` },
+        { label: product.name ?? t('products.editTitle') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">Edit Product</h1>
+      <h1 className="text-2xl font-semibold text-white">{t('products.editTitle')}</h1>
 
       {isUpdateError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">Failed to update product.</p>
+          <p className="text-sm text-red-300">{t('products.failedToUpdate')}</p>
         </GlassCard>
       )}
 
       <GlassCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <GlassInput
-            label="Name"
+            label={t('products.name')}
             type="text"
             required
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           />
           <GlassTextarea
-            label="Description"
+            label={t('products.description')}
             required
             rows={3}
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
           <GlassInput
-            label="Price ($)"
+            label={t('products.price')}
             type="number"
             required
             min="0"
@@ -139,7 +141,7 @@ export function EditProductPage() {
 
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
-              Product Image
+              {t('products.image')}
             </p>
             {(() => {
               const currentUrl = product.images?.find((img) => img.isPrimary)?.url ?? product.images?.[0]?.url;
@@ -148,20 +150,20 @@ export function EditProductPage() {
                   {currentUrl && (
                     <div className="flex flex-col gap-1 items-center">
                       <div className="relative">
-                        <img src={currentUrl} alt="Current" className={`w-24 h-24 rounded-xl object-cover ${previewUrl ? 'opacity-50' : ''}`} />
+                        <img src={currentUrl} alt={t('products.currentImage')} className={`w-24 h-24 rounded-xl object-cover ${previewUrl ? 'opacity-50' : ''}`} />
                         {previewUrl && (
                           <div className="absolute inset-0 flex items-center justify-center rounded-xl">
                             <X className="w-8 h-8 text-white/80" strokeWidth={2.5} />
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-white/35">Current</span>
+                      <span className="text-xs text-white/35">{t('products.currentImage')}</span>
                     </div>
                   )}
                   {previewUrl && (
                     <div className="flex flex-col gap-1 items-center">
-                      <img src={previewUrl} alt="New" className="w-24 h-24 rounded-xl object-cover" />
-                      <span className="text-xs text-white/35">New</span>
+                      <img src={previewUrl} alt={t('products.newImage')} className="w-24 h-24 rounded-xl object-cover" />
+                      <span className="text-xs text-white/35">{t('products.newImage')}</span>
                     </div>
                   )}
                 </div>
@@ -183,10 +185,10 @@ export function EditProductPage() {
               disabled={isUpdating || isUploading}
               onClick={() => navigate(-1)}
             >
-              Cancel
+              {t('products.cancel')}
             </GlassButton>
             <GlassButton type="submit" disabled={isUpdating || isUploading} className="flex-1">
-              {isUpdating ? 'Saving...' : isUploading ? 'Uploading image...' : 'Save Changes'}
+              {isUpdating ? t('products.saving') : isUploading ? t('products.uploadingImage') : t('products.saveChanges')}
             </GlassButton>
           </div>
         </form>

@@ -1,19 +1,21 @@
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGetShopByIdQuery } from '../store/api/generatedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 
 export function ShopSettingsPage() {
   const { shopId } = useParams<{ shopId: string }>();
+  const { t } = useTranslation();
   const { data: shop, isLoading, isError } = useGetShopByIdQuery({ shopId: shopId! });
 
-  if (isLoading) return <GlassSpinner label="Loading settings..." />;
-  if (isError || !shop) return <p className="text-red-400">Failed to load shop.</p>;
+  if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
+  if (isError || !shop) return <p className="text-red-400">{t('shops.failedToLoadShop')}</p>;
 
   const rows = [
-    { label: 'Name', value: shop.name, mono: false },
-    { label: 'ID', value: shop.id, mono: true },
-    { label: 'Slug', value: `/${shop.slug}`, mono: true },
+    { label: t('shops.labelName'), value: shop.name, mono: false },
+    { label: t('shops.labelId'), value: shop.id, mono: true },
+    { label: t('shops.labelSlug'), value: `/${shop.slug}`, mono: true },
   ];
 
   return (
