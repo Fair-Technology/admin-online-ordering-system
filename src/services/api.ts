@@ -768,6 +768,32 @@ export type UpdateProductRequest = {
   allergyInfo?: string[];
   /** Whether product is available */
   isAvailable?: boolean;
+  /** Variant groups (single-select per group, e.g. Size) */
+  variantGroups?: {
+    id: string;
+    name: string;
+    options: {
+      id: string;
+      name: string;
+      /** Price delta in cents */
+      priceDelta: number;
+      isAvailable: boolean;
+    }[];
+  }[];
+  /** Addon groups (multi-select per group, e.g. Extras) */
+  addonGroups?: {
+    id: string;
+    name: string;
+    minSelectable: number;
+    maxSelectable: number;
+    options: {
+      id: string;
+      name: string;
+      /** Price delta in cents */
+      priceDelta: number;
+      isAvailable: boolean;
+    }[];
+  }[];
 };
 export type GenerateImageUploadUrlResponse = {
   /** Unique identifier for the image */

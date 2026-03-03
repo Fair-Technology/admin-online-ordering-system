@@ -149,6 +149,30 @@
     "confirmDisable": "Disable",
     "cancelToggle": "Cancel"
   },
+  "variants": {
+    "title": "Variants",
+    "addGroup": "+ Add Variant Group",
+    "groupNamePlaceholder": "e.g. Size",
+    "optionNamePlaceholder": "e.g. Large",
+    "priceDelta": "Price delta ($)",
+    "available": "Available",
+    "addOption": "+ Add Option",
+    "removeGroup": "Remove Group",
+    "removeOption": "Remove"
+  },
+  "addons": {
+    "title": "Addons",
+    "addGroup": "+ Add Addon Group",
+    "groupNamePlaceholder": "e.g. Extras",
+    "min": "Min",
+    "max": "Max",
+    "optionNamePlaceholder": "e.g. Extra cheese",
+    "priceDelta": "Price delta ($)",
+    "available": "Available",
+    "addOption": "+ Add Option",
+    "removeGroup": "Remove Group",
+    "removeOption": "Remove"
+  },
   "orders": {
     "loading": "Loading orders...",
     "loadError": "Failed to load orders.",

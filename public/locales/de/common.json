@@ -149,6 +149,30 @@
     "confirmDisable": "Deaktivieren",
     "cancelToggle": "Abbrechen"
   },
+  "variants": {
+    "title": "Varianten",
+    "addGroup": "+ Variantengruppe hinzufügen",
+    "groupNamePlaceholder": "z.B. Größe",
+    "optionNamePlaceholder": "z.B. Groß",
+    "priceDelta": "Preisaufschlag ($)",
+    "available": "Verfügbar",
+    "addOption": "+ Option hinzufügen",
+    "removeGroup": "Gruppe entfernen",
+    "removeOption": "Entfernen"
+  },
+  "addons": {
+    "title": "Extras",
+    "addGroup": "+ Extragruppe hinzufügen",
+    "groupNamePlaceholder": "z.B. Extras",
+    "min": "Min",
+    "max": "Max",
+    "optionNamePlaceholder": "z.B. Extra Käse",
+    "priceDelta": "Preisaufschlag ($)",
+    "available": "Verfügbar",
+    "addOption": "+ Option hinzufügen",
+    "removeGroup": "Gruppe entfernen",
+    "removeOption": "Entfernen"
+  },
   "orders": {
     "loading": "Bestellungen werden geladen...",
     "loadError": "Bestellungen konnten nicht geladen werden.",
