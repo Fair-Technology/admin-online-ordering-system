@@ -3,8 +3,13 @@ import { baseApi } from '../services/baseApi';
 import { api } from '../services/api';
 
 api.enhanceEndpoints({
-  addTagTypes: ['Categories'],
+  addTagTypes: ['Categories', 'Orders'],
   endpoints: {
+    getOrdersByShop: {
+      providesTags: (_result, _error, arg) => [
+        { type: 'Orders' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
     getCategoriesByShop: {
       providesTags: (_result, _error, arg) => [
         { type: 'Categories' as const, id: `LIST-${arg.shopId}` },

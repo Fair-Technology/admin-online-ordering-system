@@ -4,6 +4,7 @@
     "adminDashboard": "Admin Dashboard",
     "dashboard": "Dashboard",
     "shops": "Shops",
+    "orders": "Orders",
     "products": "Products",
     "categories": "Categories",
     "settings": "Settings",
@@ -147,6 +148,18 @@
     "confirmEnable": "Enable",
     "confirmDisable": "Disable",
     "cancelToggle": "Cancel"
+  },
+  "orders": {
+    "loading": "Loading orders...",
+    "loadError": "Failed to load orders.",
+    "empty": "No orders yet.",
+    "status": {
+      "paid": "Paid",
+      "pending_payment": "Pending Payment",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    }
   },
   "categories": {
     "addCategory": "+ New Category",

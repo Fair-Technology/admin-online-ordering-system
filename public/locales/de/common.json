@@ -4,6 +4,7 @@
     "adminDashboard": "Admin-Dashboard",
     "dashboard": "Dashboard",
     "shops": "Shops",
+    "orders": "Bestellungen",
     "products": "Produkte",
     "categories": "Kategorien",
     "settings": "Einstellungen",
@@ -147,6 +148,18 @@
     "confirmEnable": "Aktivieren",
     "confirmDisable": "Deaktivieren",
     "cancelToggle": "Abbrechen"
+  },
+  "orders": {
+    "loading": "Bestellungen werden geladen...",
+    "loadError": "Bestellungen konnten nicht geladen werden.",
+    "empty": "Noch keine Bestellungen.",
+    "status": {
+      "paid": "Bezahlt",
+      "pending_payment": "Zahlung ausstehend",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Storniert",
+      "refunded": "Erstattet"
+    }
   },
   "categories": {
     "addCategory": "+ Neue Kategorie",

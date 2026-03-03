@@ -184,6 +184,12 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.body,
       }),
     }),
+    getOrdersByShop: build.query<
+      GetOrdersByShopApiResponse,
+      GetOrdersByShopApiArg
+    >({
+      query: (queryArg) => ({ url: `/shops/${queryArg.shopId}/orders` }),
+    }),
     getOrderByPaymentIntent: build.query<
       GetOrderByPaymentIntentApiResponse,
       GetOrderByPaymentIntentApiArg
@@ -346,6 +352,12 @@ export type StripeWebhookApiResponse = /** status 200 Event received */ {
 };
 export type StripeWebhookApiArg = {
   body: object;
+};
+export type GetOrdersByShopApiResponse =
+  /** status 200 Orders retrieved successfully */ OrderResponse[];
+export type GetOrdersByShopApiArg = {
+  /** Shop ID */
+  shopId: string;
 };
 export type GetOrderByPaymentIntentApiResponse =
   /** status 200 Order found */ OrderByPaymentIntentResponse;
@@ -860,6 +872,19 @@ export type OrderItemResponse = {
   selectedAddonOptionIds?: string[] | null;
   lineTotalCents: number;
 };
+export type OrderResponse = {
+  id: string;
+  orderRef: string;
+  status: "pending_payment" | "paid" | "failed" | "cancelled" | "refunded";
+  items: OrderItemResponse[];
+  subtotalCents: number;
+  currency: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerNotes?: string | null;
+  createdAt: string;
+};
 export type OrderByPaymentIntentResponse = {
   orderId: string;
   orderRef: string;
@@ -894,5 +919,6 @@ export const {
   useSetShopLogoMutation,
   useCreateOrderMutation,
   useStripeWebhookMutation,
+  useGetOrdersByShopQuery,
   useGetOrderByPaymentIntentQuery,
 } = injectedRtkApi;

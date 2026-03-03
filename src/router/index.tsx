@@ -13,6 +13,7 @@ import { EditCategoryPage } from '../pages/EditCategoryPage';
 import { ProductsPage } from '../pages/ProductsPage';
 import { CreateProductPage } from '../pages/CreateProductPage';
 import { EditProductPage } from '../pages/EditProductPage';
+import { OrdersPage } from '../pages/OrdersPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
             element: <ShopLayout />,
             children: [
               { index: true, element: <ProductsPage /> },
+              { path: 'orders', element: <OrdersPage /> },
               { path: 'categories', element: <CategoriesPage /> },
               { path: 'settings', element: <ShopSettingsPage /> },
             ],
