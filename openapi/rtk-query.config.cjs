@@ -1,0 +1,9 @@
+/** @type {import('@rtk-query/codegen-openapi').ConfigFile} */
+module.exports = {
+  schemaFile: './swagger.json',
+  apiFile: '../src/store/api/baseApi.ts',
+  apiImport: 'baseApi',
+  outputFile: '../src/store/api/generatedApi.ts',
+  exportName: 'generatedApi',
+  hooks: { queries: true, lazyQueries: false, mutations: true },
+};
