@@ -167,6 +167,23 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.body,
       }),
     }),
+    generateShopLogoUploadUrl: build.mutation<
+      GenerateShopLogoUploadUrlApiResponse,
+      GenerateShopLogoUploadUrlApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/logo/upload-url`,
+        method: "POST",
+        body: queryArg.generateShopLogoUploadUrlRequest,
+      }),
+    }),
+    setShopLogo: build.mutation<SetShopLogoApiResponse, SetShopLogoApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/logo`,
+        method: "POST",
+        body: queryArg.setShopLogoRequest,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -308,6 +325,20 @@ export type StripeWebhookApiResponse = /** status 200 Event received */ {
 export type StripeWebhookApiArg = {
   body: object;
 };
+export type GenerateShopLogoUploadUrlApiResponse =
+  /** status 200 Upload URL generated successfully */ GenerateShopLogoUploadUrlResponse;
+export type GenerateShopLogoUploadUrlApiArg = {
+  /** Shop ID */
+  shopId: string;
+  generateShopLogoUploadUrlRequest: GenerateShopLogoUploadUrlRequest;
+};
+export type SetShopLogoApiResponse =
+  /** status 200 Shop logo updated successfully */ ShopResponse;
+export type SetShopLogoApiArg = {
+  /** Shop ID */
+  shopId: string;
+  setShopLogoRequest: SetShopLogoRequest;
+};
 export type ShopBranding = {
   /** Logo URL (must start with https://) */
   logoUrl?: string | null;
@@ -324,6 +355,16 @@ export type ShopBranding = {
     background: string;
   };
 } | null;
+export type OpeningHoursDay = { open?: string; close?: string }[];
+export type OpeningHours = {
+  mon?: OpeningHoursDay;
+  tue?: OpeningHoursDay;
+  wed?: OpeningHoursDay;
+  thu?: OpeningHoursDay;
+  fri?: OpeningHoursDay;
+  sat?: OpeningHoursDay;
+  sun?: OpeningHoursDay;
+};
 export type ShopResponse = {
   /** Shop ID */
   id?: string;
@@ -339,6 +380,8 @@ export type ShopResponse = {
   updatedAt?: string;
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
+  /** Shop opening hours per day of the week */
+  openingHours?: OpeningHours;
 };
 export type GetAllShopsResponse = {
   /** Array of shops */
@@ -467,6 +510,8 @@ export type UpdateShopRequest = {
   };
   /** Shop branding configuration. Set to null to clear branding. */
   branding?: ShopBranding;
+  /** Shop opening hours per day. At least one day must have opening hours. */
+  openingHours?: OpeningHours;
 };
 export type DeleteResponse = {
   /** Whether deletion was successful */
@@ -698,6 +743,26 @@ export type CheckoutRequest = {
   /** Customer name (optional) */
   customerName?: string;
 };
+export type GenerateShopLogoUploadUrlResponse = {
+  /** Unique identifier for the logo image */
+  imageId: string;
+  /** Pre-signed URL for uploading the logo to Azure Blob Storage */
+  uploadUrl: string;
+  /** Permanent URL of the logo blob (without SAS token) */
+  blobUrl: string;
+  /** Expiration time of the upload URL */
+  expiresAt: string;
+};
+export type GenerateShopLogoUploadUrlRequest = {
+  /** MIME type of the logo image to upload */
+  contentType: "image/jpeg" | "image/png" | "image/webp";
+};
+export type SetShopLogoRequest = {
+  /** Image ID returned from the logo upload URL generation */
+  imageId: string;
+  /** Blob URL of the uploaded logo */
+  url: string;
+};
 export const {
   useGetShopsQuery,
   useCreateShopMutation,
@@ -720,4 +785,6 @@ export const {
   useAddProductImageMutation,
   useCreateOrderMutation,
   useStripeWebhookMutation,
+  useGenerateShopLogoUploadUrlMutation,
+  useSetShopLogoMutation,
 } = injectedRtkApi;
