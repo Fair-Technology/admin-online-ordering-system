@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGetMyShopsQuery } from '../store/api/generatedApi';
-import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 
@@ -21,35 +20,34 @@ export function ShopsPage() {
         </Link>
       </div>
 
-      <GlassCard>
-        {data?.shops.length === 0 && (
-          <p className="p-5 text-white/40 text-sm">{t('shops.empty')}</p>
-        )}
-        {data?.shops.map((shop, i) => (
+      {data?.shops.length === 0 && (
+        <p className="text-white/40 text-sm">{t('shops.empty')}</p>
+      )}
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {data?.shops.map((shop) => (
           <Link
-            key={shop.id}
             to={`/shops/${shop.id}`}
-            className={`flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition-colors ${
-              i > 0 ? 'border-t border-white/8' : ''
-            }`}
+            key={shop.id}
+            className="rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20
+                       shadow-[0_8px_40px_rgba(0,0,0,0.35)] hover:bg-white/15
+                       hover:border-white/30 cursor-pointer overflow-hidden block"
           >
-            {shop.branding?.logoUrl ? (
-              <img
-                src={shop.branding.logoUrl}
-                alt={shop.name}
-                className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-semibold text-sm">
-                  {shop.name?.charAt(0).toUpperCase()}
+            <div className="aspect-square w-full bg-white flex items-center justify-center">
+              {shop.branding?.logoUrl ? (
+                <img src={shop.branding.logoUrl} alt={shop.name} className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-4xl font-semibold text-black/20">
+                  {shop.name.charAt(0).toUpperCase()}
                 </span>
-              </div>
-            )}
-            <p className="font-medium text-white">{shop.name}</p>
+              )}
+            </div>
+            <div className="p-3">
+              <p className="font-medium text-white text-sm leading-snug truncate">{shop.name}</p>
+            </div>
           </Link>
         ))}
-      </GlassCard>
+      </div>
     </div>
   );
 }
