@@ -147,7 +147,13 @@
     "unavailable": "Nicht verfügbar",
     "confirmEnable": "Aktivieren",
     "confirmDisable": "Deaktivieren",
-    "cancelToggle": "Abbrechen"
+    "cancelToggle": "Abbrechen",
+    "dangerZone": "Gefahrenzone",
+    "deleteWarning": "Das Löschen eines Produkts ist dauerhaft und kann nicht rückgängig gemacht werden.",
+    "delete": "Produkt löschen",
+    "confirmDelete": "Ja, löschen",
+    "deleting": "Wird gelöscht...",
+    "failedToDelete": "Produkt konnte nicht gelöscht werden."
   },
   "variants": {
     "title": "Varianten",

@@ -147,7 +147,13 @@
     "unavailable": "Unavailable",
     "confirmEnable": "Enable",
     "confirmDisable": "Disable",
-    "cancelToggle": "Cancel"
+    "cancelToggle": "Cancel",
+    "dangerZone": "Danger Zone",
+    "deleteWarning": "Deleting a product is permanent and cannot be undone.",
+    "delete": "Delete Product",
+    "confirmDelete": "Yes, delete",
+    "deleting": "Deleting...",
+    "failedToDelete": "Failed to delete product."
   },
   "variants": {
     "title": "Variants",

@@ -6,6 +6,7 @@ import {
   useGetShopByIdQuery,
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
+  useDeleteProductMutation,
 } from '../services/api';
 import { useUpdateProductMutation, useGetCategoriesByShopQuery } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -33,9 +34,12 @@ export function EditProductPage() {
   });
   const [updateProduct, { isLoading: isUpdating, isError: isUpdateError }] =
     useUpdateProductMutation();
+  const [deleteProduct, { isLoading: isDeleting, isError: isDeleteError }] =
+    useDeleteProductMutation();
   const [generateUploadUrl] = useGenerateUploadUrlMutation();
   const [addProductImage] = useAddProductImageMutation();
 
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', price: '' });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -138,6 +142,15 @@ export function EditProductPage() {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await deleteProduct({ shopId: shopId!, productId: productId! }).unwrap();
+      navigate(`/shops/${shopId}`);
+    } catch {
+      setConfirmingDelete(false);
+    }
+  };
+
   const addVariantGroup = () => {
     setVariantGroups(gs => [...gs, { id: crypto.randomUUID(), name: '', options: [] }]);
   };
@@ -219,6 +232,12 @@ export function EditProductPage() {
       {isUpdateError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
           <p className="text-sm text-red-300">{t('products.failedToUpdate')}</p>
+        </GlassCard>
+      )}
+
+      {isDeleteError && (
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">{t('products.failedToDelete')}</p>
         </GlassCard>
       )}
 
@@ -478,6 +497,27 @@ export function EditProductPage() {
             </GlassButton>
           </div>
         </form>
+      </GlassCard>
+
+      <GlassCard className="p-6">
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-white">{t('products.dangerZone')}</p>
+          <p className="text-xs text-white/50">{t('products.deleteWarning')}</p>
+          {confirmingDelete ? (
+            <div className="flex gap-2">
+              <GlassButton variant="danger" disabled={isDeleting} onClick={handleDelete}>
+                {isDeleting ? t('products.deleting') : t('products.confirmDelete')}
+              </GlassButton>
+              <GlassButton variant="ghost" disabled={isDeleting} onClick={() => setConfirmingDelete(false)}>
+                {t('products.cancel')}
+              </GlassButton>
+            </div>
+          ) : (
+            <GlassButton variant="danger" onClick={() => setConfirmingDelete(true)}>
+              {t('products.delete')}
+            </GlassButton>
+          )}
+        </div>
       </GlassCard>
     </div>
   );
