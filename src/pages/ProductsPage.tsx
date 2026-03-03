@@ -1,9 +1,78 @@
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGetProductsByShopQuery } from '../store/api/generatedApi';
+import { useGetProductsByShopQuery, useUpdateProductMutation } from '../store/api/enhancedApi';
 import type { ProductResponse } from '../store/api/generatedApi';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+
+function AvailabilityToggle({
+  product,
+  shopId,
+}: {
+  product: ProductResponse;
+  shopId: string;
+}) {
+  const { t } = useTranslation();
+  const [confirming, setConfirming] = useState(false);
+  const [updateProduct, { isLoading }] = useUpdateProductMutation();
+
+  const isAvailable = product.isAvailable !== false;
+
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+  const handleConfirm = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await updateProduct({
+        productId: product.id!,
+        updateProductRequest: { shopId, isAvailable: !isAvailable },
+      }).unwrap();
+    } catch {
+      // list retains the unchanged value on failure
+    }
+    setConfirming(false);
+  };
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-1.5 mt-2" onClick={stop}>
+        <button
+          disabled={isLoading}
+          onClick={handleConfirm}
+          className="text-xs px-2 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-white border border-white/20 disabled:opacity-40 transition-colors"
+        >
+          {isLoading
+            ? '…'
+            : isAvailable
+              ? t('products.confirmDisable')
+              : t('products.confirmEnable')}
+        </button>
+        <button
+          disabled={isLoading}
+          onClick={(e) => { stop(e); setConfirming(false); }}
+          className="text-xs px-2 py-0.5 rounded-md bg-transparent hover:bg-white/10 text-white/50 border border-white/15 disabled:opacity-40 transition-colors"
+        >
+          {t('products.cancelToggle')}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={(e) => { stop(e); setConfirming(true); }}
+      className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors ${
+        isAvailable
+          ? 'bg-emerald-500/15 border-emerald-400/25 text-emerald-300 hover:bg-emerald-500/25'
+          : 'bg-white/8 border-white/12 text-white/40 hover:bg-white/15 hover:text-white/60'
+      }`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-emerald-400' : 'bg-white/30'}`} />
+      {isAvailable ? t('products.available') : t('products.unavailable')}
+    </button>
+  );
+}
 
 function ProductCard({ product, shopId }: { product: ProductResponse; shopId: string }) {
   const navigate = useNavigate();
@@ -28,6 +97,7 @@ function ProductCard({ product, shopId }: { product: ProductResponse; shopId: st
       <div className="p-3">
         <p className="font-medium text-white text-sm leading-snug truncate">{product.name}</p>
         <p className="text-white/50 text-xs mt-0.5">${((product.price ?? 0) / 100).toFixed(2)}</p>
+        <AvailabilityToggle product={product} shopId={shopId} />
       </div>
     </div>
   );

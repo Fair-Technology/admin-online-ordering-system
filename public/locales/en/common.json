@@ -141,7 +141,12 @@
     "saveChanges": "Save Changes",
     "cancel": "Cancel",
     "namePlaceholder": "Product name",
-    "descriptionPlaceholder": "Describe your product..."
+    "descriptionPlaceholder": "Describe your product...",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "confirmEnable": "Enable",
+    "confirmDisable": "Disable",
+    "cancelToggle": "Cancel"
   },
   "categories": {
     "addCategory": "+ New Category",

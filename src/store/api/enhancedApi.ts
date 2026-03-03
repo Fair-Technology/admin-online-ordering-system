@@ -4,7 +4,7 @@ import { generatedApi } from './generatedApi';
  * Enhances the generated API with cache tag configuration so mutations
  * automatically invalidate the relevant query caches.
  *
- * Import category-related hooks from this file instead of generatedApi.
+ * Import category and product hooks from this file instead of generatedApi.
  */
 export const enhancedApi = generatedApi.enhanceEndpoints({
   addTagTypes: ['Categories'],
@@ -29,6 +29,17 @@ export const enhancedApi = generatedApi.enhanceEndpoints({
         { type: 'Categories' as const, id: `LIST-${arg.shopId}` },
       ],
     },
+    getProductsByShop: {
+      providesTags: (_result, _error, arg) => [
+        { type: 'Products' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
+    updateProduct: {
+      invalidatesTags: (_result, _error, arg) =>
+        arg.updateProductRequest.shopId
+          ? [{ type: 'Products' as const, id: `LIST-${arg.updateProductRequest.shopId}` }]
+          : [{ type: 'Products' as const, id: 'LIST' }],
+    },
   },
 });
 
@@ -38,4 +49,6 @@ export const {
   useGetCategoryByIdQuery,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useGetProductsByShopQuery,
+  useUpdateProductMutation,
 } = enhancedApi;

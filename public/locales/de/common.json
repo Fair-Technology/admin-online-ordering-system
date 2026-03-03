@@ -141,7 +141,12 @@
     "saveChanges": "Änderungen speichern",
     "cancel": "Abbrechen",
     "namePlaceholder": "Produktname",
-    "descriptionPlaceholder": "Beschreiben Sie Ihr Produkt..."
+    "descriptionPlaceholder": "Beschreiben Sie Ihr Produkt...",
+    "available": "Verfügbar",
+    "unavailable": "Nicht verfügbar",
+    "confirmEnable": "Aktivieren",
+    "confirmDisable": "Deaktivieren",
+    "cancelToggle": "Abbrechen"
   },
   "categories": {
     "addCategory": "+ Neue Kategorie",
