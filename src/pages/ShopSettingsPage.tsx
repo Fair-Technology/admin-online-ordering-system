@@ -10,6 +10,7 @@ import {
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { GlassButton } from '../components/ui/GlassButton';
+import { GlassInput } from '../components/ui/GlassInput';
 
 type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 type TimeSlot = { open: string; close: string };
@@ -45,10 +46,42 @@ export function ShopSettingsPage() {
   const [hoursError, setHoursError] = useState<string | null>(null);
   const [hoursSaved, setHoursSaved] = useState(false);
 
+  const [statusState, setStatusState] = useState<{
+    acceptingOrders: boolean;
+    isPaused: boolean;
+    pausedMessage: string;
+  } | null>(null);
+  const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [statusSaved, setStatusSaved] = useState(false);
+
+  const [colorsState, setColorsState] = useState<{
+    primary: string;
+    secondary: string;
+    tertiary: string;
+    background: string;
+  } | null>(null);
+  const [isSavingColors, setIsSavingColors] = useState(false);
+  const [colorsError, setColorsError] = useState<string | null>(null);
+  const [colorsSaved, setColorsSaved] = useState(false);
+
   if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
   if (isError || !shop) return <p className="text-red-400">{t('shops.failedToLoadShop')}</p>;
 
   const currentHours = hoursState ?? buildInitialHours(shop.openingHours as Record<string, unknown> | undefined);
+
+  const currentStatus = statusState ?? {
+    acceptingOrders: shop.acceptingOrders ?? true,
+    isPaused: shop.isPaused ?? false,
+    pausedMessage: shop.pausedMessage ?? '',
+  };
+
+  const currentColors = colorsState ?? {
+    primary: shop.branding?.colors?.primary ?? '#3B82F6',
+    secondary: shop.branding?.colors?.secondary ?? '#10B981',
+    tertiary: shop.branding?.colors?.tertiary ?? '#F59E0B',
+    background: shop.branding?.colors?.background ?? '#1F2937',
+  };
 
   const DAYS: { key: DayKey; label: string }[] = [
     { key: 'mon', label: t('shops.ohMon') },
@@ -110,6 +143,53 @@ export function ShopSettingsPage() {
       setHoursError(t('shops.ohFailedToSave'));
     } finally {
       setIsSavingHours(false);
+    }
+  };
+
+  const handleSaveStatus = async () => {
+    setIsSavingStatus(true);
+    setStatusError(null);
+    setStatusSaved(false);
+
+    try {
+      await updateShop({
+        shopId: shopId!,
+        updateShopRequest: {
+          acceptingOrders: currentStatus.acceptingOrders,
+          isPaused: currentStatus.isPaused,
+          pausedMessage: currentStatus.pausedMessage || undefined,
+        },
+      }).unwrap();
+      setStatusSaved(true);
+      refetch();
+    } catch {
+      setStatusError(t('shops.statusFailedToSave'));
+    } finally {
+      setIsSavingStatus(false);
+    }
+  };
+
+  const handleSaveColors = async () => {
+    setIsSavingColors(true);
+    setColorsError(null);
+    setColorsSaved(false);
+    try {
+      await updateShop({
+        shopId: shopId!,
+        updateShopRequest: {
+          branding: {
+            logoUrl: shop.branding?.logoUrl ?? undefined,
+            heroImageUrl: shop.branding?.heroImageUrl ?? undefined,
+            colors: currentColors,
+          },
+        },
+      }).unwrap();
+      setColorsSaved(true);
+      refetch();
+    } catch {
+      setColorsError(t('shops.colorsFailedToSave'));
+    } finally {
+      setIsSavingColors(false);
     }
   };
 
@@ -216,6 +296,138 @@ export function ShopSettingsPage() {
             {isUploading ? t('shops.uploadingLogo') : t('shops.uploadLogo')}
           </GlassButton>
         </form>
+      </GlassCard>
+
+      <GlassCard className="p-5 space-y-4">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.colorsTitle')}
+        </p>
+
+        <div className="space-y-3">
+          {(
+            [
+              { key: 'primary', label: t('shops.colorPrimary') },
+              { key: 'secondary', label: t('shops.colorSecondary') },
+              { key: 'tertiary', label: t('shops.colorTertiary') },
+              { key: 'background', label: t('shops.colorBackground') },
+            ] as { key: keyof typeof currentColors; label: string }[]
+          ).map(({ key, label }) => (
+            <div key={key} className="flex items-center gap-3">
+              <span className="text-sm text-white/70 w-28 shrink-0">{label}</span>
+              <input
+                type="color"
+                value={currentColors[key]}
+                onChange={(e) => {
+                  setColorsState({ ...currentColors, [key]: e.target.value });
+                  setColorsSaved(false);
+                }}
+                className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0"
+              />
+              <input
+                type="text"
+                value={currentColors[key]}
+                maxLength={7}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (/^#[0-9a-fA-F]{0,6}$/.test(val)) {
+                    setColorsState({ ...currentColors, [key]: val });
+                    setColorsSaved(false);
+                  }
+                }}
+                className="bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5 text-sm text-white font-mono focus:outline-none focus:border-white/45 w-28"
+              />
+            </div>
+          ))}
+        </div>
+
+        {colorsError && <p className="text-sm text-red-300">{colorsError}</p>}
+        {colorsSaved && <p className="text-sm text-green-300">{t('shops.colorsSaved')}</p>}
+
+        <div className="border-t border-white/8 pt-4">
+          <GlassButton onClick={handleSaveColors} disabled={isSavingColors}>
+            {isSavingColors ? t('shops.colorsSaving') : t('shops.colorsSave')}
+          </GlassButton>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-5 space-y-4">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.statusTitle')}
+        </p>
+
+        <div className="space-y-3">
+          {/* Accepting Orders toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">{t('shops.statusAcceptingOrders')}</span>
+            <div className="flex gap-1.5">
+              <GlassButton
+                variant={currentStatus.acceptingOrders ? 'primary' : 'ghost'}
+                onClick={() => {
+                  setStatusState({ ...currentStatus, acceptingOrders: true });
+                  setStatusSaved(false);
+                }}
+              >
+                {t('shops.statusYes')}
+              </GlassButton>
+              <GlassButton
+                variant={!currentStatus.acceptingOrders ? 'primary' : 'ghost'}
+                onClick={() => {
+                  setStatusState({ ...currentStatus, acceptingOrders: false });
+                  setStatusSaved(false);
+                }}
+              >
+                {t('shops.statusNo')}
+              </GlassButton>
+            </div>
+          </div>
+
+          {/* Paused toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-white/70">{t('shops.statusPaused')}</span>
+            <div className="flex gap-1.5">
+              <GlassButton
+                variant={currentStatus.isPaused ? 'primary' : 'ghost'}
+                onClick={() => {
+                  setStatusState({ ...currentStatus, isPaused: true });
+                  setStatusSaved(false);
+                }}
+              >
+                {t('shops.statusYes')}
+              </GlassButton>
+              <GlassButton
+                variant={!currentStatus.isPaused ? 'primary' : 'ghost'}
+                onClick={() => {
+                  setStatusState({ ...currentStatus, isPaused: false });
+                  setStatusSaved(false);
+                }}
+              >
+                {t('shops.statusNo')}
+              </GlassButton>
+            </div>
+          </div>
+
+          {/* Pause message */}
+          <div className="space-y-1.5">
+            <span className="text-sm text-white/70">{t('shops.statusPauseMessage')}</span>
+            <GlassInput
+              value={currentStatus.pausedMessage}
+              placeholder={t('shops.statusPauseMessagePlaceholder')}
+              onChange={(e) => {
+                setStatusState({ ...currentStatus, pausedMessage: e.target.value });
+                setStatusSaved(false);
+              }}
+            />
+          </div>
+        </div>
+
+        {statusError && <p className="text-sm text-red-300">{statusError}</p>}
+        {statusSaved && <p className="text-sm text-green-300">{t('shops.statusSaved')}</p>}
+
+        <div className="border-t border-white/8 pt-4">
+          <GlassButton onClick={handleSaveStatus} disabled={isSavingStatus}>
+            {isSavingStatus ? t('shops.statusSaving') : t('shops.statusSave')}
+          </GlassButton>
+        </div>
       </GlassCard>
 
       <GlassCard className="p-5">

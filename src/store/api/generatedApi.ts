@@ -382,6 +382,12 @@ export type ShopResponse = {
   branding?: ShopBranding;
   /** Shop opening hours per day of the week */
   openingHours?: OpeningHours;
+  /** Whether shop is accepting orders */
+  acceptingOrders?: boolean;
+  /** Whether shop is paused */
+  isPaused?: boolean;
+  /** Message shown when shop is paused */
+  pausedMessage?: string;
 };
 export type GetAllShopsResponse = {
   /** Array of shops */
