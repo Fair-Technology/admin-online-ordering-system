@@ -2841,6 +2841,11 @@
             "nullable": true,
             "example": "opt-large"
           },
+          "selectedVariantOptionName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Large"
+          },
           "selectedAddonOptionIds": {
             "type": "array",
             "items": {
@@ -2849,6 +2854,16 @@
             "nullable": true,
             "example": [
               "addon-extra-cheese"
+            ]
+          },
+          "selectedAddonOptionNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "example": [
+              "Extra cheese"
             ]
           },
           "lineTotalCents": {

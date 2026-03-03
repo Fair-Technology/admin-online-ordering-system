@@ -65,11 +65,23 @@ function OrderRow({ order }: OrderRowProps) {
         <div className="px-5 pb-4 bg-black/10">
           <div className="divide-y divide-white/8 rounded-xl overflow-hidden border border-white/10">
             {order.items.map((item, i) => (
-              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
-                <span className="text-white/80">
-                  {item.productName} &times; {item.quantity} @ {formatCurrency(item.unitPriceCents, order.currency)}
-                </span>
-                <span className="text-white font-medium">
+              <div key={i} className="flex items-start justify-between px-4 py-2 text-sm gap-3">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-white/80">
+                    {item.productName} &times; {item.quantity} @ {formatCurrency(item.unitPriceCents, order.currency)}
+                  </span>
+                  {item.selectedVariantOptionName && (
+                    <span className="text-xs text-white/50">
+                      {item.selectedVariantOptionName}
+                    </span>
+                  )}
+                  {item.selectedAddonOptionNames && item.selectedAddonOptionNames.length > 0 && (
+                    <span className="text-xs text-white/50">
+                      + {item.selectedAddonOptionNames.join(', ')}
+                    </span>
+                  )}
+                </div>
+                <span className="text-white font-medium shrink-0">
                   {formatCurrency(item.lineTotalCents, order.currency)}
                 </span>
               </div>
