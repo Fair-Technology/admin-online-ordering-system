@@ -38,7 +38,7 @@ export function ShopsPage() {
                 <img src={shop.branding.logoUrl} alt={shop.name} className="w-full h-full object-contain" />
               ) : (
                 <span className="text-4xl font-semibold text-black/20">
-                  {shop.name.charAt(0).toUpperCase()}
+                  {shop.name?.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
