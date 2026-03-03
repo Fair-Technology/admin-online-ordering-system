@@ -1,6 +1,6 @@
 import { useParams, NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGetShopByIdQuery } from '../../store/api/generatedApi';
+import { useGetShopByIdQuery } from '../../services/api';
 import { GlassSpinner } from '../ui/GlassSpinner';
 import { Breadcrumb } from '../ui/Breadcrumb';
 

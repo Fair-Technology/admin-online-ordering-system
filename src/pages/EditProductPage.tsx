@@ -6,8 +6,8 @@ import {
   useGetShopByIdQuery,
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
-} from '../store/api/generatedApi';
-import { useUpdateProductMutation, useGetCategoriesByShopQuery } from '../store/api/enhancedApi';
+} from '../services/api';
+import { useUpdateProductMutation, useGetCategoriesByShopQuery } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';

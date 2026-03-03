@@ -20,8 +20,8 @@ import { GripVertical } from 'lucide-react';
 import {
   useGetCategoriesByShopQuery,
   useUpdateCategoryMutation,
-} from '../store/api/enhancedApi';
-import type { GetCategoriesByShopApiResponse } from '../store/api/generatedApi';
+} from '../services/api';
+import type { GetCategoriesByShopApiResponse } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';

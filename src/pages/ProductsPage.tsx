@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGetProductsByShopQuery, useUpdateProductMutation } from '../store/api/enhancedApi';
-import type { ProductResponse } from '../store/api/generatedApi';
+import { useGetProductsByShopQuery, useUpdateProductMutation } from '../services/api';
+import type { ProductResponse } from '../services/api';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 

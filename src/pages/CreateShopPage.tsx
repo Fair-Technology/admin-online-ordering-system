@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useCreateShopMutation } from '../store/api/generatedApi';
-import type { CreateShopRequest } from '../store/api/generatedApi';
+import { useCreateShopMutation } from '../services/api';
+import type { CreateShopRequest } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';

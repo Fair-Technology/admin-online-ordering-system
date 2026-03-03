@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGetShopByIdQuery } from '../store/api/generatedApi';
+import { useGetShopByIdQuery } from '../services/api';
 import {
   useCreateCategoryMutation,
   useGetCategoriesByShopQuery,
-} from '../store/api/enhancedApi';
+} from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';

@@ -1,6 +1,6 @@
 import { useMsal } from '@azure/msal-react';
 import { useTranslation } from 'react-i18next';
-import { useGetMyShopsQuery } from '../store/api/generatedApi';
+import { useGetMyShopsQuery } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 

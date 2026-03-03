@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { msalInstance, loginRequest } from '../../auth/msalConfig';
+import { msalInstance, loginRequest } from '../auth/msalConfig';
 
 // TODO: Add API-specific scope for backend access once configured, e.g.:
 // scopes: ['api://{backendClientId}/user_impersonation']

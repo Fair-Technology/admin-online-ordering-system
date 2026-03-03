@@ -195,7 +195,7 @@ const injectedRtkApi = api.injectEndpoints({
   }),
   overrideExisting: false,
 });
-export { injectedRtkApi as generatedApi };
+export { injectedRtkApi as api };
 export type GetShopsApiResponse =
   /** status 200 List of all shops retrieved successfully */ GetAllShopsResponse;
 export type GetShopsApiArg = void;

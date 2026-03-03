@@ -1,15 +1,46 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { baseApi } from './api/baseApi';
+import { baseApi } from '../services/baseApi';
+import { api } from '../services/api';
 
-// Import generated API to ensure endpoints are registered
-import { generatedApi } from './api/generatedApi';
-
-generatedApi.enhanceEndpoints({
-  addTagTypes: ['Products'],
+api.enhanceEndpoints({
+  addTagTypes: ['Categories'],
   endpoints: {
-    getProductsByShop: { providesTags: ['Products'] },
-    updateProduct:     { invalidatesTags: ['Products'] },
-    addProductImage:   { invalidatesTags: ['Products'] },
+    getCategoriesByShop: {
+      providesTags: (_result, _error, arg) => [
+        { type: 'Categories' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
+    createCategory: {
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Categories' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
+    updateCategory: {
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Categories' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
+    deleteCategory: {
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Categories' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
+    getProductsByShop: {
+      providesTags: (_result, _error, arg) => [
+        { type: 'Products' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
+    updateProduct: {
+      invalidatesTags: (_result, _error, arg) =>
+        arg.updateProductRequest.shopId
+          ? [{ type: 'Products' as const, id: `LIST-${arg.updateProductRequest.shopId}` }]
+          : [{ type: 'Products' as const, id: 'LIST' }],
+    },
+    addProductImage: {
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Products' as const, id: `LIST-${arg.shopId}` },
+      ],
+    },
   },
 });
 

@@ -6,7 +6,7 @@ import {
   useGenerateShopLogoUploadUrlMutation,
   useSetShopLogoMutation,
   useUpdateShopMutation,
-} from '../store/api/generatedApi';
+} from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { GlassButton } from '../components/ui/GlassButton';
