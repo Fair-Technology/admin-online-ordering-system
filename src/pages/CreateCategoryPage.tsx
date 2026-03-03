@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useCreateCategoryMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
+import { useGetShopByIdQuery } from '../store/api/generatedApi';
+import {
+  useCreateCategoryMutation,
+  useGetCategoriesByShopQuery,
+} from '../store/api/enhancedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
@@ -12,17 +16,17 @@ export function CreateCategoryPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
+  const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
   const [createCategory, { isLoading, isError, error }] = useCreateCategoryMutation();
 
   const [name, setName] = useState('');
-  const [sortOrder, setSortOrder] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createCategory({
         shopId: shopId!,
-        createCategoryRequest: { name, sortOrder: sortOrder ? Number(sortOrder) : undefined },
+        createCategoryRequest: { name, sortOrder: categories?.length ?? 0 },
       }).unwrap();
       navigate(`/shops/${shopId}/categories`);
     } catch {
@@ -56,13 +60,6 @@ export function CreateCategoryPage() {
             placeholder={t('categories.namePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-          />
-          <GlassInput
-            label={t('categories.sortOrder')}
-            type="number"
-            placeholder="0"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
           />
           <GlassButton type="submit" disabled={isLoading} className="w-full">
             {isLoading ? t('categories.creating') : t('categories.create')}

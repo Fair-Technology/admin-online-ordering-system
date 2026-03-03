@@ -149,8 +149,16 @@
     "loading": "Kategorien werden geladen...",
     "loadError": "Kategorien konnten nicht geladen werden.",
     "empty": "Noch keine Kategorien.",
-    "sort": "Sortierung:",
+    "dragHandle": "Zum Neuanordnen ziehen",
+    "failedToReorder": "Neue Reihenfolge konnte nicht gespeichert werden. Änderungen zurückgesetzt.",
     "edit": "Bearbeiten",
+    "delete": "Kategorie löschen",
+    "confirmDelete": "Ja, löschen",
+    "cancel": "Abbrechen",
+    "deleting": "Wird gelöscht...",
+    "failedToDelete": "Kategorie konnte nicht gelöscht werden.",
+    "dangerZone": "Gefahrenzone",
+    "deleteWarning": "Das Löschen einer Kategorie ist dauerhaft und kann nicht rückgängig gemacht werden.",
     "createTitle": "Kategorie erstellen",
     "editTitle": "Kategorie bearbeiten",
     "create": "Kategorie erstellen",
@@ -162,7 +170,6 @@
     "saving": "Wird gespeichert...",
     "saveChanges": "Änderungen speichern",
     "name": "Name",
-    "sortOrder": "Sortierreihenfolge",
     "namePlaceholder": "Kategoriename"
   }
 }

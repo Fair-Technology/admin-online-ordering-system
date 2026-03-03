@@ -149,8 +149,16 @@
     "loading": "Loading categories...",
     "loadError": "Failed to load categories.",
     "empty": "No categories yet.",
-    "sort": "Sort:",
+    "dragHandle": "Drag to reorder",
+    "failedToReorder": "Failed to save new order. Changes reverted.",
     "edit": "Edit",
+    "delete": "Delete Category",
+    "confirmDelete": "Yes, delete",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "failedToDelete": "Failed to delete category.",
+    "dangerZone": "Danger Zone",
+    "deleteWarning": "Deleting a category is permanent and cannot be undone.",
     "createTitle": "Create Category",
     "editTitle": "Edit Category",
     "create": "Create Category",
@@ -162,7 +170,6 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "name": "Name",
-    "sortOrder": "Sort Order",
     "namePlaceholder": "Category name"
   }
 }

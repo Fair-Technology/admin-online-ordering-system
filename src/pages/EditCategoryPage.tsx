@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGetCategoryByIdQuery, useUpdateCategoryMutation, useGetShopByIdQuery } from '../store/api/generatedApi';
+import { useGetShopByIdQuery } from '../store/api/generatedApi';
+import { useGetCategoryByIdQuery, useUpdateCategoryMutation, useDeleteCategoryMutation } from '../store/api/enhancedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
@@ -20,14 +21,15 @@ export function EditCategoryPage() {
   });
   const [updateCategory, { isLoading: isUpdating, isError: isUpdateError }] =
     useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting, isError: isDeleteError }] =
+    useDeleteCategoryMutation();
 
   const [name, setName] = useState('');
-  const [sortOrder, setSortOrder] = useState('');
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   useEffect(() => {
     if (category) {
       setName(category.name ?? '');
-      setSortOrder(category.sortOrder != null ? String(category.sortOrder) : '');
     }
   }, [category]);
 
@@ -40,14 +42,20 @@ export function EditCategoryPage() {
       await updateCategory({
         shopId: shopId!,
         categoryId: categoryId!,
-        updateCategoryRequest: {
-          name,
-          sortOrder: sortOrder ? Number(sortOrder) : undefined,
-        },
+        updateCategoryRequest: { name },
       }).unwrap();
       navigate(`/shops/${shopId}/categories`);
     } catch {
       // error shown below
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteCategory({ shopId: shopId!, categoryId: categoryId! }).unwrap();
+      navigate(`/shops/${shopId}/categories`);
+    } catch {
+      setConfirmingDelete(false);
     }
   };
 
@@ -67,6 +75,12 @@ export function EditCategoryPage() {
         </GlassCard>
       )}
 
+      {isDeleteError && (
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">{t('categories.failedToDelete')}</p>
+        </GlassCard>
+      )}
+
       <GlassCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <GlassInput
@@ -76,17 +90,50 @@ export function EditCategoryPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <GlassInput
-            label={t('categories.sortOrder')}
-            type="number"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            placeholder="0"
-          />
-          <GlassButton type="submit" disabled={isUpdating} className="w-full">
-            {isUpdating ? t('categories.saving') : t('categories.saveChanges')}
-          </GlassButton>
+          <div className="flex gap-2">
+            <GlassButton
+              type="button"
+              variant="ghost"
+              disabled={isUpdating}
+              className="flex-1"
+              onClick={() => navigate(`/shops/${shopId}/categories`)}
+            >
+              {t('categories.cancel')}
+            </GlassButton>
+            <GlassButton type="submit" disabled={isUpdating} className="flex-1">
+              {isUpdating ? t('categories.saving') : t('categories.saveChanges')}
+            </GlassButton>
+          </div>
         </form>
+      </GlassCard>
+
+      <GlassCard className="p-6">
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-white">{t('categories.dangerZone')}</p>
+          <p className="text-xs text-white/50">{t('categories.deleteWarning')}</p>
+          {confirmingDelete ? (
+            <div className="flex gap-2">
+              <GlassButton
+                variant="danger"
+                disabled={isDeleting}
+                onClick={handleDelete}
+              >
+                {isDeleting ? t('categories.deleting') : t('categories.confirmDelete')}
+              </GlassButton>
+              <GlassButton
+                variant="ghost"
+                disabled={isDeleting}
+                onClick={() => setConfirmingDelete(false)}
+              >
+                {t('categories.cancel')}
+              </GlassButton>
+            </div>
+          ) : (
+            <GlassButton variant="danger" onClick={() => setConfirmingDelete(true)}>
+              {t('categories.delete')}
+            </GlassButton>
+          )}
+        </div>
       </GlassCard>
     </div>
   );
