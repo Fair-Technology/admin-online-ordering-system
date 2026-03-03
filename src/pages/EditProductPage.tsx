@@ -3,15 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useGetProductByIdQuery,
-  useUpdateProductMutation,
   useGetShopByIdQuery,
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
 } from '../store/api/generatedApi';
+import { useUpdateProductMutation, useGetCategoriesByShopQuery } from '../store/api/enhancedApi';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { X } from 'lucide-react';
 
@@ -20,6 +21,7 @@ export function EditProductPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
+  const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
   const { data: product, isLoading, isError } = useGetProductByIdQuery({
     productId: productId!,
     shopId: shopId!,
@@ -30,6 +32,7 @@ export function EditProductPage() {
   const [addProductImage] = useAddProductImageMutation();
 
   const [form, setForm] = useState({ name: '', description: '', price: '' });
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -48,8 +51,10 @@ export function EditProductPage() {
         description: product.description ?? '',
         price: ((product.price ?? 0) / 100).toFixed(2),
       });
+      setSelectedCategoryIds(product.categories?.map((c) => c.id!).filter(Boolean) ?? []);
     }
   }, [product]);
+
 
   if (isLoading) return <GlassSpinner label={t('products.loadingProduct')} />;
   if (isError || !product) return <p className="text-red-400">{t('products.failedToLoad')}</p>;
@@ -64,6 +69,7 @@ export function EditProductPage() {
           name: form.name,
           description: form.description,
           price: Math.round(Number(form.price) * 100),
+          categoryIds: selectedCategoryIds,
         },
       }).unwrap();
 
@@ -138,6 +144,15 @@ export function EditProductPage() {
             value={form.price}
             onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
           />
+
+          {categories && categories.length > 0 && (
+            <CategoryPicker
+              label={t('products.categories')}
+              categories={categories}
+              selectedIds={selectedCategoryIds}
+              onChange={setSelectedCategoryIds}
+            />
+          )}
 
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-white/50 uppercase tracking-wide">

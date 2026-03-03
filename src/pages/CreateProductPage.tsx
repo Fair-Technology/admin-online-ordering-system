@@ -11,6 +11,7 @@ import {
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
+import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 
 export function CreateProductPage() {
@@ -29,12 +30,6 @@ export function CreateProductPage() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
-  const toggleCategory = (id: string) => {
-    setSelectedCategoryIds((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,25 +128,12 @@ export function CreateProductPage() {
           />
 
           {categories && categories.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium text-white/50 uppercase tracking-wide">{t('products.categories')}</p>
-              <div className="space-y-2">
-                {categories.map((cat) => (
-                  <label
-                    key={cat.id}
-                    className="flex items-center gap-2.5 text-sm text-white/65 cursor-pointer hover:text-white transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCategoryIds.includes(cat.id!)}
-                      onChange={() => toggleCategory(cat.id!)}
-                      className="rounded border-white/30 bg-white/10 accent-white/80 focus:ring-white/20"
-                    />
-                    {cat.name}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <CategoryPicker
+              label={t('products.categories')}
+              categories={categories}
+              selectedIds={selectedCategoryIds}
+              onChange={setSelectedCategoryIds}
+            />
           )}
 
           <div className="flex flex-col gap-1.5">
