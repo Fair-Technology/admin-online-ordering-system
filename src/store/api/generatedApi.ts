@@ -355,15 +355,20 @@ export type ShopBranding = {
     background: string;
   };
 } | null;
-export type OpeningHoursDay = { open?: string; close?: string }[];
+export type TimeSlot = {
+  /** Opening time (HH:MM) */
+  open?: string;
+  /** Closing time (HH:MM) */
+  close?: string;
+};
 export type OpeningHours = {
-  mon?: OpeningHoursDay;
-  tue?: OpeningHoursDay;
-  wed?: OpeningHoursDay;
-  thu?: OpeningHoursDay;
-  fri?: OpeningHoursDay;
-  sat?: OpeningHoursDay;
-  sun?: OpeningHoursDay;
+  mon?: TimeSlot[];
+  tue?: TimeSlot[];
+  wed?: TimeSlot[];
+  thu?: TimeSlot[];
+  fri?: TimeSlot[];
+  sat?: TimeSlot[];
+  sun?: TimeSlot[];
 };
 export type ShopResponse = {
   /** Shop ID */
@@ -380,14 +385,26 @@ export type ShopResponse = {
   updatedAt?: string;
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
-  /** Shop opening hours per day of the week */
   openingHours?: OpeningHours;
   /** Whether shop is accepting orders */
   acceptingOrders?: boolean;
   /** Whether shop is paused */
   isPaused?: boolean;
-  /** Message shown when shop is paused */
-  pausedMessage?: string;
+  /** Message when paused */
+  pausedMessage?: string | null;
+  /** Shop currency (ISO code) */
+  currency?: string;
+  /** Shop timezone */
+  timezone?: string;
+  /** Minimum order amount in cents */
+  minOrderAmountCents?: number;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postcode?: string;
+    country?: string;
+  };
 };
 export type GetAllShopsResponse = {
   /** Array of shops */
@@ -514,10 +531,9 @@ export type UpdateShopRequest = {
     postcode?: string;
     country?: string;
   };
+  openingHours?: OpeningHours;
   /** Shop branding configuration. Set to null to clear branding. */
   branding?: ShopBranding;
-  /** Shop opening hours per day. At least one day must have opening hours. */
-  openingHours?: OpeningHours;
 };
 export type DeleteResponse = {
   /** Whether deletion was successful */

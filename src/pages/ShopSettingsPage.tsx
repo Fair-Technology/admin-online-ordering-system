@@ -28,6 +28,16 @@ function buildInitialHours(shopHours: Record<string, unknown> | undefined): Open
   return result;
 }
 
+function toSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export function ShopSettingsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { t } = useTranslation();
@@ -65,6 +75,27 @@ export function ShopSettingsPage() {
   const [colorsError, setColorsError] = useState<string | null>(null);
   const [colorsSaved, setColorsSaved] = useState(false);
 
+  const [detailsState, setDetailsState] = useState<{
+    name: string;
+    currency: string;
+    timezone: string;
+    minOrderAmountDollars: string;
+  } | null>(null);
+  const [isSavingDetails, setIsSavingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
+  const [detailsSaved, setDetailsSaved] = useState(false);
+
+  const [addressState, setAddressState] = useState<{
+    street: string;
+    city: string;
+    state: string;
+    postcode: string;
+    country: string;
+  } | null>(null);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
+  const [addressSaved, setAddressSaved] = useState(false);
+
   if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
   if (isError || !shop) return <p className="text-red-400">{t('shops.failedToLoadShop')}</p>;
 
@@ -81,6 +112,23 @@ export function ShopSettingsPage() {
     secondary: shop.branding?.colors?.secondary ?? '#10B981',
     tertiary: shop.branding?.colors?.tertiary ?? '#F59E0B',
     background: shop.branding?.colors?.background ?? '#1F2937',
+  };
+
+  const currentDetails = detailsState ?? {
+    name: shop.name ?? '',
+    currency: shop.currency ?? '',
+    timezone: shop.timezone ?? '',
+    minOrderAmountDollars: shop.minOrderAmountCents != null
+      ? String(shop.minOrderAmountCents / 100)
+      : '',
+  };
+
+  const currentAddress = addressState ?? {
+    street: shop.address?.street ?? '',
+    city: shop.address?.city ?? '',
+    state: shop.address?.state ?? '',
+    postcode: shop.address?.postcode ?? '',
+    country: shop.address?.country ?? '',
   };
 
   const DAYS: { key: DayKey; label: string }[] = [
@@ -193,6 +241,49 @@ export function ShopSettingsPage() {
     }
   };
 
+  const handleSaveDetails = async () => {
+    setIsSavingDetails(true);
+    setDetailsError(null);
+    setDetailsSaved(false);
+    try {
+      const dollars = parseFloat(currentDetails.minOrderAmountDollars);
+      const cents = !isNaN(dollars) ? Math.round(dollars * 100) : undefined;
+      await updateShop({
+        shopId: shopId!,
+        updateShopRequest: {
+          name: currentDetails.name || undefined,
+          currency: currentDetails.currency || undefined,
+          timezone: currentDetails.timezone || undefined,
+          ...(cents != null && { minOrderAmountCents: cents }),
+        },
+      }).unwrap();
+      setDetailsSaved(true);
+      refetch();
+    } catch {
+      setDetailsError(t('shops.detailsFailedToSave'));
+    } finally {
+      setIsSavingDetails(false);
+    }
+  };
+
+  const handleSaveAddress = async () => {
+    setIsSavingAddress(true);
+    setAddressError(null);
+    setAddressSaved(false);
+    try {
+      await updateShop({
+        shopId: shopId!,
+        updateShopRequest: { address: currentAddress },
+      }).unwrap();
+      setAddressSaved(true);
+      refetch();
+    } catch {
+      setAddressError(t('shops.addressFailedToSave'));
+    } finally {
+      setIsSavingAddress(false);
+    }
+  };
+
   const handleLogoUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!logoFile) return;
@@ -228,10 +319,13 @@ export function ShopSettingsPage() {
     }
   };
 
+  const previewSlug = detailsState
+    ? toSlug(detailsState.name) || shop.slug
+    : shop.slug;
+
   const infoRows = [
-    { label: t('shops.labelName'), value: shop.name, mono: false },
     { label: t('shops.labelId'), value: shop.id, mono: true },
-    { label: t('shops.labelSlug'), value: `/${shop.slug}`, mono: true },
+    { label: t('shops.labelSlug'), value: `/${previewSlug}`, mono: true },
   ];
 
   const currentLogoUrl = shop.branding?.logoUrl;
@@ -252,6 +346,60 @@ export function ShopSettingsPage() {
             </span>
           </div>
         ))}
+      </GlassCard>
+
+      <GlassCard className="p-5 space-y-4">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.detailsTitle')}
+        </p>
+
+        <div className="space-y-3">
+          <GlassInput
+            label={t('shops.detailsName')}
+            value={currentDetails.name}
+            placeholder={t('shops.detailsName')}
+            onChange={(e) => { setDetailsState({ ...currentDetails, name: e.target.value }); setDetailsSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.detailsCurrency')}
+            value={currentDetails.currency}
+            placeholder={t('shops.detailsCurrencyPlaceholder')}
+            onChange={(e) => { setDetailsState({ ...currentDetails, currency: e.target.value }); setDetailsSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.detailsTimezone')}
+            value={currentDetails.timezone}
+            placeholder={t('shops.detailsTimezonePlaceholder')}
+            onChange={(e) => { setDetailsState({ ...currentDetails, timezone: e.target.value }); setDetailsSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.detailsMinOrder')}
+            type="number"
+            min="0"
+            step="0.01"
+            value={currentDetails.minOrderAmountDollars}
+            placeholder={t('shops.detailsMinOrderPlaceholder')}
+            onChange={(e) => { setDetailsState({ ...currentDetails, minOrderAmountDollars: e.target.value }); setDetailsSaved(false); }}
+          />
+        </div>
+
+        {detailsError && <p className="text-sm text-red-300">{detailsError}</p>}
+        {detailsSaved && <p className="text-sm text-green-300">{t('shops.detailsSaved')}</p>}
+
+        <div className="border-t border-white/8 pt-4 flex gap-2">
+          {detailsState && (
+            <GlassButton
+              variant="ghost"
+              onClick={() => { setDetailsState(null); setDetailsError(null); setDetailsSaved(false); }}
+              disabled={isSavingDetails}
+            >
+              {t('shops.detailsCancel')}
+            </GlassButton>
+          )}
+          <GlassButton onClick={handleSaveDetails} disabled={isSavingDetails}>
+            {isSavingDetails ? t('shops.detailsSaving') : t('shops.detailsSave')}
+          </GlassButton>
+        </div>
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
@@ -346,6 +494,49 @@ export function ShopSettingsPage() {
         <div className="border-t border-white/8 pt-4">
           <GlassButton onClick={handleSaveColors} disabled={isSavingColors}>
             {isSavingColors ? t('shops.colorsSaving') : t('shops.colorsSave')}
+          </GlassButton>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-5 space-y-4">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.addressTitle')}
+        </p>
+
+        <div className="space-y-3">
+          <GlassInput
+            label={t('shops.addressStreet')}
+            value={currentAddress.street}
+            onChange={(e) => { setAddressState({ ...currentAddress, street: e.target.value }); setAddressSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.addressCity')}
+            value={currentAddress.city}
+            onChange={(e) => { setAddressState({ ...currentAddress, city: e.target.value }); setAddressSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.addressState')}
+            value={currentAddress.state}
+            onChange={(e) => { setAddressState({ ...currentAddress, state: e.target.value }); setAddressSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.addressPostcode')}
+            value={currentAddress.postcode}
+            onChange={(e) => { setAddressState({ ...currentAddress, postcode: e.target.value }); setAddressSaved(false); }}
+          />
+          <GlassInput
+            label={t('shops.addressCountry')}
+            value={currentAddress.country}
+            onChange={(e) => { setAddressState({ ...currentAddress, country: e.target.value }); setAddressSaved(false); }}
+          />
+        </div>
+
+        {addressError && <p className="text-sm text-red-300">{addressError}</p>}
+        {addressSaved && <p className="text-sm text-green-300">{t('shops.addressSaved')}</p>}
+
+        <div className="border-t border-white/8 pt-4">
+          <GlassButton onClick={handleSaveAddress} disabled={isSavingAddress}>
+            {isSavingAddress ? t('shops.addressSaving') : t('shops.addressSave')}
           </GlassButton>
         </div>
       </GlassCard>
