@@ -9,6 +9,9 @@ import {
   useUpdateShopMutation,
   useAddShopMemberMutation,
   useRemoveShopMemberMutation,
+  useCreateShopRoleMutation,
+  useUpdateShopRoleMutation,
+  useDeleteShopRoleMutation,
 } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
@@ -21,6 +24,9 @@ type OpeningHoursState = Record<DayKey, TimeSlot[]>;
 
 const ALL_DAYS: DayKey[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DEFAULT_SLOT: TimeSlot = { open: '09:00', close: '17:00' };
+
+const ALL_PERMISSIONS = ['view_orders', 'manage_products', 'manage_shop'] as const;
+type ShopPermission = (typeof ALL_PERMISSIONS)[number];
 
 function buildInitialHours(shopHours: Record<string, unknown> | undefined): OpeningHoursState {
   const result = {} as OpeningHoursState;
@@ -52,6 +58,9 @@ export function ShopSettingsPage() {
   const [updateShop] = useUpdateShopMutation();
   const [addShopMember] = useAddShopMemberMutation();
   const [removeShopMember] = useRemoveShopMemberMutation();
+  const [createShopRole] = useCreateShopRoleMutation();
+  const [updateShopRole] = useUpdateShopRoleMutation();
+  const [deleteShopRole] = useDeleteShopRoleMutation();
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -104,14 +113,46 @@ export function ShopSettingsPage() {
   const [addressSaved, setAddressSaved] = useState(false);
 
   const [newMemberUserId, setNewMemberUserId] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState<'owner' | 'staff'>('staff');
+  const [newMemberRoleId, setNewMemberRoleId] = useState<string>('staff');
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [memberAddError, setMemberAddError] = useState<string | null>(null);
   const [memberAddSuccess, setMemberAddSuccess] = useState(false);
   const [memberRemoveError, setMemberRemoveError] = useState<string | null>(null);
 
+  // Roles card state
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRolePerms, setNewRolePerms] = useState<ShopPermission[]>([]);
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
+  const [roleCreateError, setRoleCreateError] = useState<string | null>(null);
+  const [roleCreateSuccess, setRoleCreateSuccess] = useState(false);
+
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
+  const [editRoleName, setEditRoleName] = useState('');
+  const [editRolePerms, setEditRolePerms] = useState<ShopPermission[]>([]);
+  const [isSavingRole, setIsSavingRole] = useState(false);
+  const [roleSaveError, setRoleSaveError] = useState<string | null>(null);
+  const [roleDeleteError, setRoleDeleteError] = useState<string | null>(null);
+
   if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
   if (isError || !shop) return <p className="text-red-400">{t('shops.failedToLoadShop')}</p>;
+
+  const members = shop.members ?? [];
+  const isCurrentUserOwner = members.some(
+    (m) => m.userId === currentUserId && m.isActive && m.role === 'owner',
+  );
+
+  // Defensive access guard
+  if (!isCurrentUserOwner) {
+    return (
+      <div className="max-w-lg">
+        <GlassCard className="p-5">
+          <p className="text-sm text-white/70">{t('shops.membersAccessDenied')}</p>
+        </GlassCard>
+      </div>
+    );
+  }
+
+  const shopRoles = shop.roles ?? [];
 
   const currentHours = hoursState ?? buildInitialHours(shop.openingHours as Record<string, unknown> | undefined);
 
@@ -154,6 +195,12 @@ export function ShopSettingsPage() {
     { key: 'sat', label: t('shops.ohSat') },
     { key: 'sun', label: t('shops.ohSun') },
   ];
+
+  const PERM_LABELS: Record<ShopPermission, string> = {
+    view_orders: t('shops.rolesPermViewOrders'),
+    manage_products: t('shops.rolesPermManageProducts'),
+    manage_shop: t('shops.rolesPermManageShop'),
+  };
 
   function toggleDay(day: DayKey) {
     const next = { ...currentHours };
@@ -333,11 +380,6 @@ export function ShopSettingsPage() {
     }
   };
 
-  const members = shop.members ?? [];
-  const isCurrentUserOwner = members.some(
-    (m) => m.userId === currentUserId && m.isActive && m.role === 'owner',
-  );
-
   const handleAddMember = async () => {
     if (!newMemberUserId.trim()) {
       setMemberAddError(t('shops.membersUserIdRequired'));
@@ -350,10 +392,10 @@ export function ShopSettingsPage() {
       await addShopMember({
         shopId: shopId!,
         userId: newMemberUserId.trim(),
-        role: newMemberRole,
+        roleId: newMemberRoleId,
       }).unwrap();
       setNewMemberUserId('');
-      setNewMemberRole('staff');
+      setNewMemberRoleId('staff');
       setMemberAddSuccess(true);
       refetch();
     } catch (err: any) {
@@ -375,6 +417,65 @@ export function ShopSettingsPage() {
     }
   };
 
+  const handleCreateRole = async () => {
+    if (!newRoleName.trim()) return;
+    setIsCreatingRole(true);
+    setRoleCreateError(null);
+    setRoleCreateSuccess(false);
+    try {
+      await createShopRole({
+        shopId: shopId!,
+        name: newRoleName.trim(),
+        permissions: newRolePerms,
+      }).unwrap();
+      setNewRoleName('');
+      setNewRolePerms([]);
+      setRoleCreateSuccess(true);
+      refetch();
+    } catch (err: any) {
+      setRoleCreateError(err?.data?.error ?? t('shops.rolesAddFailed'));
+    } finally {
+      setIsCreatingRole(false);
+    }
+  };
+
+  const startEditRole = (role: { id?: string; name?: string; permissions?: string[] }) => {
+    setEditingRoleId(role.id ?? '');
+    setEditRoleName(role.name ?? '');
+    setEditRolePerms((role.permissions ?? []) as ShopPermission[]);
+    setRoleSaveError(null);
+  };
+
+  const handleSaveRole = async () => {
+    if (!editingRoleId) return;
+    setIsSavingRole(true);
+    setRoleSaveError(null);
+    try {
+      await updateShopRole({
+        shopId: shopId!,
+        roleId: editingRoleId,
+        name: editRoleName,
+        permissions: editRolePerms,
+      }).unwrap();
+      setEditingRoleId(null);
+      refetch();
+    } catch (err: any) {
+      setRoleSaveError(err?.data?.error ?? t('shops.rolesAddFailed'));
+    } finally {
+      setIsSavingRole(false);
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string) => {
+    setRoleDeleteError(null);
+    try {
+      await deleteShopRole({ shopId: shopId!, roleId }).unwrap();
+      refetch();
+    } catch (err: any) {
+      setRoleDeleteError(err?.data?.error ?? t('shops.rolesDeleteFailed'));
+    }
+  };
+
   const previewSlug = detailsState
     ? toSlug(detailsState.name) || shop.slug
     : shop.slug;
@@ -385,6 +486,12 @@ export function ShopSettingsPage() {
   ];
 
   const currentLogoUrl = shop.branding?.logoUrl;
+
+  // Role options for the add-member dropdown: 'owner' + custom roles
+  const roleOptions = [
+    { id: 'owner', name: 'Owner' },
+    ...shopRoles.map((r) => ({ id: r.id ?? '', name: r.name ?? '' })),
+  ];
 
   return (
     <div className="max-w-lg space-y-4">
@@ -757,6 +864,148 @@ export function ShopSettingsPage() {
         </div>
       </GlassCard>
 
+      {/* Roles card */}
+      <GlassCard className="p-5 space-y-4">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.rolesTitle')}
+        </p>
+
+        {shopRoles.length === 0 && (
+          <p className="text-sm text-white/35">{t('shops.rolesEmpty')}</p>
+        )}
+
+        <div className="space-y-0">
+          {shopRoles.map((role) => {
+            const isEditing = editingRoleId === role.id;
+            const membersUsingRole = members.filter(
+              (m) => m.isActive && m.role === role.id,
+            ).length;
+
+            return (
+              <div
+                key={role.id}
+                className="border-t border-white/8 py-3 first:border-t-0 first:pt-0"
+              >
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <GlassInput
+                      label={t('shops.detailsName')}
+                      value={editRoleName}
+                      onChange={(e) => setEditRoleName(e.target.value)}
+                    />
+                    <div className="space-y-1">
+                      <span className="text-xs text-white/50">{t('shops.rolesTitle')}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {ALL_PERMISSIONS.map((perm) => (
+                          <label key={perm} className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editRolePerms.includes(perm)}
+                              onChange={(e) => {
+                                setEditRolePerms(
+                                  e.target.checked
+                                    ? [...editRolePerms, perm]
+                                    : editRolePerms.filter((p) => p !== perm),
+                                );
+                              }}
+                              className="accent-white/70"
+                            />
+                            <span className="text-xs text-white/70">{PERM_LABELS[perm]}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    {roleSaveError && <p className="text-sm text-red-300">{roleSaveError}</p>}
+                    <div className="flex gap-2">
+                      <GlassButton onClick={handleSaveRole} disabled={isSavingRole}>
+                        {isSavingRole ? t('shops.rolesAdding') : t('shops.rolesSave')}
+                      </GlassButton>
+                      <GlassButton variant="ghost" onClick={() => setEditingRoleId(null)}>
+                        {t('shops.detailsCancel')}
+                      </GlassButton>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm text-white font-medium">{role.name}</span>
+                      {(role.permissions ?? []).map((perm) => (
+                        <span
+                          key={perm}
+                          className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-white/55"
+                        >
+                          {PERM_LABELS[perm as ShopPermission] ?? perm}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      <GlassButton variant="ghost" onClick={() => startEditRole(role)}>
+                        {t('shops.detailsSave').charAt(0) === 'S' ? 'Edit' : t('shops.rolesSave')}
+                      </GlassButton>
+                      <GlassButton
+                        variant="ghost"
+                        disabled={membersUsingRole > 0}
+                        onClick={() => handleDeleteRole(role.id ?? '')}
+                      >
+                        {t('shops.rolesDelete')}
+                      </GlassButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {roleDeleteError && <p className="text-sm text-red-300">{roleDeleteError}</p>}
+
+        {/* Add new role */}
+        <div className="border-t border-white/8 pt-4 space-y-3">
+          <p className="text-xs text-white/40 uppercase tracking-wide">{t('shops.rolesAdd')}</p>
+          <GlassInput
+            label={t('shops.detailsName')}
+            value={newRoleName}
+            placeholder="e.g. Kitchen"
+            onChange={(e) => {
+              setNewRoleName(e.target.value);
+              setRoleCreateError(null);
+              setRoleCreateSuccess(false);
+            }}
+          />
+          <div className="space-y-1">
+            <span className="text-xs text-white/50">{t('shops.rolesTitle')}</span>
+            <div className="flex flex-wrap gap-2">
+              {ALL_PERMISSIONS.map((perm) => (
+                <label key={perm} className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newRolePerms.includes(perm)}
+                    onChange={(e) => {
+                      setNewRolePerms(
+                        e.target.checked
+                          ? [...newRolePerms, perm]
+                          : newRolePerms.filter((p) => p !== perm),
+                      );
+                    }}
+                    className="accent-white/70"
+                  />
+                  <span className="text-xs text-white/70">{PERM_LABELS[perm]}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          {roleCreateError && <p className="text-sm text-red-300">{roleCreateError}</p>}
+          {roleCreateSuccess && <p className="text-sm text-green-300">{t('shops.rolesAddSuccess')}</p>}
+          <GlassButton
+            onClick={handleCreateRole}
+            disabled={isCreatingRole || !newRoleName.trim()}
+          >
+            {isCreatingRole ? t('shops.rolesAdding') : t('shops.rolesAdd')}
+          </GlassButton>
+        </div>
+      </GlassCard>
+
+      {/* Members card */}
       <GlassCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
           {t('shops.membersTitle')}
@@ -772,6 +1021,9 @@ export function ShopSettingsPage() {
             ).length;
             const isLastActiveOwner =
               member.isActive && member.role === 'owner' && activeOwnerCount === 1;
+            const roleName = member.role === 'owner'
+              ? 'Owner'
+              : shopRoles.find((r) => r.id === member.role)?.name ?? member.role;
             return (
               <div
                 key={member.userId}
@@ -791,21 +1043,19 @@ export function ShopSettingsPage() {
                         : 'bg-white/10 text-white/55'
                     }`}
                   >
-                    {member.role}
+                    {roleName}
                   </span>
                   {!member.isActive && (
                     <span className="text-xs text-white/30">{t('shops.membersInactive')}</span>
                   )}
                 </div>
-                {isCurrentUserOwner && (
-                  <GlassButton
-                    variant="ghost"
-                    disabled={isLastActiveOwner}
-                    onClick={() => handleRemoveMember(member.userId!)}
-                  >
-                    {t('shops.membersRemove')}
-                  </GlassButton>
-                )}
+                <GlassButton
+                  variant="ghost"
+                  disabled={isLastActiveOwner}
+                  onClick={() => handleRemoveMember(member.userId!)}
+                >
+                  {t('shops.membersRemove')}
+                </GlassButton>
               </div>
             );
           })}
@@ -815,49 +1065,44 @@ export function ShopSettingsPage() {
           <p className="text-sm text-red-300">{memberRemoveError}</p>
         )}
 
-        {isCurrentUserOwner && (
-          <div className="border-t border-white/8 pt-4 space-y-3">
-            <p className="text-xs text-white/40 uppercase tracking-wide">
-              {t('shops.membersAddTitle')}
-            </p>
-            <GlassInput
-              label={t('shops.membersUserId')}
-              value={newMemberUserId}
-              placeholder={t('shops.membersUserIdPlaceholder')}
-              onChange={(e) => {
-                setNewMemberUserId(e.target.value);
-                setMemberAddError(null);
-                setMemberAddSuccess(false);
-              }}
-            />
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-white/50">{t('shops.membersRole')}</span>
-              <div className="flex gap-1.5">
-                <GlassButton
-                  variant={newMemberRole === 'staff' ? 'primary' : 'ghost'}
-                  onClick={() => setNewMemberRole('staff')}
-                >
-                  {t('shops.membersRoleStaff')}
-                </GlassButton>
-                <GlassButton
-                  variant={newMemberRole === 'owner' ? 'primary' : 'ghost'}
-                  onClick={() => setNewMemberRole('owner')}
-                >
-                  {t('shops.membersRoleOwner')}
-                </GlassButton>
-              </div>
-            </div>
-
-            {memberAddError && <p className="text-sm text-red-300">{memberAddError}</p>}
-            {memberAddSuccess && (
-              <p className="text-sm text-green-300">{t('shops.membersAddSuccess')}</p>
-            )}
-
-            <GlassButton onClick={handleAddMember} disabled={isAddingMember}>
-              {isAddingMember ? t('shops.membersAdding') : t('shops.membersAdd')}
-            </GlassButton>
+        <div className="border-t border-white/8 pt-4 space-y-3">
+          <p className="text-xs text-white/40 uppercase tracking-wide">
+            {t('shops.membersAddTitle')}
+          </p>
+          <GlassInput
+            label={t('shops.membersUserId')}
+            value={newMemberUserId}
+            placeholder={t('shops.membersUserIdPlaceholder')}
+            onChange={(e) => {
+              setNewMemberUserId(e.target.value);
+              setMemberAddError(null);
+              setMemberAddSuccess(false);
+            }}
+          />
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-white/50">{t('shops.membersRoleLabel')}</span>
+            <select
+              value={newMemberRoleId}
+              onChange={(e) => setNewMemberRoleId(e.target.value)}
+              className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+            >
+              {roleOptions.map((opt) => (
+                <option key={opt.id} value={opt.id} className="bg-gray-900 text-white">
+                  {opt.name}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+
+          {memberAddError && <p className="text-sm text-red-300">{memberAddError}</p>}
+          {memberAddSuccess && (
+            <p className="text-sm text-green-300">{t('shops.membersAddSuccess')}</p>
+          )}
+
+          <GlassButton onClick={handleAddMember} disabled={isAddingMember}>
+            {isAddingMember ? t('shops.membersAdding') : t('shops.membersAdd')}
+          </GlassButton>
+        </div>
       </GlassCard>
 
       <GlassCard className="p-4">

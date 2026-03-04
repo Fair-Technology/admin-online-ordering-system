@@ -12,7 +12,13 @@ const rawBaseQuery = fetchBaseQuery({
     if (account) {
       try {
         const result = await msalInstance.acquireTokenSilent({ ...loginRequest, account });
-        headers.set('Authorization', `Bearer ${result.accessToken}`);
+        // No dedicated API scope is registered in Entra yet, so result.accessToken is a
+        // Microsoft Graph token (aud: 00000003-..., iss: sts.windows.net) which the
+        // backend cannot verify against CIAM JWKS. Use the ID token instead — it is
+        // always issued by the CIAM tenant (iss: https://{tenantId}.ciamlogin.com/...)
+        // and verifiable against the CIAM JWKS endpoint. Switch to result.accessToken
+        // once a dedicated API scope is registered in Entra.
+        headers.set('Authorization', `Bearer ${result.idToken}`);
       } catch {
         // Silent acquisition failed — redirect to login
         msalInstance.loginRedirect(loginRequest);

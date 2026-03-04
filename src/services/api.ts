@@ -171,12 +171,32 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/shops/${queryArg.shopId}/members`,
         method: "POST",
-        body: { userId: queryArg.userId, role: queryArg.role },
+        body: { userId: queryArg.userId, role: queryArg.roleId },
       }),
     }),
     removeShopMember: build.mutation<RemoveShopMemberApiResponse, RemoveShopMemberApiArg>({
       query: (queryArg) => ({
         url: `/shops/${queryArg.shopId}/members/${queryArg.userId}`,
+        method: "DELETE",
+      }),
+    }),
+    createShopRole: build.mutation<CreateShopRoleApiResponse, CreateShopRoleApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/roles`,
+        method: "POST",
+        body: { name: queryArg.name, permissions: queryArg.permissions },
+      }),
+    }),
+    updateShopRole: build.mutation<UpdateShopRoleApiResponse, UpdateShopRoleApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/roles/${queryArg.roleId}`,
+        method: "PATCH",
+        body: { name: queryArg.name, permissions: queryArg.permissions },
+      }),
+    }),
+    deleteShopRole: build.mutation<DeleteShopRoleApiResponse, DeleteShopRoleApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/roles/${queryArg.roleId}`,
         method: "DELETE",
       }),
     }),
@@ -236,7 +256,7 @@ export type GetShopBySlugApiArg = {
   slug: string;
 };
 export type GetMyShopsApiResponse =
-  /** status 200 Shops where the user is an active owner member */ GetAllShopsResponse;
+  /** status 200 Shops where the user is an active member (any role) */ GetAllShopsResponse;
 export type GetMyShopsApiArg = void;
 export type GetShopByIdApiResponse =
   /** status 200 Shop retrieved successfully */ ShopResponse;
@@ -391,9 +411,12 @@ export type GetOrderByPaymentIntentApiArg = {
 export type ShopMembersResponse = {
   members: {
     userId: string;
-    role: "owner" | "staff";
+    role: string;
     isActive: boolean;
   }[];
+};
+export type ShopRolesResponse = {
+  roles: { id: string; name: string; permissions: string[] }[];
 };
 export type AddShopMemberApiResponse =
   /** status 200 Member added successfully */ ShopMembersResponse;
@@ -402,8 +425,26 @@ export type AddShopMemberApiArg = {
   shopId: string;
   /** Entra Object ID of the new member */
   userId: string;
-  /** Role to assign */
-  role: "owner" | "staff";
+  /** Role ID to assign ('owner' or a custom role id from shop.roles) */
+  roleId: string;
+};
+export type CreateShopRoleApiResponse = /** status 200 Role created */ ShopRolesResponse;
+export type CreateShopRoleApiArg = {
+  shopId: string;
+  name: string;
+  permissions: string[];
+};
+export type UpdateShopRoleApiResponse = /** status 200 Role updated */ ShopRolesResponse;
+export type UpdateShopRoleApiArg = {
+  shopId: string;
+  roleId: string;
+  name?: string;
+  permissions?: string[];
+};
+export type DeleteShopRoleApiResponse = /** status 200 Role deleted */ ShopRolesResponse;
+export type DeleteShopRoleApiArg = {
+  shopId: string;
+  roleId: string;
 };
 export type RemoveShopMemberApiResponse =
   /** status 200 Member removed successfully */ ShopMembersResponse;
@@ -465,9 +506,11 @@ export type ShopResponse = {
   /** Shop members */
   members?: {
     userId?: string;
-    role?: "owner" | "staff";
+    role?: string;
     isActive?: boolean;
   }[];
+  /** Custom roles defined for this shop */
+  roles?: { id?: string; name?: string; permissions?: string[] }[];
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
   /** Shop opening hours per day of the week. */
@@ -1011,4 +1054,7 @@ export const {
   useGetOrderByPaymentIntentQuery,
   useAddShopMemberMutation,
   useRemoveShopMemberMutation,
+  useCreateShopRoleMutation,
+  useUpdateShopRoleMutation,
+  useDeleteShopRoleMutation,
 } = injectedRtkApi;
