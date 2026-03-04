@@ -20,7 +20,15 @@ export function CreateShopPage() {
     minOrderAmountCents: 0,
     paymentPolicy: 'pay_online',
     address: { street: '', city: '', state: '', postcode: '', country: 'Australia' },
-    openingHours: {},
+    openingHours: {
+      mon: [{ open: '09:00', close: '17:00' }],
+      tue: [{ open: '09:00', close: '17:00' }],
+      wed: [{ open: '09:00', close: '17:00' }],
+      thu: [{ open: '09:00', close: '17:00' }],
+      fri: [{ open: '09:00', close: '17:00' }],
+      sat: [],
+      sun: [],
+    },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
