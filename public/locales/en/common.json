@@ -23,6 +23,7 @@
     "subtitle": "Manage your shops and products",
     "loading": "Loading dashboard...",
     "totalShops": "Total Shops",
+    "totalOrders": "Total Orders",
     "active": "Active",
     "status": "Status",
     "allSystemsOperational": "All systems operational"
@@ -183,6 +184,9 @@
     "loading": "Loading orders...",
     "loadError": "Failed to load orders.",
     "empty": "No orders yet.",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "pageInfo": "Page {{page}} of {{total}}",
     "status": {
       "paid": "Paid",
       "pending_payment": "Pending Payment",

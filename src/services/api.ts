@@ -188,7 +188,13 @@ const injectedRtkApi = api.injectEndpoints({
       GetOrdersByShopApiResponse,
       GetOrdersByShopApiArg
     >({
-      query: (queryArg) => ({ url: `/shops/${queryArg.shopId}/orders` }),
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/orders`,
+        params: {
+          page: queryArg.page,
+          pageSize: queryArg.pageSize,
+        },
+      }),
     }),
     getOrderByPaymentIntent: build.query<
       GetOrderByPaymentIntentApiResponse,
@@ -354,10 +360,14 @@ export type StripeWebhookApiArg = {
   body: object;
 };
 export type GetOrdersByShopApiResponse =
-  /** status 200 Orders retrieved successfully */ OrderResponse[];
+  /** status 200 Orders retrieved successfully */ OrdersPageResponse;
 export type GetOrdersByShopApiArg = {
   /** Shop ID */
   shopId: string;
+  /** 1-based page number (default: 1) */
+  page?: number;
+  /** Number of orders per page (default: 20, max: 100) */
+  pageSize?: number;
 };
 export type GetOrderByPaymentIntentApiResponse =
   /** status 200 Order found */ OrderByPaymentIntentResponse;
@@ -912,6 +922,12 @@ export type OrderResponse = {
   customerPhone: string;
   customerNotes?: string | null;
   createdAt: string;
+};
+export type OrdersPageResponse = {
+  orders: OrderResponse[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 export type OrderByPaymentIntentResponse = {
   orderId: string;

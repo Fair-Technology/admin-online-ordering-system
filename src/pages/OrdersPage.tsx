@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGetOrdersByShopQuery } from '../services/api';
-import type { GetOrdersByShopApiResponse } from '../services/api';
+import type { OrderResponse } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { GlassButton } from '../components/ui/GlassButton';
 
-type Order = NonNullable<GetOrdersByShopApiResponse>[number];
+const PAGE_SIZE = 10;
 
-const STATUS_COLORS: Record<Order['status'], string> = {
+const STATUS_COLORS: Record<OrderResponse['status'], string> = {
   paid: 'bg-green-500/20 text-green-300 border border-green-400/30',
   pending_payment: 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30',
   failed: 'bg-red-500/20 text-red-300 border border-red-400/30',
@@ -31,7 +32,7 @@ function formatDate(iso: string): string {
 }
 
 interface OrderRowProps {
-  order: Order;
+  order: OrderResponse;
 }
 
 function OrderRow({ order }: OrderRowProps) {
@@ -99,15 +100,29 @@ function OrderRow({ order }: OrderRowProps) {
 export function OrdersPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { t } = useTranslation();
-  const { data: orders, isLoading, isError } = useGetOrdersByShopQuery({ shopId: shopId! });
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [shopId]);
+
+  const { data, isLoading, isError } = useGetOrdersByShopQuery({
+    shopId: shopId!,
+    page,
+    pageSize: PAGE_SIZE,
+  });
 
   if (isLoading) return <GlassSpinner label={t('orders.loading')} />;
   if (isError) return <p className="text-red-400">{t('orders.loadError')}</p>;
 
+  const orders = data?.orders ?? [];
+  const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
+  const showPagination = data ? data.total > PAGE_SIZE : false;
+
   return (
     <div className="space-y-4">
       <GlassCard>
-        {(!orders || orders.length === 0) ? (
+        {orders.length === 0 ? (
           <p className="p-5 text-white/40 text-sm">{t('orders.empty')}</p>
         ) : (
           <div className="divide-y divide-white/8">
@@ -117,6 +132,30 @@ export function OrdersPage() {
           </div>
         )}
       </GlassCard>
+
+      {showPagination && (
+        <div className="flex items-center justify-between mt-4">
+          <GlassButton
+            variant="secondary"
+            size="sm"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            {t('orders.previousPage')}
+          </GlassButton>
+          <span className="text-sm text-white/60">
+            {t('orders.pageInfo', { page, total: totalPages })}
+          </span>
+          <GlassButton
+            variant="secondary"
+            size="sm"
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            {t('orders.nextPage')}
+          </GlassButton>
+        </div>
+      )}
     </div>
   );
 }

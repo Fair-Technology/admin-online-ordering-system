@@ -23,6 +23,7 @@
     "subtitle": "Verwalten Sie Ihre Shops und Produkte",
     "loading": "Dashboard wird geladen...",
     "totalShops": "Shops gesamt",
+    "totalOrders": "Bestellungen gesamt",
     "active": "Aktiv",
     "status": "Status",
     "allSystemsOperational": "Alle Systeme funktionieren"
@@ -183,6 +184,9 @@
     "loading": "Bestellungen werden geladen...",
     "loadError": "Bestellungen konnten nicht geladen werden.",
     "empty": "Noch keine Bestellungen.",
+    "previousPage": "Zurück",
+    "nextPage": "Weiter",
+    "pageInfo": "Seite {{page}} von {{total}}",
     "status": {
       "paid": "Bezahlt",
       "pending_payment": "Zahlung ausstehend",
