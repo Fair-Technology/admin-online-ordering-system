@@ -167,6 +167,19 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.setShopLogoRequest,
       }),
     }),
+    addShopMember: build.mutation<AddShopMemberApiResponse, AddShopMemberApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/members`,
+        method: "POST",
+        body: { userId: queryArg.userId, role: queryArg.role },
+      }),
+    }),
+    removeShopMember: build.mutation<RemoveShopMemberApiResponse, RemoveShopMemberApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/members/${queryArg.userId}`,
+        method: "DELETE",
+      }),
+    }),
     createOrder: build.mutation<CreateOrderApiResponse, CreateOrderApiArg>({
       query: (queryArg) => ({
         url: `/orders`,
@@ -375,6 +388,31 @@ export type GetOrderByPaymentIntentApiArg = {
   /** Stripe PaymentIntent ID (starts with pi_) */
   paymentIntentId: string;
 };
+export type ShopMembersResponse = {
+  members: {
+    userId: string;
+    role: "owner" | "staff";
+    isActive: boolean;
+  }[];
+};
+export type AddShopMemberApiResponse =
+  /** status 200 Member added successfully */ ShopMembersResponse;
+export type AddShopMemberApiArg = {
+  /** Shop ID */
+  shopId: string;
+  /** Entra Object ID of the new member */
+  userId: string;
+  /** Role to assign */
+  role: "owner" | "staff";
+};
+export type RemoveShopMemberApiResponse =
+  /** status 200 Member removed successfully */ ShopMembersResponse;
+export type RemoveShopMemberApiArg = {
+  /** Shop ID */
+  shopId: string;
+  /** Entra Object ID of the member to remove */
+  userId: string;
+};
 export type ShopBranding = {
   /** Logo URL (must start with https://) */
   logoUrl?: string | null;
@@ -424,6 +462,12 @@ export type ShopResponse = {
   createdAt?: string;
   /** Last update timestamp */
   updatedAt?: string;
+  /** Shop members */
+  members?: {
+    userId?: string;
+    role?: "owner" | "staff";
+    isActive?: boolean;
+  }[];
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
   /** Shop opening hours per day of the week. */
@@ -965,4 +1009,6 @@ export const {
   useStripeWebhookMutation,
   useGetOrdersByShopQuery,
   useGetOrderByPaymentIntentQuery,
+  useAddShopMemberMutation,
+  useRemoveShopMemberMutation,
 } = injectedRtkApi;

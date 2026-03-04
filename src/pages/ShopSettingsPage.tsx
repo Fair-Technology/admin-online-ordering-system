@@ -1,11 +1,14 @@
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useMsal } from '@azure/msal-react';
 import {
   useGetShopByIdQuery,
   useGenerateShopLogoUploadUrlMutation,
   useSetShopLogoMutation,
   useUpdateShopMutation,
+  useAddShopMemberMutation,
+  useRemoveShopMemberMutation,
 } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
@@ -41,10 +44,14 @@ function toSlug(name: string): string {
 export function ShopSettingsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { t } = useTranslation();
+  const { accounts } = useMsal();
+  const currentUserId = accounts[0]?.localAccountId;
   const { data: shop, isLoading, isError, refetch } = useGetShopByIdQuery({ shopId: shopId! });
   const [generateShopLogoUploadUrl] = useGenerateShopLogoUploadUrlMutation();
   const [setShopLogo] = useSetShopLogoMutation();
   const [updateShop] = useUpdateShopMutation();
+  const [addShopMember] = useAddShopMemberMutation();
+  const [removeShopMember] = useRemoveShopMemberMutation();
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -95,6 +102,13 @@ export function ShopSettingsPage() {
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [addressError, setAddressError] = useState<string | null>(null);
   const [addressSaved, setAddressSaved] = useState(false);
+
+  const [newMemberUserId, setNewMemberUserId] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<'owner' | 'staff'>('staff');
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [memberAddError, setMemberAddError] = useState<string | null>(null);
+  const [memberAddSuccess, setMemberAddSuccess] = useState(false);
+  const [memberRemoveError, setMemberRemoveError] = useState<string | null>(null);
 
   if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
   if (isError || !shop) return <p className="text-red-400">{t('shops.failedToLoadShop')}</p>;
@@ -316,6 +330,48 @@ export function ShopSettingsPage() {
       setUploadError(t('shops.failedToUploadLogo'));
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const members = shop.members ?? [];
+  const isCurrentUserOwner = members.some(
+    (m) => m.userId === currentUserId && m.isActive && m.role === 'owner',
+  );
+
+  const handleAddMember = async () => {
+    if (!newMemberUserId.trim()) {
+      setMemberAddError(t('shops.membersUserIdRequired'));
+      return;
+    }
+    setIsAddingMember(true);
+    setMemberAddError(null);
+    setMemberAddSuccess(false);
+    try {
+      await addShopMember({
+        shopId: shopId!,
+        userId: newMemberUserId.trim(),
+        role: newMemberRole,
+      }).unwrap();
+      setNewMemberUserId('');
+      setNewMemberRole('staff');
+      setMemberAddSuccess(true);
+      refetch();
+    } catch (err: any) {
+      const msg = err?.data?.error ?? t('shops.membersAddFailed');
+      setMemberAddError(msg);
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async (targetUserId: string) => {
+    setMemberRemoveError(null);
+    try {
+      await removeShopMember({ shopId: shopId!, userId: targetUserId }).unwrap();
+      refetch();
+    } catch (err: any) {
+      const msg = err?.data?.error ?? t('shops.membersRemoveFailed');
+      setMemberRemoveError(msg);
     }
   };
 
@@ -699,6 +755,109 @@ export function ShopSettingsPage() {
             {isSavingHours ? t('shops.ohSavingHours') : t('shops.ohSaveHours')}
           </GlassButton>
         </div>
+      </GlassCard>
+
+      <GlassCard className="p-5 space-y-4">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.membersTitle')}
+        </p>
+
+        <div className="space-y-0">
+          {members.length === 0 && (
+            <p className="text-sm text-white/35">{t('shops.membersEmpty')}</p>
+          )}
+          {members.map((member) => {
+            const activeOwnerCount = members.filter(
+              (m) => m.isActive && m.role === 'owner',
+            ).length;
+            const isLastActiveOwner =
+              member.isActive && member.role === 'owner' && activeOwnerCount === 1;
+            return (
+              <div
+                key={member.userId}
+                className="flex items-center justify-between border-t border-white/8 py-3 first:border-t-0 first:pt-0"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="text-sm text-white font-mono truncate"
+                    title={member.userId}
+                  >
+                    {(member.userId ?? '').slice(0, 8)}…
+                  </span>
+                  <span
+                    className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                      member.role === 'owner'
+                        ? 'bg-amber-500/20 text-amber-300'
+                        : 'bg-white/10 text-white/55'
+                    }`}
+                  >
+                    {member.role}
+                  </span>
+                  {!member.isActive && (
+                    <span className="text-xs text-white/30">{t('shops.membersInactive')}</span>
+                  )}
+                </div>
+                {isCurrentUserOwner && (
+                  <GlassButton
+                    variant="ghost"
+                    disabled={isLastActiveOwner}
+                    onClick={() => handleRemoveMember(member.userId!)}
+                  >
+                    {t('shops.membersRemove')}
+                  </GlassButton>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {memberRemoveError && (
+          <p className="text-sm text-red-300">{memberRemoveError}</p>
+        )}
+
+        {isCurrentUserOwner && (
+          <div className="border-t border-white/8 pt-4 space-y-3">
+            <p className="text-xs text-white/40 uppercase tracking-wide">
+              {t('shops.membersAddTitle')}
+            </p>
+            <GlassInput
+              label={t('shops.membersUserId')}
+              value={newMemberUserId}
+              placeholder={t('shops.membersUserIdPlaceholder')}
+              onChange={(e) => {
+                setNewMemberUserId(e.target.value);
+                setMemberAddError(null);
+                setMemberAddSuccess(false);
+              }}
+            />
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-white/50">{t('shops.membersRole')}</span>
+              <div className="flex gap-1.5">
+                <GlassButton
+                  variant={newMemberRole === 'staff' ? 'primary' : 'ghost'}
+                  onClick={() => setNewMemberRole('staff')}
+                >
+                  {t('shops.membersRoleStaff')}
+                </GlassButton>
+                <GlassButton
+                  variant={newMemberRole === 'owner' ? 'primary' : 'ghost'}
+                  onClick={() => setNewMemberRole('owner')}
+                >
+                  {t('shops.membersRoleOwner')}
+                </GlassButton>
+              </div>
+            </div>
+
+            {memberAddError && <p className="text-sm text-red-300">{memberAddError}</p>}
+            {memberAddSuccess && (
+              <p className="text-sm text-green-300">{t('shops.membersAddSuccess')}</p>
+            )}
+
+            <GlassButton onClick={handleAddMember} disabled={isAddingMember}>
+              {isAddingMember ? t('shops.membersAdding') : t('shops.membersAdd')}
+            </GlassButton>
+          </div>
+        )}
       </GlassCard>
 
       <GlassCard className="p-4">
