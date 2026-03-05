@@ -704,6 +704,37 @@ export function ShopSettingsPage() {
         </div>
       </GlassCard>
 
+      {/* Tax Rates card */}
+      <GlassCard className="p-5 space-y-3">
+        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          {t('shops.taxRatesTitle')}
+        </p>
+
+        {(shop.taxRates ?? []).length === 0 ? (
+          <p className="text-sm text-white/35">{t('shops.taxRatesEmpty')}</p>
+        ) : (
+          <div className="space-y-0">
+            {(shop.taxRates ?? []).map((rate) => (
+              <div
+                key={rate.id}
+                className="flex items-center justify-between border-t border-white/8 py-2.5 first:border-t-0 first:pt-0"
+              >
+                <span className="text-sm text-white/80">{rate.label}</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-white/55 font-mono">
+                  {rate.rate != null ? `${(rate.rate * 100).toFixed(1).replace(/\.0$/, '')}%` : '—'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {shop.countryCode && (
+          <p className="text-xs text-white/30">
+            {t('shops.taxRatesNote', { country: shop.countryCode })}
+          </p>
+        )}
+      </GlassCard>
+
       <GlassCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
           {t('shops.statusTitle')}

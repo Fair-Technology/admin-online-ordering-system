@@ -511,6 +511,10 @@ export type ShopResponse = {
   }[];
   /** Custom roles defined for this shop */
   roles?: { id?: string; name?: string; permissions?: string[] }[];
+  /** ISO 3166-1 alpha-2 country code (e.g. "AU", "DE") */
+  countryCode?: string;
+  /** Tax rates seeded from country on shop creation */
+  taxRates?: { id?: string; label?: string; rate?: number }[];
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
   /** Shop opening hours per day of the week. */
@@ -554,6 +558,8 @@ export type GetAllShopsResponse = {
 export type CreateShopRequest = {
   /** Shop name (slug will be auto-generated from this) */
   name: string;
+  /** ISO 3166-1 alpha-2 country code (e.g. "AU", "DE") */
+  countryCode: string;
   /** Shop currency (ISO code) */
   currency: string;
   /** Shop timezone */
@@ -814,6 +820,8 @@ export type ProductResponse = {
   isAvailable?: boolean;
   /** Whether product is deleted */
   isDeleted?: boolean;
+  /** Tax rate ID from the shop's taxRates list, or null */
+  taxRateId?: string | null;
   /** Creation timestamp */
   createdAt?: string;
   /** Last update timestamp */
@@ -842,6 +850,8 @@ export type CreateProductRequest = {
   allergyInfo?: string[];
   /** Whether product is available */
   isAvailable?: boolean;
+  /** Tax rate ID from the shop's taxRates list, or null to clear */
+  taxRateId?: string | null;
 };
 export type UpdateProductRequest = {
   /** Shop ID (required for partition key) */
@@ -865,6 +875,8 @@ export type UpdateProductRequest = {
   allergyInfo?: string[];
   /** Whether product is available */
   isAvailable?: boolean;
+  /** Tax rate ID from the shop's taxRates list, or null to clear */
+  taxRateId?: string | null;
   /** Variant groups (single-select per group, e.g. Size) */
   variantGroups?: {
     id: string;

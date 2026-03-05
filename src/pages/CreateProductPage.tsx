@@ -28,6 +28,7 @@ export function CreateProductPage() {
 
   const [form, setForm] = useState({ name: '', description: '', price: '' });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -41,6 +42,7 @@ export function CreateProductPage() {
           description: form.description,
           price: Math.round(Number(form.price) * 100),
           categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
+          taxRateId: selectedTaxRateId,
         },
       }).unwrap();
 
@@ -134,6 +136,28 @@ export function CreateProductPage() {
               selectedIds={selectedCategoryIds}
               onChange={setSelectedCategoryIds}
             />
+          )}
+
+          {shop?.taxRates && shop.taxRates.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                {t('products.taxRate')}
+              </label>
+              <select
+                value={selectedTaxRateId ?? ''}
+                onChange={(e) => setSelectedTaxRateId(e.target.value || null)}
+                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+              >
+                <option value="" className="bg-gray-900 text-white">
+                  {t('products.taxRateNone')}
+                </option>
+                {shop.taxRates.map((rate) => (
+                  <option key={rate.id} value={rate.id} className="bg-gray-900 text-white">
+                    {rate.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
 
           <div className="flex flex-col gap-1.5">

@@ -143,7 +143,12 @@
     "rolesSave": "Save",
     "rolesPermViewOrders": "View Orders",
     "rolesPermManageProducts": "Manage Products",
-    "rolesPermManageShop": "Manage Shop"
+    "rolesPermManageShop": "Manage Shop",
+    "shopCountry": "Country",
+    "shopCountryPlaceholder": "Select country",
+    "taxRatesTitle": "Tax Rates",
+    "taxRatesEmpty": "No tax rates configured.",
+    "taxRatesNote": "Seeded from country ({{country}}) on shop creation."
   },
   "products": {
     "addProduct": "+ Add Product",
@@ -184,7 +189,9 @@
     "delete": "Delete Product",
     "confirmDelete": "Yes, delete",
     "deleting": "Deleting...",
-    "failedToDelete": "Failed to delete product."
+    "failedToDelete": "Failed to delete product.",
+    "taxRate": "Tax Rate",
+    "taxRateNone": "— No tax rate —"
   },
   "variants": {
     "title": "Variants",

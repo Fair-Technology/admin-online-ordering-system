@@ -143,7 +143,12 @@
     "rolesSave": "Speichern",
     "rolesPermViewOrders": "Bestellungen anzeigen",
     "rolesPermManageProducts": "Produkte verwalten",
-    "rolesPermManageShop": "Shop verwalten"
+    "rolesPermManageShop": "Shop verwalten",
+    "shopCountry": "Land",
+    "shopCountryPlaceholder": "Land auswählen",
+    "taxRatesTitle": "Steuersätze",
+    "taxRatesEmpty": "Keine Steuersätze konfiguriert.",
+    "taxRatesNote": "Beim Erstellen des Shops aus dem Land ({{country}}) übernommen."
   },
   "products": {
     "addProduct": "+ Produkt hinzufügen",
@@ -184,7 +189,9 @@
     "delete": "Produkt löschen",
     "confirmDelete": "Ja, löschen",
     "deleting": "Wird gelöscht...",
-    "failedToDelete": "Produkt konnte nicht gelöscht werden."
+    "failedToDelete": "Produkt konnte nicht gelöscht werden.",
+    "taxRate": "Steuersatz",
+    "taxRateNone": "— Kein Steuersatz —"
   },
   "variants": {
     "title": "Varianten",

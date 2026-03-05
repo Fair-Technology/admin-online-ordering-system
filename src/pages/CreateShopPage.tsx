@@ -8,6 +8,36 @@ import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 
+const COUNTRY_OPTIONS = [
+  { code: 'AU', label: 'Australia' },
+  { code: 'NZ', label: 'New Zealand' },
+  { code: 'DE', label: 'Germany' },
+  { code: 'AT', label: 'Austria' },
+  { code: 'FR', label: 'France' },
+  { code: 'NL', label: 'Netherlands' },
+  { code: 'GB', label: 'United Kingdom' },
+  { code: 'CH', label: 'Switzerland' },
+  { code: 'US', label: 'United States' },
+  { code: 'CA', label: 'Canada' },
+  { code: 'SG', label: 'Singapore' },
+  { code: 'JP', label: 'Japan' },
+] as const;
+
+const COUNTRY_DEFAULTS: Record<string, { currency: string; timezone: string }> = {
+  AU: { currency: 'AUD', timezone: 'Australia/Sydney' },
+  NZ: { currency: 'NZD', timezone: 'Pacific/Auckland' },
+  DE: { currency: 'EUR', timezone: 'Europe/Berlin' },
+  AT: { currency: 'EUR', timezone: 'Europe/Vienna' },
+  FR: { currency: 'EUR', timezone: 'Europe/Paris' },
+  NL: { currency: 'EUR', timezone: 'Europe/Amsterdam' },
+  GB: { currency: 'GBP', timezone: 'Europe/London' },
+  CH: { currency: 'CHF', timezone: 'Europe/Zurich' },
+  US: { currency: 'USD', timezone: 'America/New_York' },
+  CA: { currency: 'CAD', timezone: 'America/Toronto' },
+  SG: { currency: 'SGD', timezone: 'Asia/Singapore' },
+  JP: { currency: 'JPY', timezone: 'Asia/Tokyo' },
+};
+
 export function CreateShopPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -15,6 +45,7 @@ export function CreateShopPage() {
 
   const [form, setForm] = useState<Partial<CreateShopRequest>>({
     name: '',
+    countryCode: 'AU',
     currency: 'AUD',
     timezone: 'Australia/Sydney',
     minOrderAmountCents: 0,
@@ -30,6 +61,15 @@ export function CreateShopPage() {
       sun: [],
     },
   });
+
+  const handleCountryChange = (countryCode: string) => {
+    const defaults = COUNTRY_DEFAULTS[countryCode];
+    setForm((f) => ({
+      ...f,
+      countryCode,
+      ...(defaults ? { currency: defaults.currency, timezone: defaults.timezone } : {}),
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +104,28 @@ export function CreateShopPage() {
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           />
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+              {t('shops.shopCountry')}
+            </label>
+            <select
+              required
+              value={form.countryCode ?? 'AU'}
+              onChange={(e) => handleCountryChange(e.target.value)}
+              className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+            >
+              <option value="" disabled className="bg-gray-900 text-white/50">
+                {t('shops.shopCountryPlaceholder')}
+              </option>
+              {COUNTRY_OPTIONS.map((c) => (
+                <option key={c.code} value={c.code} className="bg-gray-900 text-white">
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <GlassButton type="submit" disabled={isLoading} className="w-full">
             {isLoading ? t('shops.creating') : t('shops.create')}
           </GlassButton>
