@@ -16,3 +16,7 @@ export const msalInstance = new PublicClientApplication(msalConfig);
 export const loginRequest: RedirectRequest = {
   scopes: ['openid', 'profile', 'offline_access'],
 };
+
+export const apiRequest = {
+  scopes: [import.meta.env.VITE_MSAL_API_SCOPE as string],
+};
