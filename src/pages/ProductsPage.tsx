@@ -85,15 +85,22 @@ function ProductCard({ product, shopId }: { product: ProductResponse; shopId: st
       onClick={() => navigate(`/shops/${shopId}/products/${product.id}`)}
       className="group cursor-pointer backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.35)] overflow-hidden hover:bg-white/15 hover:border-white/30 transition-all"
     >
-      {imageUrl ? (
-        <img src={imageUrl} alt={product.name} className="w-full aspect-square object-cover" />
-      ) : (
-        <div className="w-full aspect-square bg-white/10 flex items-center justify-center">
-          <span className="text-white/50 font-semibold text-4xl">
-            {product.name?.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
+      <div className="relative">
+        {imageUrl ? (
+          <img src={imageUrl} alt={product.name} className="w-full aspect-square object-cover" />
+        ) : (
+          <div className="w-full aspect-square bg-white/10 flex items-center justify-center">
+            <span className="text-white/50 font-semibold text-4xl">
+              {product.name?.charAt(0).toUpperCase()}
+            </span>
+          </div>
+        )}
+        {product.isAvailable === false && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="text-white/80 text-xs font-semibold uppercase tracking-widest">Unavailable</span>
+          </div>
+        )}
+      </div>
       <div className="p-3">
         <p className="font-medium text-white text-sm leading-snug truncate">{product.name}</p>
         <p className="text-white/50 text-xs mt-0.5">${((product.price ?? 0) / 100).toFixed(2)}</p>
