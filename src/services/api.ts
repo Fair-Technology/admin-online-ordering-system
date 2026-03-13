@@ -86,6 +86,7 @@ const injectedRtkApi = api.injectEndpoints({
           shopId: queryArg.shopId,
         },
       }),
+      providesTags: ['Products'],
     }),
     createProduct: build.mutation<
       CreateProductApiResponse,
@@ -96,6 +97,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.createProductRequest,
       }),
+      invalidatesTags: ['Products'],
     }),
     getProductById: build.query<
       GetProductByIdApiResponse,

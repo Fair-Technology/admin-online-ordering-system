@@ -70,7 +70,7 @@ export function CreateProductPage() {
         }).unwrap();
       }
 
-      navigate(`/shops/${shopId}/products/${productId}`);
+      navigate(`/shops/${shopId}`);
     } catch {
       setIsUploading(false);
     }
