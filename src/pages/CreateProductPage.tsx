@@ -14,6 +14,11 @@ import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 
+type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
+type VariantGroup  = { id: string; name: string; options: VariantOption[] };
+type AddonOption   = { id: string; name: string; priceDelta: number; isAvailable: boolean };
+type AddonGroup    = { id: string; name: string; minSelectable: number; maxSelectable: number; options: AddonOption[] };
+
 export function CreateProductPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
@@ -31,6 +36,66 @@ export function CreateProductPage() {
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
+  const [addonGroups, setAddonGroups] = useState<AddonGroup[]>([]);
+
+  const addVariantGroup = () => {
+    setVariantGroups(gs => [...gs, { id: crypto.randomUUID(), name: '', options: [] }]);
+  };
+  const removeVariantGroup = (groupId: string) => {
+    setVariantGroups(gs => gs.filter(g => g.id !== groupId));
+  };
+  const updateVariantGroupName = (groupId: string, name: string) => {
+    setVariantGroups(gs => gs.map(g => g.id === groupId ? { ...g, name } : g));
+  };
+  const addVariantOption = (groupId: string) => {
+    setVariantGroups(gs => gs.map(g =>
+      g.id === groupId
+        ? { ...g, options: [...g.options, { id: crypto.randomUUID(), name: '', priceDelta: 0, isAvailable: true }] }
+        : g
+    ));
+  };
+  const removeVariantOption = (groupId: string, optionId: string) => {
+    setVariantGroups(gs => gs.map(g =>
+      g.id === groupId ? { ...g, options: g.options.filter(o => o.id !== optionId) } : g
+    ));
+  };
+  const updateVariantOption = (groupId: string, optionId: string, patch: Partial<VariantOption>) => {
+    setVariantGroups(gs => gs.map(g =>
+      g.id === groupId
+        ? { ...g, options: g.options.map(o => o.id === optionId ? { ...o, ...patch } : o) }
+        : g
+    ));
+  };
+
+  const addAddonGroup = () => {
+    setAddonGroups(gs => [...gs, { id: crypto.randomUUID(), name: '', minSelectable: 0, maxSelectable: 1, options: [] }]);
+  };
+  const removeAddonGroup = (groupId: string) => {
+    setAddonGroups(gs => gs.filter(g => g.id !== groupId));
+  };
+  const updateAddonGroup = (groupId: string, patch: Partial<AddonGroup>) => {
+    setAddonGroups(gs => gs.map(g => g.id === groupId ? { ...g, ...patch } : g));
+  };
+  const addAddonOption = (groupId: string) => {
+    setAddonGroups(gs => gs.map(g =>
+      g.id === groupId
+        ? { ...g, options: [...g.options, { id: crypto.randomUUID(), name: '', priceDelta: 0, isAvailable: true }] }
+        : g
+    ));
+  };
+  const removeAddonOption = (groupId: string, optionId: string) => {
+    setAddonGroups(gs => gs.map(g =>
+      g.id === groupId ? { ...g, options: g.options.filter(o => o.id !== optionId) } : g
+    ));
+  };
+  const updateAddonOption = (groupId: string, optionId: string, patch: Partial<AddonOption>) => {
+    setAddonGroups(gs => gs.map(g =>
+      g.id === groupId
+        ? { ...g, options: g.options.map(o => o.id === optionId ? { ...o, ...patch } : o) }
+        : g
+    ));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +108,8 @@ export function CreateProductPage() {
           price: Math.round(Number(form.price) * 100),
           categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
           taxRateId: selectedTaxRateId,
+          variantGroups: variantGroups.length > 0 ? variantGroups : undefined,
+          addonGroups: addonGroups.length > 0 ? addonGroups : undefined,
         },
       }).unwrap();
 
@@ -159,6 +226,174 @@ export function CreateProductPage() {
               </select>
             </div>
           )}
+
+          {/* Variant Groups */}
+          <GlassCard className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-white/70">{t('variants.title')}</span>
+              <GlassButton type="button" variant="secondary" size="sm" onClick={addVariantGroup}>
+                {t('variants.addGroup')}
+              </GlassButton>
+            </div>
+            {variantGroups.map(group => (
+              <div key={group.id} className="border border-white/15 rounded-xl p-3 space-y-3">
+                <GlassInput
+                  placeholder={t('variants.groupNamePlaceholder')}
+                  value={group.name}
+                  onChange={(e) => updateVariantGroupName(group.id, e.target.value)}
+                />
+                <div className="space-y-2">
+                  {group.options.map(option => (
+                    <div key={option.id} className="flex items-center gap-2">
+                      <GlassInput
+                        placeholder={t('variants.optionNamePlaceholder')}
+                        value={option.name}
+                        onChange={(e) => updateVariantOption(group.id, option.id, { name: e.target.value })}
+                        className="flex-1"
+                      />
+                      <GlassInput
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={t('variants.priceDelta')}
+                        value={(option.priceDelta / 100).toFixed(2)}
+                        onChange={(e) => updateVariantOption(group.id, option.id, { priceDelta: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                        className="w-24"
+                      />
+                      <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={option.isAvailable}
+                          onChange={(e) => updateVariantOption(group.id, option.id, { isAvailable: e.target.checked })}
+                          className="accent-white/80"
+                        />
+                        {t('variants.available')}
+                      </label>
+                      <GlassButton
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeVariantOption(group.id, option.id)}
+                      >
+                        ×
+                      </GlassButton>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => addVariantOption(group.id)}
+                    className="text-xs text-white/60 hover:text-white/90 transition-colors"
+                  >
+                    {t('variants.addOption')}
+                  </button>
+                  <GlassButton
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeVariantGroup(group.id)}
+                    className="text-red-400/80 hover:text-red-400"
+                  >
+                    {t('variants.removeGroup')}
+                  </GlassButton>
+                </div>
+              </div>
+            ))}
+          </GlassCard>
+
+          {/* Addon Groups */}
+          <GlassCard className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-white/70">{t('addons.title')}</span>
+              <GlassButton type="button" variant="secondary" size="sm" onClick={addAddonGroup}>
+                {t('addons.addGroup')}
+              </GlassButton>
+            </div>
+            {addonGroups.map(group => (
+              <div key={group.id} className="border border-white/15 rounded-xl p-3 space-y-3">
+                <GlassInput
+                  placeholder={t('addons.groupNamePlaceholder')}
+                  value={group.name}
+                  onChange={(e) => updateAddonGroup(group.id, { name: e.target.value })}
+                />
+                <div className="flex gap-3">
+                  <GlassInput
+                    label={t('addons.min')}
+                    type="number"
+                    min="0"
+                    value={group.minSelectable}
+                    onChange={(e) => updateAddonGroup(group.id, { minSelectable: parseInt(e.target.value || '0', 10) })}
+                    className="flex-1"
+                  />
+                  <GlassInput
+                    label={t('addons.max')}
+                    type="number"
+                    min="0"
+                    value={group.maxSelectable}
+                    onChange={(e) => updateAddonGroup(group.id, { maxSelectable: parseInt(e.target.value || '0', 10) })}
+                    className="flex-1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  {group.options.map(option => (
+                    <div key={option.id} className="flex items-center gap-2">
+                      <GlassInput
+                        placeholder={t('addons.optionNamePlaceholder')}
+                        value={option.name}
+                        onChange={(e) => updateAddonOption(group.id, option.id, { name: e.target.value })}
+                        className="flex-1"
+                      />
+                      <GlassInput
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder={t('addons.priceDelta')}
+                        value={(option.priceDelta / 100).toFixed(2)}
+                        onChange={(e) => updateAddonOption(group.id, option.id, { priceDelta: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                        className="w-24"
+                      />
+                      <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={option.isAvailable}
+                          onChange={(e) => updateAddonOption(group.id, option.id, { isAvailable: e.target.checked })}
+                          className="accent-white/80"
+                        />
+                        {t('addons.available')}
+                      </label>
+                      <GlassButton
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeAddonOption(group.id, option.id)}
+                      >
+                        ×
+                      </GlassButton>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => addAddonOption(group.id)}
+                    className="text-xs text-white/60 hover:text-white/90 transition-colors"
+                  >
+                    {t('addons.addOption')}
+                  </button>
+                  <GlassButton
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAddonGroup(group.id)}
+                    className="text-red-400/80 hover:text-red-400"
+                  >
+                    {t('addons.removeGroup')}
+                  </GlassButton>
+                </div>
+              </div>
+            ))}
+          </GlassCard>
 
           <div className="flex flex-col gap-1.5">
             <p className="text-xs font-medium text-white/50 uppercase tracking-wide">

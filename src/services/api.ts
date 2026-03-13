@@ -850,6 +850,18 @@ export type CreateProductRequest = {
   isAvailable?: boolean;
   /** Tax rate ID from the shop's taxRates list, or null to clear */
   taxRateId?: string | null;
+  variantGroups?: {
+    id: string;
+    name: string;
+    options: { id: string; name: string; priceDelta: number; isAvailable: boolean }[];
+  }[];
+  addonGroups?: {
+    id: string;
+    name: string;
+    minSelectable: number;
+    maxSelectable: number;
+    options: { id: string; name: string; priceDelta: number; isAvailable: boolean }[];
+  }[];
 };
 export type UpdateProductRequest = {
   /** Shop ID (required for partition key) */
