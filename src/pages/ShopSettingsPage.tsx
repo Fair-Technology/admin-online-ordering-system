@@ -73,7 +73,6 @@ export function ShopSettingsPage() {
   const [hoursSaved, setHoursSaved] = useState(false);
 
   const [statusState, setStatusState] = useState<{
-    acceptingOrders: boolean;
     isPaused: boolean;
     pausedMessage: string;
   } | null>(null);
@@ -157,7 +156,6 @@ export function ShopSettingsPage() {
   const currentHours = hoursState ?? buildInitialHours(shop.openingHours as Record<string, unknown> | undefined);
 
   const currentStatus = statusState ?? {
-    acceptingOrders: shop.acceptingOrders ?? true,
     isPaused: shop.isPaused ?? false,
     pausedMessage: shop.pausedMessage ?? '',
   };
@@ -264,7 +262,6 @@ export function ShopSettingsPage() {
       await updateShop({
         shopId: shopId!,
         updateShopRequest: {
-          acceptingOrders: currentStatus.acceptingOrders,
           isPaused: currentStatus.isPaused,
           pausedMessage: currentStatus.pausedMessage || undefined,
         },
@@ -741,31 +738,6 @@ export function ShopSettingsPage() {
         </p>
 
         <div className="space-y-3">
-          {/* Accepting Orders toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-white/70">{t('shops.statusAcceptingOrders')}</span>
-            <div className="flex gap-1.5">
-              <GlassButton
-                variant={currentStatus.acceptingOrders ? 'primary' : 'ghost'}
-                onClick={() => {
-                  setStatusState({ ...currentStatus, acceptingOrders: true });
-                  setStatusSaved(false);
-                }}
-              >
-                {t('shops.statusYes')}
-              </GlassButton>
-              <GlassButton
-                variant={!currentStatus.acceptingOrders ? 'primary' : 'ghost'}
-                onClick={() => {
-                  setStatusState({ ...currentStatus, acceptingOrders: false });
-                  setStatusSaved(false);
-                }}
-              >
-                {t('shops.statusNo')}
-              </GlassButton>
-            </div>
-          </div>
-
           {/* Paused toggle */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-white/70">{t('shops.statusPaused')}</span>
@@ -792,17 +764,19 @@ export function ShopSettingsPage() {
           </div>
 
           {/* Pause message */}
-          <div className="space-y-1.5">
-            <span className="text-sm text-white/70">{t('shops.statusPauseMessage')}</span>
-            <GlassInput
-              value={currentStatus.pausedMessage}
-              placeholder={t('shops.statusPauseMessagePlaceholder')}
-              onChange={(e) => {
-                setStatusState({ ...currentStatus, pausedMessage: e.target.value });
-                setStatusSaved(false);
-              }}
-            />
-          </div>
+          {currentStatus.isPaused && (
+            <div className="space-y-1.5">
+              <span className="text-sm text-white/70">{t('shops.statusPauseMessage')}</span>
+              <GlassInput
+                value={currentStatus.pausedMessage}
+                placeholder={t('shops.statusPauseMessagePlaceholder')}
+                onChange={(e) => {
+                  setStatusState({ ...currentStatus, pausedMessage: e.target.value });
+                  setStatusSaved(false);
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {statusError && <p className="text-sm text-red-300">{statusError}</p>}
