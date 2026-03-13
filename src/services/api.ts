@@ -663,10 +663,6 @@ export type UpdateShopRequest = {
   paymentPolicy?: "pay_online";
   /** Allow guest checkout */
   allowGuestCheckout?: boolean;
-  /** Shop currency */
-  currency?: string;
-  /** Shop timezone */
-  timezone?: string;
   /** Minimum order amount in cents */
   minOrderAmountCents?: number;
   address?: {

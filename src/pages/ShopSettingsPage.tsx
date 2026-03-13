@@ -92,8 +92,6 @@ export function ShopSettingsPage() {
 
   const [detailsState, setDetailsState] = useState<{
     name: string;
-    currency: string;
-    timezone: string;
     minOrderAmountDollars: string;
   } | null>(null);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
@@ -169,8 +167,6 @@ export function ShopSettingsPage() {
 
   const currentDetails = detailsState ?? {
     name: shop.name ?? '',
-    currency: shop.currency ?? '',
-    timezone: shop.timezone ?? '',
     minOrderAmountDollars: shop.minOrderAmountCents != null
       ? String(shop.minOrderAmountCents / 100)
       : '',
@@ -310,8 +306,6 @@ export function ShopSettingsPage() {
         shopId: shopId!,
         updateShopRequest: {
           name: currentDetails.name || undefined,
-          currency: currentDetails.currency || undefined,
-          timezone: currentDetails.timezone || undefined,
           ...(cents != null && { minOrderAmountCents: cents }),
         },
       }).unwrap();
@@ -520,18 +514,14 @@ export function ShopSettingsPage() {
             placeholder={t('shops.detailsName')}
             onChange={(e) => { setDetailsState({ ...currentDetails, name: e.target.value }); setDetailsSaved(false); }}
           />
-          <GlassInput
-            label={t('shops.detailsCurrency')}
-            value={currentDetails.currency}
-            placeholder={t('shops.detailsCurrencyPlaceholder')}
-            onChange={(e) => { setDetailsState({ ...currentDetails, currency: e.target.value }); setDetailsSaved(false); }}
-          />
-          <GlassInput
-            label={t('shops.detailsTimezone')}
-            value={currentDetails.timezone}
-            placeholder={t('shops.detailsTimezonePlaceholder')}
-            onChange={(e) => { setDetailsState({ ...currentDetails, timezone: e.target.value }); setDetailsSaved(false); }}
-          />
+          <div>
+            <p className="text-xs text-white/50 mb-1">{t('shops.detailsCurrency')}</p>
+            <p className="text-sm text-white/80">{shop.currency ?? '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-white/50 mb-1">{t('shops.detailsTimezone')}</p>
+            <p className="text-sm text-white/80">{shop.timezone ?? '—'}</p>
+          </div>
           <GlassInput
             label={t('shops.detailsMinOrder')}
             type="number"
