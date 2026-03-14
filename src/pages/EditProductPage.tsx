@@ -42,6 +42,7 @@ export function EditProductPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', price: '' });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [categoryError, setCategoryError] = useState(false);
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -100,6 +101,11 @@ export function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedCategoryIds.length === 0) {
+      setCategoryError(true);
+      return;
+    }
+    setCategoryError(false);
     try {
       await updateProduct({
         productId: productId!,
@@ -241,6 +247,12 @@ export function EditProductPage() {
       {isDeleteError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
           <p className="text-sm text-red-300">{t('products.failedToDelete')}</p>
+        </GlassCard>
+      )}
+
+      {categoryError && (
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">{t('products.categoryRequired')}</p>
         </GlassCard>
       )}
 

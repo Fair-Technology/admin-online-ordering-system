@@ -33,6 +33,8 @@ export function CreateProductPage() {
 
   const [form, setForm] = useState({ name: '', description: '', price: '' });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [categoryError, setCategoryError] = useState(false);
+  const [taxRateError, setTaxRateError] = useState(false);
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -99,6 +101,11 @@ export function CreateProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const hasNoCategory = selectedCategoryIds.length === 0;
+    const hasNoTaxRate = !selectedTaxRateId;
+    setCategoryError(hasNoCategory);
+    setTaxRateError(hasNoTaxRate);
+    if (hasNoCategory || hasNoTaxRate) return;
     try {
       const product = await createProduct({
         createProductRequest: {
@@ -106,7 +113,7 @@ export function CreateProductPage() {
           name: form.name,
           description: form.description,
           price: Math.round(Number(form.price) * 100),
-          categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
+          categoryIds: selectedCategoryIds,
           taxRateId: selectedTaxRateId,
           variantGroups: variantGroups.length > 0 ? variantGroups : undefined,
           addonGroups: addonGroups.length > 0 ? addonGroups : undefined,
@@ -164,6 +171,18 @@ export function CreateProductPage() {
           <p className="text-sm text-red-300">
             {(error as { data?: { error?: string } })?.data?.error ?? t('products.failedToCreate')}
           </p>
+        </GlassCard>
+      )}
+
+      {categoryError && (
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">{t('products.categoryRequired')}</p>
+        </GlassCard>
+      )}
+
+      {taxRateError && (
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">{t('products.taxRateRequired')}</p>
         </GlassCard>
       )}
 
