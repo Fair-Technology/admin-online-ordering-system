@@ -38,7 +38,7 @@ export function CategoryPicker({ label, categories, selectedIds, onChange }: Cat
   const selected = categories.filter((c) => c.id && selectedIds.includes(c.id));
   const remaining = categories.filter((c) => c.id && !selectedIds.includes(c.id));
 
-  const add = (id: string) => onChange([...selectedIds, id]);
+  const add = (id: string) => { onChange([...selectedIds, id]); setOpen(false); };
   const remove = (id: string) => onChange(selectedIds.filter((s) => s !== id));
 
   return (
