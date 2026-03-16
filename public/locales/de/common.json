@@ -193,7 +193,8 @@
     "deleting": "Wird gelöscht...",
     "failedToDelete": "Produkt konnte nicht gelöscht werden.",
     "taxRate": "Steuersatz",
-    "taxRateNone": "— Kein Steuersatz —"
+    "taxRateNone": "— Kein Steuersatz —",
+    "deleteTypeToConfirm": "Geben Sie \"{{name}}\" zur Bestätigung ein"
   },
   "variants": {
     "title": "Varianten",
@@ -262,6 +263,7 @@
     "saveChanges": "Änderungen speichern",
     "name": "Name",
     "namePlaceholder": "Kategoriename",
-    "hasStar": "Stern-Symbol anzeigen"
+    "hasStar": "Stern-Symbol anzeigen",
+    "deleteTypeToConfirm": "Geben Sie \"{{name}}\" zur Bestätigung ein"
   }
 }

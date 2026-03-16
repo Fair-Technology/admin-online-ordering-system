@@ -26,6 +26,7 @@ export function EditCategoryPage() {
 
   const [name, setName] = useState('');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
 
   useEffect(() => {
     if (category) {
@@ -112,21 +113,30 @@ export function EditCategoryPage() {
           <p className="text-sm font-medium text-white">{t('categories.dangerZone')}</p>
           <p className="text-xs text-white/50">{t('categories.deleteWarning')}</p>
           {confirmingDelete ? (
-            <div className="flex gap-2">
-              <GlassButton
-                variant="danger"
-                disabled={isDeleting}
-                onClick={handleDelete}
-              >
-                {isDeleting ? t('categories.deleting') : t('categories.confirmDelete')}
-              </GlassButton>
-              <GlassButton
-                variant="ghost"
-                disabled={isDeleting}
-                onClick={() => setConfirmingDelete(false)}
-              >
-                {t('categories.cancel')}
-              </GlassButton>
+            <div className="space-y-3">
+              <GlassInput
+                label={t('categories.deleteTypeToConfirm', { name: category.name })}
+                type="text"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder={category.name}
+              />
+              <div className="flex gap-2">
+                <GlassButton
+                  variant="danger"
+                  disabled={isDeleting || deleteConfirmName !== category.name}
+                  onClick={handleDelete}
+                >
+                  {isDeleting ? t('categories.deleting') : t('categories.confirmDelete')}
+                </GlassButton>
+                <GlassButton
+                  variant="ghost"
+                  disabled={isDeleting}
+                  onClick={() => { setConfirmingDelete(false); setDeleteConfirmName(''); }}
+                >
+                  {t('categories.cancel')}
+                </GlassButton>
+              </div>
             </div>
           ) : (
             <GlassButton variant="danger" onClick={() => setConfirmingDelete(true)}>

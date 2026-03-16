@@ -193,7 +193,8 @@
     "deleting": "Deleting...",
     "failedToDelete": "Failed to delete product.",
     "taxRate": "Tax Rate",
-    "taxRateNone": "— No tax rate —"
+    "taxRateNone": "— No tax rate —",
+    "deleteTypeToConfirm": "Type \"{{name}}\" to confirm"
   },
   "variants": {
     "title": "Variants",
@@ -262,6 +263,7 @@
     "saveChanges": "Save Changes",
     "name": "Name",
     "namePlaceholder": "Category name",
-    "hasStar": "Show star icon"
+    "hasStar": "Show star icon",
+    "deleteTypeToConfirm": "Type \"{{name}}\" to confirm"
   }
 }

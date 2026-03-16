@@ -43,6 +43,7 @@ export function EditProductPage() {
   const [addProductImage] = useAddProductImageMutation();
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [form, setForm] = useState({ name: '', description: '', price: 0 });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categoryError, setCategoryError] = useState(false);
@@ -532,13 +533,22 @@ export function EditProductPage() {
           <p className="text-sm font-medium text-white">{t('products.dangerZone')}</p>
           <p className="text-xs text-white/50">{t('products.deleteWarning')}</p>
           {confirmingDelete ? (
-            <div className="flex gap-2">
-              <GlassButton variant="danger" disabled={isDeleting} onClick={handleDelete}>
-                {isDeleting ? t('products.deleting') : t('products.confirmDelete')}
-              </GlassButton>
-              <GlassButton variant="ghost" disabled={isDeleting} onClick={() => setConfirmingDelete(false)}>
-                {t('products.cancel')}
-              </GlassButton>
+            <div className="space-y-3">
+              <GlassInput
+                label={t('products.deleteTypeToConfirm', { name: product.name })}
+                type="text"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder={product.name}
+              />
+              <div className="flex gap-2">
+                <GlassButton variant="danger" disabled={isDeleting || deleteConfirmName !== product.name} onClick={handleDelete}>
+                  {isDeleting ? t('products.deleting') : t('products.confirmDelete')}
+                </GlassButton>
+                <GlassButton variant="ghost" disabled={isDeleting} onClick={() => { setConfirmingDelete(false); setDeleteConfirmName(''); }}>
+                  {t('products.cancel')}
+                </GlassButton>
+              </div>
             </div>
           ) : (
             <GlassButton variant="danger" onClick={() => setConfirmingDelete(true)}>
