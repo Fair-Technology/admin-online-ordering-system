@@ -11,8 +11,10 @@ import {
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
+import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
+import { getCurrencySymbol } from '../utils/currency';
 
 type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 type VariantGroup  = { id: string; name: string; options: VariantOption[] };
@@ -25,13 +27,14 @@ export function CreateProductPage() {
   const { t } = useTranslation();
 
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
+  const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
   const [createProduct, { isLoading, isError, error }] = useCreateProductMutation();
   const [generateUploadUrl] = useGenerateUploadUrlMutation();
   const [addProductImage] = useAddProductImageMutation();
 
   const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
 
-  const [form, setForm] = useState({ name: '', description: '', price: '' });
+  const [form, setForm] = useState({ name: '', description: '', price: 0 });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
@@ -112,7 +115,7 @@ export function CreateProductPage() {
           shopId: shopId!,
           name: form.name,
           description: form.description,
-          price: Math.round(Number(form.price) * 100),
+          price: form.price,
           categoryIds: selectedCategoryIds,
           taxRateId: selectedTaxRateId,
           variantGroups: variantGroups.length > 0 ? variantGroups : undefined,
@@ -204,15 +207,10 @@ export function CreateProductPage() {
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
-          <GlassInput
-            label={t('products.price')}
-            type="number"
-            required
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-            value={form.price}
-            onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+          <CurrencyInput
+            label={t('products.price', { symbol: currencySymbol })}
+            valueCents={form.price}
+            onChange={(cents) => setForm((f) => ({ ...f, price: cents }))}
           />
 
           {categories && categories.length > 0 && (
@@ -270,13 +268,9 @@ export function CreateProductPage() {
                         onChange={(e) => updateVariantOption(group.id, option.id, { name: e.target.value })}
                         className="flex-1"
                       />
-                      <GlassInput
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder={t('variants.priceDelta')}
-                        value={(option.priceDelta / 100).toFixed(2)}
-                        onChange={(e) => updateVariantOption(group.id, option.id, { priceDelta: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      <CurrencyInput
+                        valueCents={option.priceDelta}
+                        onChange={(cents) => updateVariantOption(group.id, option.id, { priceDelta: cents })}
                         className="w-24"
                       />
                       <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">
@@ -363,13 +357,9 @@ export function CreateProductPage() {
                         onChange={(e) => updateAddonOption(group.id, option.id, { name: e.target.value })}
                         className="flex-1"
                       />
-                      <GlassInput
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder={t('addons.priceDelta')}
-                        value={(option.priceDelta / 100).toFixed(2)}
-                        onChange={(e) => updateAddonOption(group.id, option.id, { priceDelta: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      <CurrencyInput
+                        valueCents={option.priceDelta}
+                        onChange={(cents) => updateAddonOption(group.id, option.id, { priceDelta: cents })}
                         className="w-24"
                       />
                       <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">

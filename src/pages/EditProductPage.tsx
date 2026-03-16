@@ -12,10 +12,12 @@ import { useUpdateProductMutation, useGetCategoriesByShopQuery } from '../servic
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
+import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { X } from 'lucide-react';
+import { getCurrencySymbol } from '../utils/currency';
 
 type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 type VariantGroup  = { id: string; name: string; options: VariantOption[] };
@@ -27,6 +29,7 @@ export function EditProductPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
+  const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
   const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
   const { data: product, isLoading, isError } = useGetProductByIdQuery(
     { productId: productId!, shopId: shopId! },
@@ -40,7 +43,7 @@ export function EditProductPage() {
   const [addProductImage] = useAddProductImageMutation();
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', price: '' });
+  const [form, setForm] = useState({ name: '', description: '', price: 0 });
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categoryError, setCategoryError] = useState(false);
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
@@ -62,7 +65,7 @@ export function EditProductPage() {
       setForm({
         name: product.name ?? '',
         description: product.description ?? '',
-        price: ((product.price ?? 0) / 100).toFixed(2),
+        price: product.price ?? 0,
       });
       setSelectedCategoryIds(product.categories?.map((c) => c.id!).filter(Boolean) ?? []);
       setSelectedTaxRateId(product.taxRateId ?? null);
@@ -113,7 +116,7 @@ export function EditProductPage() {
           shopId: shopId!,
           name: form.name,
           description: form.description,
-          price: Math.round(Number(form.price) * 100),
+          price: form.price,
           categoryIds: selectedCategoryIds,
           variantGroups,
           addonGroups,
@@ -272,14 +275,10 @@ export function EditProductPage() {
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
-          <GlassInput
-            label={t('products.price')}
-            type="number"
-            required
-            min="0"
-            step="0.01"
-            value={form.price}
-            onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+          <CurrencyInput
+            label={t('products.price', { symbol: currencySymbol })}
+            valueCents={form.price}
+            onChange={(cents) => setForm((f) => ({ ...f, price: cents }))}
           />
 
           {categories && categories.length > 0 && (
@@ -337,13 +336,9 @@ export function EditProductPage() {
                         onChange={(e) => updateVariantOption(group.id, option.id, { name: e.target.value })}
                         className="flex-1"
                       />
-                      <GlassInput
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder={t('variants.priceDelta')}
-                        value={(option.priceDelta / 100).toFixed(2)}
-                        onChange={(e) => updateVariantOption(group.id, option.id, { priceDelta: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      <CurrencyInput
+                        valueCents={option.priceDelta}
+                        onChange={(cents) => updateVariantOption(group.id, option.id, { priceDelta: cents })}
                         className="w-24"
                       />
                       <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">
@@ -430,13 +425,9 @@ export function EditProductPage() {
                         onChange={(e) => updateAddonOption(group.id, option.id, { name: e.target.value })}
                         className="flex-1"
                       />
-                      <GlassInput
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder={t('addons.priceDelta')}
-                        value={(option.priceDelta / 100).toFixed(2)}
-                        onChange={(e) => updateAddonOption(group.id, option.id, { priceDelta: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      <CurrencyInput
+                        valueCents={option.priceDelta}
+                        onChange={(cents) => updateAddonOption(group.id, option.id, { priceDelta: cents })}
                         className="w-24"
                       />
                       <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">

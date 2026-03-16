@@ -17,6 +17,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
+import { CurrencyInput } from '../components/ui/CurrencyInput';
 
 type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 type TimeSlot = { open: string; close: string };
@@ -92,7 +93,7 @@ export function ShopSettingsPage() {
 
   const [detailsState, setDetailsState] = useState<{
     name: string;
-    minOrderAmountDollars: string;
+    minOrderAmountCents: number;
   } | null>(null);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
@@ -167,9 +168,7 @@ export function ShopSettingsPage() {
 
   const currentDetails = detailsState ?? {
     name: shop.name ?? '',
-    minOrderAmountDollars: shop.minOrderAmountCents != null
-      ? String(shop.minOrderAmountCents / 100)
-      : '',
+    minOrderAmountCents: shop.minOrderAmountCents ?? 0,
   };
 
   const currentAddress = addressState ?? {
@@ -300,8 +299,7 @@ export function ShopSettingsPage() {
     setDetailsError(null);
     setDetailsSaved(false);
     try {
-      const dollars = parseFloat(currentDetails.minOrderAmountDollars);
-      const cents = !isNaN(dollars) ? Math.round(dollars * 100) : undefined;
+      const cents = currentDetails.minOrderAmountCents > 0 ? currentDetails.minOrderAmountCents : undefined;
       await updateShop({
         shopId: shopId!,
         updateShopRequest: {
@@ -522,14 +520,10 @@ export function ShopSettingsPage() {
             <p className="text-xs text-white/50 mb-1">{t('shops.detailsTimezone')}</p>
             <p className="text-sm text-white/80">{shop.timezone ?? '—'}</p>
           </div>
-          <GlassInput
+          <CurrencyInput
             label={t('shops.detailsMinOrder')}
-            type="number"
-            min="0"
-            step="0.01"
-            value={currentDetails.minOrderAmountDollars}
-            placeholder={t('shops.detailsMinOrderPlaceholder')}
-            onChange={(e) => { setDetailsState({ ...currentDetails, minOrderAmountDollars: e.target.value }); setDetailsSaved(false); }}
+            valueCents={currentDetails.minOrderAmountCents}
+            onChange={(cents) => { setDetailsState({ ...currentDetails, minOrderAmountCents: cents }); setDetailsSaved(false); }}
           />
         </div>
 

@@ -161,7 +161,7 @@
     "editTitle": "Edit Product",
     "name": "Name",
     "description": "Description",
-    "price": "Price ($)",
+    "price": "Price ({{symbol}})",
     "categories": "Categories",
     "image": "Product Image",
     "imageOptionalNote": "(optional)",
