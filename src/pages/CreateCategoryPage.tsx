@@ -10,11 +10,13 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
+import { useToast } from '../contexts/ToastContext';
 
 export function CreateCategoryPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
   const [createCategory, { isLoading, isError, error }] = useCreateCategoryMutation();
@@ -29,6 +31,7 @@ export function CreateCategoryPage() {
         shopId: shopId!,
         createCategoryRequest: { name, sortOrder: categories?.length ?? 0, hasStar },
       }).unwrap();
+      toast.success(t('categories.created'));
       navigate(`/shops/${shopId}/categories`);
     } catch {
       // error shown below

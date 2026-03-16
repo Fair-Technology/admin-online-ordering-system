@@ -19,6 +19,7 @@ import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { X } from 'lucide-react';
 import { getCurrencySymbol } from '../utils/currency';
+import { useToast } from '../contexts/ToastContext';
 
 type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 type VariantGroup  = { id: string; name: string; options: VariantOption[] };
@@ -29,6 +30,7 @@ export function EditProductPage() {
   const { shopId, productId } = useParams<{ shopId: string; productId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
   const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
@@ -194,6 +196,7 @@ export function EditProductPage() {
         setIsUploading(false);
         setImageFile(null);
       }
+      toast.success(t('products.saved'));
       navigate(-1);
     } catch {
       setIsUploading(false);
@@ -203,6 +206,7 @@ export function EditProductPage() {
   const handleDelete = async () => {
     try {
       await deleteProduct({ shopId: shopId!, productId: productId! }).unwrap();
+      toast.success(t('products.deleted'));
       navigate(`/shops/${shopId}`);
     } catch {
       setConfirmingDelete(false);

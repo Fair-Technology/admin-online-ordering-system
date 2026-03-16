@@ -18,6 +18,7 @@ import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
+import { useToast } from '../contexts/ToastContext';
 
 type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 type TimeSlot = { open: string; close: string };
@@ -51,6 +52,7 @@ function toSlug(name: string): string {
 export function ShopSettingsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { t } = useTranslation();
+  const toast = useToast();
   const { accounts } = useMsal();
   const currentUserId = accounts[0]?.localAccountId;
   const { data: shop, isLoading, isError, refetch } = useGetShopByIdQuery(
@@ -74,7 +76,6 @@ export function ShopSettingsPage() {
   const [hoursState, setHoursState] = useState<OpeningHoursState | null>(null);
   const [isSavingHours, setIsSavingHours] = useState(false);
   const [hoursError, setHoursError] = useState<string | null>(null);
-  const [hoursSaved, setHoursSaved] = useState(false);
 
   const [statusState, setStatusState] = useState<{
     isPaused: boolean;
@@ -82,7 +83,6 @@ export function ShopSettingsPage() {
   } | null>(null);
   const [isSavingStatus, setIsSavingStatus] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
-  const [statusSaved, setStatusSaved] = useState(false);
 
   const [colorsState, setColorsState] = useState<{
     primary: string;
@@ -92,7 +92,6 @@ export function ShopSettingsPage() {
   } | null>(null);
   const [isSavingColors, setIsSavingColors] = useState(false);
   const [colorsError, setColorsError] = useState<string | null>(null);
-  const [colorsSaved, setColorsSaved] = useState(false);
 
   const [detailsState, setDetailsState] = useState<{
     name: string;
@@ -100,7 +99,6 @@ export function ShopSettingsPage() {
   } | null>(null);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
-  const [detailsSaved, setDetailsSaved] = useState(false);
 
   const [addressState, setAddressState] = useState<{
     street: string;
@@ -111,13 +109,11 @@ export function ShopSettingsPage() {
   } | null>(null);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [addressError, setAddressError] = useState<string | null>(null);
-  const [addressSaved, setAddressSaved] = useState(false);
 
   const [newMemberUserId, setNewMemberUserId] = useState('');
   const [newMemberRoleId, setNewMemberRoleId] = useState<string>('staff');
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [memberAddError, setMemberAddError] = useState<string | null>(null);
-  const [memberAddSuccess, setMemberAddSuccess] = useState(false);
   const [memberRemoveError, setMemberRemoveError] = useState<string | null>(null);
 
   // Roles card state
@@ -125,7 +121,6 @@ export function ShopSettingsPage() {
   const [newRolePerms, setNewRolePerms] = useState<ShopPermission[]>([]);
   const [isCreatingRole, setIsCreatingRole] = useState(false);
   const [roleCreateError, setRoleCreateError] = useState<string | null>(null);
-  const [roleCreateSuccess, setRoleCreateSuccess] = useState(false);
 
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [editRoleName, setEditRoleName] = useState('');
@@ -202,28 +197,24 @@ export function ShopSettingsPage() {
     const next = { ...currentHours };
     next[day] = next[day].length > 0 ? [] : [{ ...DEFAULT_SLOT }];
     setHoursState(next);
-    setHoursSaved(false);
   }
 
   function updateSlot(day: DayKey, idx: number, field: 'open' | 'close', value: string) {
     const next = { ...currentHours };
     next[day] = next[day].map((slot, i) => (i === idx ? { ...slot, [field]: value } : slot));
     setHoursState(next);
-    setHoursSaved(false);
   }
 
   function addSlot(day: DayKey) {
     const next = { ...currentHours };
     next[day] = [...next[day], { ...DEFAULT_SLOT }];
     setHoursState(next);
-    setHoursSaved(false);
   }
 
   function removeSlot(day: DayKey, idx: number) {
     const next = { ...currentHours };
     next[day] = next[day].filter((_, i) => i !== idx);
     setHoursState(next);
-    setHoursSaved(false);
   }
 
   const handleSaveHours = async () => {
@@ -235,14 +226,13 @@ export function ShopSettingsPage() {
 
     setIsSavingHours(true);
     setHoursError(null);
-    setHoursSaved(false);
 
     try {
       await updateShop({
         shopId: shopId!,
         updateShopRequest: { openingHours: currentHours },
       }).unwrap();
-      setHoursSaved(true);
+      toast.success(t('shops.ohHoursSaved'));
       refetch();
     } catch {
       setHoursError(t('shops.ohFailedToSave'));
@@ -254,7 +244,6 @@ export function ShopSettingsPage() {
   const handleSaveStatus = async () => {
     setIsSavingStatus(true);
     setStatusError(null);
-    setStatusSaved(false);
 
     try {
       await updateShop({
@@ -264,7 +253,7 @@ export function ShopSettingsPage() {
           pausedMessage: currentStatus.pausedMessage || undefined,
         },
       }).unwrap();
-      setStatusSaved(true);
+      toast.success(t('shops.statusSaved'));
       refetch();
     } catch {
       setStatusError(t('shops.statusFailedToSave'));
@@ -276,7 +265,6 @@ export function ShopSettingsPage() {
   const handleSaveColors = async () => {
     setIsSavingColors(true);
     setColorsError(null);
-    setColorsSaved(false);
     try {
       await updateShop({
         shopId: shopId!,
@@ -288,7 +276,7 @@ export function ShopSettingsPage() {
           },
         },
       }).unwrap();
-      setColorsSaved(true);
+      toast.success(t('shops.colorsSaved'));
       refetch();
     } catch {
       setColorsError(t('shops.colorsFailedToSave'));
@@ -300,7 +288,6 @@ export function ShopSettingsPage() {
   const handleSaveDetails = async () => {
     setIsSavingDetails(true);
     setDetailsError(null);
-    setDetailsSaved(false);
     try {
       const cents = currentDetails.minOrderAmountCents > 0 ? currentDetails.minOrderAmountCents : undefined;
       await updateShop({
@@ -310,7 +297,7 @@ export function ShopSettingsPage() {
           ...(cents != null && { minOrderAmountCents: cents }),
         },
       }).unwrap();
-      setDetailsSaved(true);
+      toast.success(t('shops.detailsSaved'));
       refetch();
     } catch {
       setDetailsError(t('shops.detailsFailedToSave'));
@@ -322,13 +309,12 @@ export function ShopSettingsPage() {
   const handleSaveAddress = async () => {
     setIsSavingAddress(true);
     setAddressError(null);
-    setAddressSaved(false);
     try {
       await updateShop({
         shopId: shopId!,
         updateShopRequest: { address: currentAddress },
       }).unwrap();
-      setAddressSaved(true);
+      toast.success(t('shops.addressSaved'));
       refetch();
     } catch {
       setAddressError(t('shops.addressFailedToSave'));
@@ -364,6 +350,7 @@ export function ShopSettingsPage() {
 
       setLogoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
+      toast.success(t('shops.logoSaved'));
       refetch();
     } catch {
       setUploadError(t('shops.failedToUploadLogo'));
@@ -379,7 +366,6 @@ export function ShopSettingsPage() {
     }
     setIsAddingMember(true);
     setMemberAddError(null);
-    setMemberAddSuccess(false);
     try {
       await addShopMember({
         shopId: shopId!,
@@ -388,7 +374,7 @@ export function ShopSettingsPage() {
       }).unwrap();
       setNewMemberUserId('');
       setNewMemberRoleId('staff');
-      setMemberAddSuccess(true);
+      toast.success(t('shops.membersAddSuccess'));
       refetch();
     } catch (err: any) {
       const msg = err?.data?.error ?? t('shops.membersAddFailed');
@@ -413,7 +399,6 @@ export function ShopSettingsPage() {
     if (!newRoleName.trim()) return;
     setIsCreatingRole(true);
     setRoleCreateError(null);
-    setRoleCreateSuccess(false);
     try {
       await createShopRole({
         shopId: shopId!,
@@ -422,7 +407,7 @@ export function ShopSettingsPage() {
       }).unwrap();
       setNewRoleName('');
       setNewRolePerms([]);
-      setRoleCreateSuccess(true);
+      toast.success(t('shops.rolesAddSuccess'));
       refetch();
     } catch (err: any) {
       setRoleCreateError(err?.data?.error ?? t('shops.rolesAddFailed'));
@@ -513,7 +498,7 @@ export function ShopSettingsPage() {
             label={t('shops.detailsName')}
             value={currentDetails.name}
             placeholder={t('shops.detailsName')}
-            onChange={(e) => { setDetailsState({ ...currentDetails, name: e.target.value }); setDetailsSaved(false); }}
+            onChange={(e) => setDetailsState({ ...currentDetails, name: e.target.value })}
           />
           <div>
             <p className="text-xs text-white/50 mb-1">{t('shops.detailsCurrency')}</p>
@@ -526,18 +511,17 @@ export function ShopSettingsPage() {
           <CurrencyInput
             label={t('shops.detailsMinOrder')}
             valueCents={currentDetails.minOrderAmountCents}
-            onChange={(cents) => { setDetailsState({ ...currentDetails, minOrderAmountCents: cents }); setDetailsSaved(false); }}
+            onChange={(cents) => setDetailsState({ ...currentDetails, minOrderAmountCents: cents })}
           />
         </div>
 
         {detailsError && <p className="text-sm text-red-300">{detailsError}</p>}
-        {detailsSaved && <p className="text-sm text-green-300">{t('shops.detailsSaved')}</p>}
 
         <div className="border-t border-white/8 pt-4 flex gap-2">
           {detailsState && (
             <GlassButton
               variant="ghost"
-              onClick={() => { setDetailsState(null); setDetailsError(null); setDetailsSaved(false); }}
+              onClick={() => { setDetailsState(null); setDetailsError(null); }}
               disabled={isSavingDetails}
             >
               {t('shops.detailsCancel')}
@@ -614,7 +598,6 @@ export function ShopSettingsPage() {
                 value={currentColors[key]}
                 onChange={(e) => {
                   setColorsState({ ...currentColors, [key]: e.target.value });
-                  setColorsSaved(false);
                 }}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0"
               />
@@ -626,7 +609,6 @@ export function ShopSettingsPage() {
                   const val = e.target.value;
                   if (/^#[0-9a-fA-F]{0,6}$/.test(val)) {
                     setColorsState({ ...currentColors, [key]: val });
-                    setColorsSaved(false);
                   }
                 }}
                 className="bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5 text-sm text-white font-mono focus:outline-none focus:border-white/45 w-28"
@@ -636,7 +618,6 @@ export function ShopSettingsPage() {
         </div>
 
         {colorsError && <p className="text-sm text-red-300">{colorsError}</p>}
-        {colorsSaved && <p className="text-sm text-green-300">{t('shops.colorsSaved')}</p>}
 
         <div className="border-t border-white/8 pt-4">
           <GlassButton onClick={handleSaveColors} disabled={isSavingColors}>
@@ -654,32 +635,31 @@ export function ShopSettingsPage() {
           <GlassInput
             label={t('shops.addressStreet')}
             value={currentAddress.street}
-            onChange={(e) => { setAddressState({ ...currentAddress, street: e.target.value }); setAddressSaved(false); }}
+            onChange={(e) => setAddressState({ ...currentAddress, street: e.target.value })}
           />
           <GlassInput
             label={t('shops.addressCity')}
             value={currentAddress.city}
-            onChange={(e) => { setAddressState({ ...currentAddress, city: e.target.value }); setAddressSaved(false); }}
+            onChange={(e) => setAddressState({ ...currentAddress, city: e.target.value })}
           />
           <GlassInput
             label={t('shops.addressState')}
             value={currentAddress.state}
-            onChange={(e) => { setAddressState({ ...currentAddress, state: e.target.value }); setAddressSaved(false); }}
+            onChange={(e) => setAddressState({ ...currentAddress, state: e.target.value })}
           />
           <GlassInput
             label={t('shops.addressPostcode')}
             value={currentAddress.postcode}
-            onChange={(e) => { setAddressState({ ...currentAddress, postcode: e.target.value }); setAddressSaved(false); }}
+            onChange={(e) => setAddressState({ ...currentAddress, postcode: e.target.value })}
           />
           <GlassInput
             label={t('shops.addressCountry')}
             value={currentAddress.country}
-            onChange={(e) => { setAddressState({ ...currentAddress, country: e.target.value }); setAddressSaved(false); }}
+            onChange={(e) => setAddressState({ ...currentAddress, country: e.target.value })}
           />
         </div>
 
         {addressError && <p className="text-sm text-red-300">{addressError}</p>}
-        {addressSaved && <p className="text-sm text-green-300">{t('shops.addressSaved')}</p>}
 
         <div className="border-t border-white/8 pt-4">
           <GlassButton onClick={handleSaveAddress} disabled={isSavingAddress}>
@@ -731,19 +711,13 @@ export function ShopSettingsPage() {
             <div className="flex gap-1.5">
               <GlassButton
                 variant={currentStatus.isPaused ? 'primary' : 'ghost'}
-                onClick={() => {
-                  setStatusState({ ...currentStatus, isPaused: true });
-                  setStatusSaved(false);
-                }}
+                onClick={() => setStatusState({ ...currentStatus, isPaused: true })}
               >
                 {t('shops.statusYes')}
               </GlassButton>
               <GlassButton
                 variant={!currentStatus.isPaused ? 'primary' : 'ghost'}
-                onClick={() => {
-                  setStatusState({ ...currentStatus, isPaused: false });
-                  setStatusSaved(false);
-                }}
+                onClick={() => setStatusState({ ...currentStatus, isPaused: false })}
               >
                 {t('shops.statusNo')}
               </GlassButton>
@@ -757,17 +731,13 @@ export function ShopSettingsPage() {
               <GlassInput
                 value={currentStatus.pausedMessage}
                 placeholder={t('shops.statusPauseMessagePlaceholder')}
-                onChange={(e) => {
-                  setStatusState({ ...currentStatus, pausedMessage: e.target.value });
-                  setStatusSaved(false);
-                }}
+                onChange={(e) => setStatusState({ ...currentStatus, pausedMessage: e.target.value })}
               />
             </div>
           )}
         </div>
 
         {statusError && <p className="text-sm text-red-300">{statusError}</p>}
-        {statusSaved && <p className="text-sm text-green-300">{t('shops.statusSaved')}</p>}
 
         <div className="border-t border-white/8 pt-4">
           <GlassButton onClick={handleSaveStatus} disabled={isSavingStatus}>
@@ -847,7 +817,6 @@ export function ShopSettingsPage() {
         </div>
 
         {hoursError && <p className="text-sm text-red-300 mt-2">{hoursError}</p>}
-        {hoursSaved && <p className="text-sm text-green-300 mt-2">{t('shops.ohHoursSaved')}</p>}
 
         <div className="mt-4 border-t border-white/8 pt-4">
           <GlassButton onClick={handleSaveHours} disabled={isSavingHours}>
@@ -961,7 +930,6 @@ export function ShopSettingsPage() {
             onChange={(e) => {
               setNewRoleName(e.target.value);
               setRoleCreateError(null);
-              setRoleCreateSuccess(false);
             }}
           />
           <div className="space-y-1">
@@ -987,7 +955,6 @@ export function ShopSettingsPage() {
             </div>
           </div>
           {roleCreateError && <p className="text-sm text-red-300">{roleCreateError}</p>}
-          {roleCreateSuccess && <p className="text-sm text-green-300">{t('shops.rolesAddSuccess')}</p>}
           <GlassButton
             onClick={handleCreateRole}
             disabled={isCreatingRole || !newRoleName.trim()}
@@ -1068,7 +1035,6 @@ export function ShopSettingsPage() {
             onChange={(e) => {
               setNewMemberUserId(e.target.value);
               setMemberAddError(null);
-              setMemberAddSuccess(false);
             }}
           />
           <div className="flex flex-col gap-1">
@@ -1087,9 +1053,6 @@ export function ShopSettingsPage() {
           </div>
 
           {memberAddError && <p className="text-sm text-red-300">{memberAddError}</p>}
-          {memberAddSuccess && (
-            <p className="text-sm text-green-300">{t('shops.membersAddSuccess')}</p>
-          )}
 
           <GlassButton onClick={handleAddMember} disabled={isAddingMember}>
             {isAddingMember ? t('shops.membersAdding') : t('shops.membersAdd')}

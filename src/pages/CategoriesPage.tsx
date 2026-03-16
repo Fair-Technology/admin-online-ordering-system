@@ -25,6 +25,7 @@ import type { GetCategoriesByShopApiResponse } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { useToast } from '../contexts/ToastContext';
 
 type Category = NonNullable<GetCategoriesByShopApiResponse>[number];
 
@@ -101,6 +102,7 @@ function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
 export function CategoriesPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { t } = useTranslation();
+  const toast = useToast();
   const { data: categories, isLoading, isError } = useGetCategoriesByShopQuery({ shopId: shopId! });
   const [updateCategory] = useUpdateCategoryMutation();
 
@@ -142,6 +144,7 @@ export function CategoriesPage() {
           }).unwrap()
         )
       );
+      toast.success(t('categories.reordered'));
     } catch {
       setOrderedCategories(snapshot);
       setReorderError(true);

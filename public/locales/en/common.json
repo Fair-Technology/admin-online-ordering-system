@@ -148,7 +148,9 @@
     "shopCountryPlaceholder": "Select country",
     "taxRatesTitle": "Tax Rates",
     "taxRatesEmpty": "No tax rates configured.",
-    "taxRatesNote": "Seeded from country ({{country}}) on shop creation."
+    "taxRatesNote": "Seeded from country ({{country}}) on shop creation.",
+    "created": "Shop created.",
+    "logoSaved": "Logo updated."
   },
   "products": {
     "addProduct": "+ Add Product",
@@ -210,7 +212,10 @@
     "scheduleThu": "Thu",
     "scheduleFri": "Fri",
     "scheduleSat": "Sat",
-    "scheduleSun": "Sun"
+    "scheduleSun": "Sun",
+    "created": "Product created.",
+    "saved": "Product saved.",
+    "deleted": "Product deleted."
   },
   "variants": {
     "title": "Variants",
@@ -280,6 +285,10 @@
     "name": "Name",
     "namePlaceholder": "Category name",
     "hasStar": "Show star icon",
-    "deleteTypeToConfirm": "Type \"{{name}}\" to confirm"
+    "deleteTypeToConfirm": "Type \"{{name}}\" to confirm",
+    "created": "Category created.",
+    "saved": "Category saved.",
+    "deleted": "Category deleted.",
+    "reordered": "Category order saved."
   }
 }

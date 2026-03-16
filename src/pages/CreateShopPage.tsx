@@ -7,6 +7,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
+import { useToast } from '../contexts/ToastContext';
 
 const COUNTRY_OPTIONS = [
   { code: 'AU', label: 'Australia' },
@@ -41,6 +42,7 @@ const COUNTRY_DEFAULTS: Record<string, { currency: string; timezone: string }> =
 export function CreateShopPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
   const [createShop, { isLoading, isError, error }] = useCreateShopMutation();
 
   const [form, setForm] = useState<Partial<CreateShopRequest>>({
@@ -75,6 +77,7 @@ export function CreateShopPage() {
     e.preventDefault();
     try {
       const shop = await createShop({ createShopRequest: form as CreateShopRequest }).unwrap();
+      toast.success(t('shops.created'));
       navigate(`/shops/${shop.id}`);
     } catch {
       // error shown below

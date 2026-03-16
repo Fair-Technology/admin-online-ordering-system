@@ -8,6 +8,7 @@ import './index.css'
 import { store } from './store'
 import { router } from './router'
 import { msalInstance } from './auth/msalConfig'
+import { ToastProvider } from './contexts/ToastContext'
 
 ;(async () => {
   console.log('[env]', {
@@ -24,7 +25,9 @@ import { msalInstance } from './auth/msalConfig'
       <Suspense fallback={null}>
         <MsalProvider instance={msalInstance}>
           <Provider store={store}>
-            <RouterProvider router={router} />
+            <ToastProvider>
+              <RouterProvider router={router} />
+            </ToastProvider>
           </Provider>
         </MsalProvider>
       </Suspense>

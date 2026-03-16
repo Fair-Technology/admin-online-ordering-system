@@ -16,6 +16,7 @@ import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { CategoryPicker } from '../components/ui/CategoryPicker';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { getCurrencySymbol } from '../utils/currency';
+import { useToast } from '../contexts/ToastContext';
 
 type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 type VariantGroup  = { id: string; name: string; options: VariantOption[] };
@@ -26,6 +27,7 @@ export function CreateProductPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
 
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
@@ -180,6 +182,7 @@ export function CreateProductPage() {
         }).unwrap();
       }
 
+      toast.success(t('products.created'));
       navigate(`/shops/${shopId}`);
     } catch {
       setIsUploading(false);

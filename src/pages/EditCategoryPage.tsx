@@ -8,11 +8,13 @@ import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
+import { useToast } from '../contexts/ToastContext';
 
 export function EditCategoryPage() {
   const { shopId, categoryId } = useParams<{ shopId: string; categoryId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
 
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: category, isLoading, isError } = useGetCategoryByIdQuery(
@@ -45,6 +47,7 @@ export function EditCategoryPage() {
         categoryId: categoryId!,
         updateCategoryRequest: { name },
       }).unwrap();
+      toast.success(t('categories.saved'));
       navigate(`/shops/${shopId}/categories`);
     } catch {
       // error shown below
@@ -54,6 +57,7 @@ export function EditCategoryPage() {
   const handleDelete = async () => {
     try {
       await deleteCategory({ shopId: shopId!, categoryId: categoryId! }).unwrap();
+      toast.success(t('categories.deleted'));
       navigate(`/shops/${shopId}/categories`);
     } catch {
       setConfirmingDelete(false);

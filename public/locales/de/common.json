@@ -148,7 +148,9 @@
     "shopCountryPlaceholder": "Land auswählen",
     "taxRatesTitle": "Steuersätze",
     "taxRatesEmpty": "Keine Steuersätze konfiguriert.",
-    "taxRatesNote": "Beim Erstellen des Shops aus dem Land ({{country}}) übernommen."
+    "taxRatesNote": "Beim Erstellen des Shops aus dem Land ({{country}}) übernommen.",
+    "created": "Shop erstellt.",
+    "logoSaved": "Logo aktualisiert."
   },
   "products": {
     "addProduct": "+ Produkt hinzufügen",
@@ -210,7 +212,10 @@
     "scheduleThu": "Do",
     "scheduleFri": "Fr",
     "scheduleSat": "Sa",
-    "scheduleSun": "So"
+    "scheduleSun": "So",
+    "created": "Produkt erstellt.",
+    "saved": "Produkt gespeichert.",
+    "deleted": "Produkt gelöscht."
   },
   "variants": {
     "title": "Varianten",
@@ -280,6 +285,10 @@
     "name": "Name",
     "namePlaceholder": "Kategoriename",
     "hasStar": "Stern-Symbol anzeigen",
-    "deleteTypeToConfirm": "Geben Sie \"{{name}}\" zur Bestätigung ein"
+    "deleteTypeToConfirm": "Geben Sie \"{{name}}\" zur Bestätigung ein",
+    "created": "Kategorie erstellt.",
+    "saved": "Kategorie gespeichert.",
+    "deleted": "Kategorie gelöscht.",
+    "reordered": "Kategoriereihenfolge gespeichert."
   }
 }
