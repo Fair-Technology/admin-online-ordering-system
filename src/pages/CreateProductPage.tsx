@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { ProductSchedule } from '../services/api';
 import {
   useCreateProductMutation,
   useGetCategoriesByShopQuery,
@@ -43,6 +44,16 @@ export function CreateProductPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
   const [addonGroups, setAddonGroups] = useState<AddonGroup[]>([]);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [noEndDate, setNoEndDate] = useState(false);
+  const [schedule, setSchedule] = useState({
+    startDate: '',
+    endDate: '',
+    startTime: '',
+    endTime: '',
+    daysOfWeek: [] as number[],
+  });
+  const [scheduleError, setScheduleError] = useState(false);
 
   const addVariantGroup = () => {
     setVariantGroups(gs => [...gs, { id: crypto.randomUUID(), name: '', options: [] }]);
@@ -108,7 +119,28 @@ export function CreateProductPage() {
     const hasNoTaxRate = !selectedTaxRateId;
     setCategoryError(hasNoCategory);
     setTaxRateError(hasNoTaxRate);
-    if (hasNoCategory || hasNoTaxRate) return;
+
+    // Validate schedule
+    let scheduleInvalid = false;
+    if (scheduleEnabled) {
+      const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
+      const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
+      if (endDateInvalid || endTimeInvalid) scheduleInvalid = true;
+    }
+    setScheduleError(scheduleInvalid);
+    if (hasNoCategory || hasNoTaxRate || scheduleInvalid) return;
+
+    let schedulePayload: ProductSchedule | null = null;
+    if (scheduleEnabled) {
+      schedulePayload = {
+        startDate: schedule.startDate,
+        endDate: noEndDate ? null : (schedule.endDate || null),
+        startTime: schedule.startTime || null,
+        endTime: schedule.endTime || null,
+        daysOfWeek: schedule.daysOfWeek.length > 0 ? schedule.daysOfWeek : undefined,
+      };
+    }
+
     try {
       const product = await createProduct({
         createProductRequest: {
@@ -120,6 +152,7 @@ export function CreateProductPage() {
           taxRateId: selectedTaxRateId,
           variantGroups: variantGroups.length > 0 ? variantGroups : undefined,
           addonGroups: addonGroups.length > 0 ? addonGroups : undefined,
+          schedule: schedulePayload,
         },
       }).unwrap();
 
@@ -186,6 +219,12 @@ export function CreateProductPage() {
       {taxRateError && (
         <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
           <p className="text-sm text-red-300">{t('products.taxRateRequired')}</p>
+        </GlassCard>
+      )}
+
+      {scheduleError && (
+        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
+          <p className="text-sm text-red-300">{t('products.scheduleInvalid')}</p>
         </GlassCard>
       )}
 
@@ -402,6 +441,105 @@ export function CreateProductPage() {
                 </div>
               </div>
             ))}
+          </GlassCard>
+
+          {/* Schedule */}
+          <GlassCard className="p-4 space-y-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={scheduleEnabled}
+                onChange={(e) => setScheduleEnabled(e.target.checked)}
+                className="accent-white/80"
+              />
+              <span className="text-sm font-medium text-white/70">{t('products.scheduleTitle')}</span>
+            </label>
+            <p className="text-xs text-white/40">{t('products.scheduleToggle')}</p>
+            {scheduleEnabled && (
+              <div className="space-y-3 pt-1">
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-1 flex-1">
+                    <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleStartDate')}</label>
+                    <input
+                      type="date"
+                      required
+                      value={schedule.startDate}
+                      onChange={(e) => setSchedule((s) => ({ ...s, startDate: e.target.value }))}
+                      className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                    />
+                  </div>
+                  {!noEndDate && (
+                    <div className="flex flex-col gap-1 flex-1">
+                      <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleEndDate')}</label>
+                      <input
+                        type="date"
+                        value={schedule.endDate}
+                        onChange={(e) => setSchedule((s) => ({ ...s, endDate: e.target.value }))}
+                        className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                      />
+                    </div>
+                  )}
+                </div>
+                <label className="flex items-center gap-2 text-xs text-white/50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={noEndDate}
+                    onChange={(e) => setNoEndDate(e.target.checked)}
+                    className="accent-white/80"
+                  />
+                  {t('products.scheduleNoEndDate')}
+                </label>
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-1 flex-1">
+                    <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleStartTime')}</label>
+                    <input
+                      type="time"
+                      value={schedule.startTime}
+                      onChange={(e) => setSchedule((s) => ({ ...s, startTime: e.target.value }))}
+                      className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 flex-1">
+                    <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleEndTime')}</label>
+                    <input
+                      type="time"
+                      value={schedule.endTime}
+                      onChange={(e) => setSchedule((s) => ({ ...s, endTime: e.target.value }))}
+                      className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleDaysOfWeek')}</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {([1,2,3,4,5,6,0] as number[]).map((day) => {
+                      const keys = ['scheduleSun','scheduleMon','scheduleTue','scheduleWed','scheduleThu','scheduleFri','scheduleSat'];
+                      const label = t(`products.${keys[day]}`);
+                      const selected = schedule.daysOfWeek.includes(day);
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => setSchedule((s) => ({
+                            ...s,
+                            daysOfWeek: selected
+                              ? s.daysOfWeek.filter((d) => d !== day)
+                              : [...s.daysOfWeek, day],
+                          }))}
+                          className={`text-xs px-2.5 py-1 rounded-md border transition-colors ${
+                            selected
+                              ? 'bg-white/20 border-white/40 text-white'
+                              : 'bg-transparent border-white/15 text-white/40 hover:border-white/30 hover:text-white/60'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </GlassCard>
 
           <div className="flex flex-col gap-1.5">

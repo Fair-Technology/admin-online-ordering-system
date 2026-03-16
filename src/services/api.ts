@@ -423,6 +423,13 @@ export type GetOrderByPaymentIntentApiArg = {
   /** Stripe PaymentIntent ID (starts with pi_) */
   paymentIntentId: string;
 };
+export type ProductSchedule = {
+  startDate: string;
+  endDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  daysOfWeek?: number[];
+};
 export type ShopMembersResponse = {
   members: {
     userId: string;
@@ -839,6 +846,8 @@ export type ProductResponse = {
   isDeleted?: boolean;
   /** Tax rate ID from the shop's taxRates list, or null */
   taxRateId?: string | null;
+  /** Optional availability schedule */
+  schedule?: ProductSchedule | null;
   /** Creation timestamp */
   createdAt?: string;
   /** Last update timestamp */
@@ -881,6 +890,8 @@ export type CreateProductRequest = {
     maxSelectable: number;
     options: { id: string; name: string; priceDelta: number; isAvailable: boolean }[];
   }[];
+  /** Optional availability schedule; null = no time restriction */
+  schedule?: ProductSchedule | null;
 };
 export type UpdateProductRequest = {
   /** Shop ID (required for partition key) */
@@ -932,6 +943,8 @@ export type UpdateProductRequest = {
       isAvailable: boolean;
     }[];
   }[];
+  /** Optional availability schedule; null = no time restriction */
+  schedule?: ProductSchedule | null;
 };
 export type GenerateImageUploadUrlResponse = {
   /** Unique identifier for the image */

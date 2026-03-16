@@ -5,6 +5,7 @@ import { useGetProductsByShopQuery, useUpdateProductMutation } from '../services
 import type { ProductResponse } from '../services/api';
 import { glassButtonClass } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { Calendar } from 'lucide-react';
 
 function AvailabilityToggle({
   product,
@@ -102,7 +103,12 @@ function ProductCard({ product, shopId }: { product: ProductResponse; shopId: st
         )}
       </div>
       <div className="p-3">
-        <p className="font-medium text-white text-sm leading-snug truncate">{product.name}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="font-medium text-white text-sm leading-snug truncate">{product.name}</p>
+          {product.schedule && (
+            <Calendar className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+          )}
+        </div>
         <p className="text-white/50 text-xs mt-0.5">${((product.price ?? 0) / 100).toFixed(2)}</p>
         <AvailabilityToggle product={product} shopId={shopId} />
       </div>
