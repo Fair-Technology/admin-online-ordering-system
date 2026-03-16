@@ -109,6 +109,7 @@ const injectedRtkApi = api.injectEndpoints({
           shopId: queryArg.shopId,
         },
       }),
+      providesTags: (result, error, arg) => [{ type: 'Products', id: arg.productId }],
     }),
     updateProduct: build.mutation<
       UpdateProductApiResponse,
@@ -119,6 +120,10 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.updateProductRequest,
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: 'Products', id: arg.productId },
+        'Products',
+      ],
     }),
     deleteProduct: build.mutation<
       DeleteProductApiResponse,

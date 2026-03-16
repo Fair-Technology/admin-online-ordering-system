@@ -28,10 +28,10 @@ export function EditProductPage() {
   const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
   const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
-  const { data: product, isLoading, isError } = useGetProductByIdQuery({
-    productId: productId!,
-    shopId: shopId!,
-  });
+  const { data: product, isLoading, isError } = useGetProductByIdQuery(
+    { productId: productId!, shopId: shopId! },
+    { refetchOnMountOrArgChange: true },
+  );
   const [updateProduct, { isLoading: isUpdating, isError: isUpdateError }] =
     useUpdateProductMutation();
   const [deleteProduct, { isLoading: isDeleting, isError: isDeleteError }] =
