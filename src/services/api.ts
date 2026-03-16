@@ -58,7 +58,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/shops/${queryArg.shopId}/categories/${queryArg.categoryId}`,
       }),
-      providesTags: (result, error, arg) => [{ type: 'Categories', id: arg.categoryId }],
+      providesTags: (_result, _error, arg) => [{ type: 'Categories', id: arg.categoryId }],
     }),
     updateCategory: build.mutation<
       UpdateCategoryApiResponse,
@@ -69,7 +69,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.updateCategoryRequest,
       }),
-      invalidatesTags: (result, error, arg) => [
+      invalidatesTags: (_result, _error, arg) => [
         { type: 'Categories', id: arg.categoryId },
         'Categories',
       ],
@@ -117,7 +117,7 @@ const injectedRtkApi = api.injectEndpoints({
           shopId: queryArg.shopId,
         },
       }),
-      providesTags: (result, error, arg) => [{ type: 'Products', id: arg.productId }],
+      providesTags: (_result, _error, arg) => [{ type: 'Products', id: arg.productId }],
     }),
     updateProduct: build.mutation<
       UpdateProductApiResponse,
@@ -128,7 +128,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.updateProductRequest,
       }),
-      invalidatesTags: (result, error, arg) => [
+      invalidatesTags: (_result, _error, arg) => [
         { type: 'Products', id: arg.productId },
         'Products',
       ],
