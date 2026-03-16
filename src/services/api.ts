@@ -38,6 +38,7 @@ const injectedRtkApi = api.injectEndpoints({
       GetCategoriesByShopApiArg
     >({
       query: (queryArg) => ({ url: `/shops/${queryArg.shopId}/categories` }),
+      providesTags: ['Categories'],
     }),
     createCategory: build.mutation<
       CreateCategoryApiResponse,
@@ -48,6 +49,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.createCategoryRequest,
       }),
+      invalidatesTags: ['Categories'],
     }),
     getCategoryById: build.query<
       GetCategoryByIdApiResponse,
@@ -56,6 +58,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/shops/${queryArg.shopId}/categories/${queryArg.categoryId}`,
       }),
+      providesTags: (result, error, arg) => [{ type: 'Categories', id: arg.categoryId }],
     }),
     updateCategory: build.mutation<
       UpdateCategoryApiResponse,
@@ -66,6 +69,10 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.updateCategoryRequest,
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: 'Categories', id: arg.categoryId },
+        'Categories',
+      ],
     }),
     deleteCategory: build.mutation<
       DeleteCategoryApiResponse,
@@ -75,6 +82,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/shops/${queryArg.shopId}/categories/${queryArg.categoryId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ['Categories'],
     }),
     getProductsByShop: build.query<
       GetProductsByShopApiResponse,
@@ -728,6 +736,8 @@ export type CategoryResponse = {
   name?: string;
   /** Sort order for display */
   sortOrder?: number;
+  /** Whether to show a star icon in the frontend */
+  hasStar?: boolean;
   /** Whether category is deleted */
   isDeleted?: boolean;
   /** Creation timestamp */
@@ -741,12 +751,16 @@ export type CreateCategoryRequest = {
   name: string;
   /** Sort order for display */
   sortOrder?: number;
+  /** Whether to show a star icon in the frontend */
+  hasStar?: boolean;
 };
 export type UpdateCategoryRequest = {
   /** Category name */
   name?: string;
   /** Sort order for display */
   sortOrder?: number;
+  /** Whether to show a star icon in the frontend */
+  hasStar?: boolean;
 };
 export type ProductResponse = {
   /** Product ID */

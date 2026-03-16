@@ -20,13 +20,14 @@ export function CreateCategoryPage() {
   const [createCategory, { isLoading, isError, error }] = useCreateCategoryMutation();
 
   const [name, setName] = useState('');
+  const [hasStar, setHasStar] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createCategory({
         shopId: shopId!,
-        createCategoryRequest: { name, sortOrder: categories?.length ?? 0 },
+        createCategoryRequest: { name, sortOrder: categories?.length ?? 0, hasStar },
       }).unwrap();
       navigate(`/shops/${shopId}/categories`);
     } catch {
@@ -61,6 +62,15 @@ export function CreateCategoryPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+          <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hasStar}
+              onChange={(e) => setHasStar(e.target.checked)}
+              className="h-4 w-4 rounded"
+            />
+            {t('categories.hasStar')}
+          </label>
           <GlassButton type="submit" disabled={isLoading} className="w-full">
             {isLoading ? t('categories.creating') : t('categories.create')}
           </GlassButton>

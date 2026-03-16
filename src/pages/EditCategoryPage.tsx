@@ -15,10 +15,10 @@ export function EditCategoryPage() {
   const { t } = useTranslation();
 
   const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
-  const { data: category, isLoading, isError } = useGetCategoryByIdQuery({
-    shopId: shopId!,
-    categoryId: categoryId!,
-  });
+  const { data: category, isLoading, isError } = useGetCategoryByIdQuery(
+    { shopId: shopId!, categoryId: categoryId! },
+    { refetchOnMountOrArgChange: true },
+  );
   const [updateCategory, { isLoading: isUpdating, isError: isUpdateError }] =
     useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: isDeleting, isError: isDeleteError }] =

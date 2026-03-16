@@ -53,7 +53,10 @@ export function ShopSettingsPage() {
   const { t } = useTranslation();
   const { accounts } = useMsal();
   const currentUserId = accounts[0]?.localAccountId;
-  const { data: shop, isLoading, isError, refetch } = useGetShopByIdQuery({ shopId: shopId! });
+  const { data: shop, isLoading, isError, refetch } = useGetShopByIdQuery(
+    { shopId: shopId! },
+    { refetchOnMountOrArgChange: true },
+  );
   const [generateShopLogoUploadUrl] = useGenerateShopLogoUploadUrlMutation();
   const [setShopLogo] = useSetShopLogoMutation();
   const [updateShop] = useUpdateShopMutation();

@@ -261,6 +261,7 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "name": "Name",
-    "namePlaceholder": "Category name"
+    "namePlaceholder": "Category name",
+    "hasStar": "Show star icon"
   }
 }

@@ -16,7 +16,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Star } from 'lucide-react';
 import {
   useGetCategoriesByShopQuery,
   useUpdateCategoryMutation,
@@ -35,6 +35,7 @@ interface SortableCategoryItemProps {
 
 function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
   const { t } = useTranslation();
+  const [updateCategory, { isLoading: isToggling }] = useUpdateCategoryMutation();
   const {
     attributes,
     listeners,
@@ -48,6 +49,14 @@ function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
+  };
+
+  const handleStarToggle = async () => {
+    await updateCategory({
+      shopId,
+      categoryId: cat.id!,
+      updateCategoryRequest: { hasStar: !cat.hasStar },
+    });
   };
 
   return (
@@ -68,12 +77,23 @@ function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
         </button>
         <p className="font-medium text-white">{cat.name}</p>
       </div>
-      <Link
-        to={`/shops/${shopId}/categories/${cat.id}/edit`}
-        className={glassButtonClass('secondary', 'sm')}
-      >
-        {t('categories.edit')}
-      </Link>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={isToggling}
+          onClick={handleStarToggle}
+          aria-label={t('categories.hasStar')}
+          className={`p-1.5 rounded transition-colors ${cat.hasStar ? 'text-yellow-400 hover:text-yellow-300' : 'text-white/20 hover:text-white/50'}`}
+        >
+          <Star size={16} fill={cat.hasStar ? 'currentColor' : 'none'} />
+        </button>
+        <Link
+          to={`/shops/${shopId}/categories/${cat.id}/edit`}
+          className={glassButtonClass('secondary', 'sm')}
+        >
+          {t('categories.edit')}
+        </Link>
+      </div>
     </div>
   );
 }

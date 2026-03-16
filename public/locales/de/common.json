@@ -261,6 +261,7 @@
     "saving": "Wird gespeichert...",
     "saveChanges": "Änderungen speichern",
     "name": "Name",
-    "namePlaceholder": "Kategoriename"
+    "namePlaceholder": "Kategoriename",
+    "hasStar": "Stern-Symbol anzeigen"
   }
 }
