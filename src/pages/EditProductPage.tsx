@@ -692,7 +692,7 @@ export function EditProductPage() {
                 placeholder={product.name}
               />
               <div className="flex gap-2">
-                <GlassButton variant="danger" disabled={isDeleting || deleteConfirmName !== product.name} onClick={handleDelete}>
+                <GlassButton variant="danger" disabled={isDeleting || deleteConfirmName.toLowerCase() !== product.name?.toLowerCase()} onClick={handleDelete}>
                   {isDeleting ? t('products.deleting') : t('products.confirmDelete')}
                 </GlassButton>
                 <GlassButton variant="ghost" disabled={isDeleting} onClick={() => { setConfirmingDelete(false); setDeleteConfirmName(''); }}>

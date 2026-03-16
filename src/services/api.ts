@@ -144,6 +144,10 @@ const injectedRtkApi = api.injectEndpoints({
           shopId: queryArg.shopId,
         },
       }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Products', id: arg.productId },
+        'Products',
+      ],
     }),
     generateUploadUrl: build.mutation<
       GenerateUploadUrlApiResponse,
