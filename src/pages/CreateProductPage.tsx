@@ -34,6 +34,8 @@ export function CreateProductPage() {
   const { data: categories } = useGetCategoriesByShopQuery({ shopId: shopId! });
   const taxRates = shop?.taxRates ?? [];
   const hasTaxRates = taxRates.length > 0;
+  const categoriesList = (categories ?? []).filter((c): c is { id: string; name: string } => !!c.id && !!c.name);
+  const taxRatesList = taxRates.filter((r): r is { id: string; label: string } => !!r.id && !!r.label);
 
   // ── Wizard state ──────────────────────────────────────────────────
   const [step, setStep] = useState<StepNum>(1);
@@ -243,10 +245,10 @@ export function CreateProductPage() {
           )}
           {step === 2 && (
             <Step2Categories
-              categories={categories ?? []}
+              categories={categoriesList}
               selectedCategoryIds={selectedCategoryIds}
               setSelectedCategoryIds={setSelectedCategoryIds}
-              taxRates={taxRates}
+              taxRates={taxRatesList}
               selectedTaxRateId={selectedTaxRateId}
               setSelectedTaxRateId={setSelectedTaxRateId}
               categoryError={categoryError}
@@ -283,8 +285,8 @@ export function CreateProductPage() {
             <Step5Review
               form={form} imageFile={imageFile}
               selectedCategoryIds={selectedCategoryIds}
-              categories={categories ?? []}
-              taxRates={taxRates}
+              categories={categoriesList}
+              taxRates={taxRatesList}
               selectedTaxRateId={selectedTaxRateId}
               variantGroups={variantGroups} addonGroups={addonGroups}
               scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule}
