@@ -219,6 +219,28 @@ const injectedRtkApi = api.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getVisiblePlans: build.query<GetVisiblePlansApiResponse, void>({
+      query: () => ({ url: '/plans' }),
+      providesTags: ['Plans'],
+    }),
+    getShopSubscription: build.query<GetShopSubscriptionApiResponse, GetShopSubscriptionApiArg>({
+      query: ({ shopId }) => ({ url: `/shops/${shopId}/subscription` }),
+      providesTags: (_r, _e, { shopId }) => [{ type: 'Subscriptions' as const, id: shopId }],
+    }),
+    getPlanPricing: build.query<GetPlanPricingApiResponse, GetPlanPricingApiArg>({
+      query: ({ planId }) => ({ url: `/plans/${planId}/pricing` }),
+      providesTags: (_r, _e, { planId }) => [{ type: 'Plans' as const, id: `pricing-${planId}` }],
+    }),
+    createSubscriptionCheckout: build.mutation<
+      CreateSubscriptionCheckoutApiResponse,
+      CreateSubscriptionCheckoutApiArg
+    >({
+      query: ({ shopId, planId, billingInterval }) => ({
+        url: `/shops/${shopId}/subscription/checkout`,
+        method: 'POST',
+        body: { planId, billingInterval },
+      }),
+    }),
     createOrder: build.mutation<CreateOrderApiResponse, CreateOrderApiArg>({
       query: (queryArg) => ({
         url: `/orders`,
@@ -1084,6 +1106,76 @@ export type OrderByPaymentIntentResponse = {
   customerName: string;
   createdAt: string;
 };
+export type SubscriptionStatus = 'free' | 'active' | 'past_due' | 'canceled' | 'expired';
+export type PlanSource = 'default' | 'billing' | 'superadmin_override';
+
+export type PlanLimitResponse = {
+  key: string;
+  value: number;
+};
+
+export type PlanResponse = {
+  id: string;
+  name: string;
+  internalKey: string;
+  isDefault: boolean;
+  isVisible: boolean;
+  sortOrder: number;
+  limits: PlanLimitResponse[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlanPricingResponse = {
+  id: string;
+  planId: string;
+  currency: string;
+  monthlyAmountCents: number;
+  yearlyAmountCents: number;
+  billingPriceIdMonthly: string | null;
+  billingPriceIdYearly: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ShopSubscriptionResponse = {
+  id: string;
+  shopId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  billingInterval: 'monthly' | 'yearly' | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  billingCustomerId: string | null;
+  billingSubscriptionId: string | null;
+  cancelAtPeriodEnd: boolean;
+  planSource: PlanSource;
+  overriddenBy: string | null;
+  overrideReason: string | null;
+  overrideExpiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GetShopSubscriptionApiResponse = {
+  subscription: ShopSubscriptionResponse;
+  plan: PlanResponse | null;
+};
+export type GetShopSubscriptionApiArg = { shopId: string };
+
+export type GetVisiblePlansApiResponse = { plans: PlanResponse[] };
+
+export type GetPlanPricingApiResponse = PlanPricingResponse[];
+export type GetPlanPricingApiArg = { planId: string };
+
+export type CreateSubscriptionCheckoutApiResponse = { url: string };
+export type CreateSubscriptionCheckoutApiArg = {
+  shopId: string;
+  planId: string;
+  billingInterval: 'monthly' | 'yearly';
+};
+
 export const {
   useGetShopsQuery,
   useCreateShopMutation,
@@ -1115,4 +1207,8 @@ export const {
   useCreateShopRoleMutation,
   useUpdateShopRoleMutation,
   useDeleteShopRoleMutation,
+  useGetVisiblePlansQuery,
+  useGetShopSubscriptionQuery,
+  useGetPlanPricingQuery,
+  useCreateSubscriptionCheckoutMutation,
 } = injectedRtkApi;

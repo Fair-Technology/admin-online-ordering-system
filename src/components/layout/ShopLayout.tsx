@@ -45,6 +45,9 @@ export function ShopLayout() {
           <NavLink to={`/shops/${shopId}/categories`} className={tabClass}>
             {t('nav.categories')}
           </NavLink>
+          <NavLink to={`/shops/${shopId}/subscription`} className={tabClass}>
+            {t('nav.subscription')}
+          </NavLink>
           {isOwner && (
             <NavLink to={`/shops/${shopId}/settings`} className={tabClass}>
               {t('nav.settings')}

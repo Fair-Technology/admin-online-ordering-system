@@ -14,6 +14,7 @@ import { ProductsPage } from '../pages/ProductsPage';
 import { CreateProductPage } from '../pages/CreateProductPage';
 import { EditProductPage } from '../pages/EditProductPage';
 import { OrdersPage } from '../pages/OrdersPage';
+import { SubscriptionPage } from '../pages/SubscriptionPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
               { index: true, element: <ProductsPage /> },
               { path: 'orders', element: <OrdersPage /> },
               { path: 'categories', element: <CategoriesPage /> },
+              { path: 'subscription', element: <SubscriptionPage /> },
               { path: 'settings', element: <ShopSettingsPage /> },
             ],
           },
