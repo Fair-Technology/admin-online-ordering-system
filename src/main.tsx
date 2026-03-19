@@ -3,11 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { RouterProvider } from 'react-router-dom'
 import { MsalProvider } from '@azure/msal-react'
-import './i18n'
+import './config/i18n'
 import './index.css'
 import { store } from './store'
 import { router } from './router'
-import { msalInstance } from './auth/msalConfig'
+import { msalInstance } from './config/msalConfig'
 import { ToastProvider } from './contexts/ToastContext'
 
 ;(async () => {

@@ -2,7 +2,7 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { loginRequest } from '../auth/msalConfig';
+import { loginRequest } from '../config/msalConfig';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import bgImage from '../assets/background-image.jpg';

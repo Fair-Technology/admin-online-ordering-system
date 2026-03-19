@@ -4,7 +4,7 @@ import { useMsal } from '@azure/msal-react';
 import { useGetShopByIdQuery } from '../../services/api';
 import { GlassSpinner } from '../ui/GlassSpinner';
 import { Breadcrumb } from '../ui/Breadcrumb';
-import { ShopRoleContext } from '../../contexts/ShopRoleContext';
+import { ShopRoleContext } from '../../features/shops/ShopRoleContext';
 
 export function ShopLayout() {
   const { shopId } = useParams<{ shopId: string }>();

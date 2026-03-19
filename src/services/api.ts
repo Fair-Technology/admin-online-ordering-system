@@ -38,7 +38,7 @@ const injectedRtkApi = api.injectEndpoints({
       GetCategoriesByShopApiArg
     >({
       query: (queryArg) => ({ url: `/shops/${queryArg.shopId}/categories` }),
-      providesTags: ['Categories'],
+      providesTags: (_result, _error, arg) => [{ type: 'Categories' as const, id: `LIST-${arg.shopId}` }],
     }),
     createCategory: build.mutation<
       CreateCategoryApiResponse,
@@ -49,7 +49,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.createCategoryRequest,
       }),
-      invalidatesTags: ['Categories'],
+      invalidatesTags: (_result, _error, arg) => [{ type: 'Categories' as const, id: `LIST-${arg.shopId}` }],
     }),
     getCategoryById: build.query<
       GetCategoryByIdApiResponse,
@@ -69,10 +69,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.updateCategoryRequest,
       }),
-      invalidatesTags: (_result, _error, arg) => [
-        { type: 'Categories', id: arg.categoryId },
-        'Categories',
-      ],
+      invalidatesTags: (_result, _error, arg) => [{ type: 'Categories' as const, id: `LIST-${arg.shopId}` }],
     }),
     deleteCategory: build.mutation<
       DeleteCategoryApiResponse,
@@ -82,7 +79,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/shops/${queryArg.shopId}/categories/${queryArg.categoryId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ['Categories'],
+      invalidatesTags: (_result, _error, arg) => [{ type: 'Categories' as const, id: `LIST-${arg.shopId}` }],
     }),
     getProductsByShop: build.query<
       GetProductsByShopApiResponse,
@@ -94,7 +91,7 @@ const injectedRtkApi = api.injectEndpoints({
           shopId: queryArg.shopId,
         },
       }),
-      providesTags: ['Products'],
+      providesTags: (_result, _error, arg) => [{ type: 'Products' as const, id: `LIST-${arg.shopId}` }],
     }),
     createProduct: build.mutation<
       CreateProductApiResponse,
@@ -128,10 +125,10 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.updateProductRequest,
       }),
-      invalidatesTags: (_result, _error, arg) => [
-        { type: 'Products', id: arg.productId },
-        'Products',
-      ],
+      invalidatesTags: (_result, _error, arg) =>
+        arg.updateProductRequest.shopId
+          ? [{ type: 'Products' as const, id: `LIST-${arg.updateProductRequest.shopId}` }]
+          : [{ type: 'Products' as const, id: 'LIST' }],
     }),
     deleteProduct: build.mutation<
       DeleteProductApiResponse,
@@ -168,6 +165,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.addProductImageRequest,
       }),
+      invalidatesTags: (_result, _error, arg) => [{ type: 'Products' as const, id: `LIST-${arg.shopId}` }],
     }),
     generateShopLogoUploadUrl: build.mutation<
       GenerateShopLogoUploadUrlApiResponse,
@@ -269,6 +267,7 @@ const injectedRtkApi = api.injectEndpoints({
           pageSize: queryArg.pageSize,
         },
       }),
+      providesTags: (_result, _error, arg) => [{ type: 'Orders' as const, id: `LIST-${arg.shopId}` }],
     }),
     getOrderByPaymentIntent: build.query<
       GetOrderByPaymentIntentApiResponse,

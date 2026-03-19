@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { msalInstance, apiRequest } from '../auth/msalConfig';
+import { msalInstance, apiRequest } from '../config/msalConfig';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_BASE_URL,
@@ -21,6 +21,6 @@ const rawBaseQuery = fetchBaseQuery({
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: rawBaseQuery,
-  tagTypes: ['Products', 'Categories', 'Plans', 'Subscriptions'],
+  tagTypes: ['Products', 'Categories', 'Orders', 'Plans', 'Subscriptions'],
   endpoints: () => ({}),
 });

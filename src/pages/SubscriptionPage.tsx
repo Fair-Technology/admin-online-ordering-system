@@ -266,26 +266,8 @@ export function SubscriptionPage() {
         </div>
       )}
 
-      {/* Header row: title left, toggle right */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-white">{t('nav.subscription')}</h2>
-          {subscription && (
-            <p className="text-sm text-white/45 mt-1">
-              <span className="capitalize">{subscription.status}</span>
-              {subscription.currentPeriodEnd && (
-                <>
-                  {' · '}
-                  {t('subscription.periodEnd')}{' '}
-                  {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                </>
-              )}
-              {subscription.planSource === 'superadmin_override' && (
-                <> · {t('subscription.overrideNote')}</>
-              )}
-            </p>
-          )}
-        </div>
+      {/* Header row: toggle right */}
+      <div className="flex justify-end">
 
         {/* Pill toggle matching the screenshot */}
         <div className="flex items-center p-1 rounded-xl bg-white/10 border border-white/15 shrink-0">
