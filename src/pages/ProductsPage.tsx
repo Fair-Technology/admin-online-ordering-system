@@ -130,6 +130,71 @@ function ProductDetailView({
             </div>
           </div>
         )}
+
+        {/* Variant groups */}
+        {(product.variantGroups?.length ?? 0) > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              {t('variants.title')}
+            </p>
+            <div className="space-y-3">
+              {product.variantGroups!.map((group, gi) => (
+                <div key={group.id ?? gi} className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
+                    <p className="text-xs font-semibold text-gray-700">{group.name}</p>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {(group.options ?? []).map((opt, oi) => (
+                      <div key={opt.id ?? oi} className="flex items-center justify-between px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${opt.isAvailable !== false ? 'bg-emerald-400' : 'bg-gray-300'}`} />
+                          <span className="text-sm text-gray-700">{opt.name}</span>
+                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">
+                          {`+${currencySymbol}${((opt.priceDelta ?? 0) / 100).toFixed(2)}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Addon groups */}
+        {(product.addonGroups?.length ?? 0) > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              {t('addons.title')}
+            </p>
+            <div className="space-y-3">
+              {product.addonGroups!.map((group, gi) => (
+                <div key={group.id ?? gi} className="rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <p className="text-xs font-semibold text-gray-700">{group.name}</p>
+                    <span className="text-xs text-gray-400">
+                      {t('addons.min')} {group.minSelectable ?? 0} · {t('addons.max')} {group.maxSelectable ?? 1}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {(group.options ?? []).map((opt, oi) => (
+                      <div key={opt.id ?? oi} className="flex items-center justify-between px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${opt.isAvailable !== false ? 'bg-emerald-400' : 'bg-gray-300'}`} />
+                          <span className="text-sm text-gray-700">{opt.name}</span>
+                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">
+                          {`+${currencySymbol}${((opt.priceDelta ?? 0) / 100).toFixed(2)}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
@@ -485,18 +550,23 @@ function ProductEditView({
 // ── Combined product modal (view → edit) ──────────────────────────────────────
 
 function ProductModal({
-  product,
+  productId,
   shopId,
   onClose,
   onDeleted,
 }: {
-  product: ProductResponse;
+  productId: string;
   shopId: string;
   onClose: () => void;
   onDeleted: () => void;
 }) {
+  const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId });
   const { data: categories } = useGetCategoriesByShopQuery({ shopId });
+  const { data: fullProduct, isLoading: productLoading } = useGetProductByIdQuery(
+    { productId, shopId },
+    { refetchOnMountOrArgChange: true },
+  );
 
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -517,16 +587,20 @@ function ProductModal({
           className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          {mode === 'view' ? (
+          {productLoading || !fullProduct ? (
+            <div className="flex-1 flex items-center justify-center p-10">
+              <GlassSpinner label={t('products.loadingProduct')} />
+            </div>
+          ) : mode === 'view' ? (
             <ProductDetailView
-              product={product}
+              product={fullProduct}
               currencySymbol={currencySymbol}
               onEdit={() => setMode('edit')}
               onClose={onClose}
             />
           ) : (
             <ProductEditView
-              productId={product.id!}
+              productId={productId}
               shopId={shopId}
               currencySymbol={currencySymbol}
               categoriesList={categoriesList}
@@ -779,7 +853,7 @@ function ProductTable({
   onSelect,
 }: {
   products: ProductResponse[];
-  onSelect: (product: ProductResponse) => void;
+  onSelect: (id: string) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -792,7 +866,7 @@ function ProductTable({
         return (
           <div
             key={product.id}
-            onClick={() => onSelect(product)}
+            onClick={() => onSelect(product.id!)}
             className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer group transition-colors"
           >
             {/* Thumbnail */}
@@ -849,7 +923,7 @@ export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
 
-  const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const showAddModal = searchParams.get('addProduct') === '1';
   const closeAddModal = () => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('addProduct'); return n; });
 
@@ -880,11 +954,6 @@ export function ProductsPage() {
   const uncategorized = (products ?? []).filter((p) => !p.categories?.length);
   const isEmpty = !products?.length;
 
-  // Keep the selected product in sync with the latest list data (e.g. after edit)
-  const liveSelected = selectedProduct
-    ? (products ?? []).find((p) => p.id === selectedProduct.id) ?? selectedProduct
-    : null;
-
   return (
     <>
       <div className="space-y-6">
@@ -898,7 +967,7 @@ export function ProductsPage() {
             <GlassCard>
               <ProductTable
                 products={byCategory.get(cat.id)!}
-                onSelect={setSelectedProduct}
+                onSelect={setSelectedProductId}
               />
             </GlassCard>
           </section>
@@ -910,18 +979,18 @@ export function ProductsPage() {
               {t('products.uncategorized')}
             </h2>
             <GlassCard>
-              <ProductTable products={uncategorized} onSelect={setSelectedProduct} />
+              <ProductTable products={uncategorized} onSelect={setSelectedProductId} />
             </GlassCard>
           </section>
         )}
       </div>
 
-      {liveSelected && (
+      {selectedProductId && (
         <ProductModal
-          product={liveSelected}
+          productId={selectedProductId}
           shopId={shopId!}
-          onClose={() => setSelectedProduct(null)}
-          onDeleted={() => setSelectedProduct(null)}
+          onClose={() => setSelectedProductId(null)}
+          onDeleted={() => setSelectedProductId(null)}
         />
       )}
 

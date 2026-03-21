@@ -53,29 +53,37 @@ export function TopNav() {
       ? 'flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium'
       : 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 text-sm font-medium transition-colors';
 
+  const divider = <hr className="border-t border-gray-100 my-0.5" />;
+
   const shopNavItems = shopId ? (
     <>
-      <NavLink to={`/shops/${shopId}`} end className={({ isActive }) => navItemClass(isActive)}>
-        <Package size={16} className="flex-shrink-0" />
-        {t('nav.products')}
-      </NavLink>
       <NavLink to={`/shops/${shopId}/orders`} className={({ isActive }) => navItemClass(isActive)}>
         <ClipboardList size={16} className="flex-shrink-0" />
         {t('nav.orders')}
       </NavLink>
+      {divider}
+      <NavLink to={`/shops/${shopId}`} end className={({ isActive }) => navItemClass(isActive)}>
+        <Package size={16} className="flex-shrink-0" />
+        {t('nav.products')}
+      </NavLink>
+      {divider}
       <NavLink to={`/shops/${shopId}/categories`} className={({ isActive }) => navItemClass(isActive)}>
         <Tag size={16} className="flex-shrink-0" />
         {t('nav.categories')}
       </NavLink>
+      {divider}
       <NavLink to={`/shops/${shopId}/subscription`} className={({ isActive }) => navItemClass(isActive)}>
         <CreditCard size={16} className="flex-shrink-0" />
         {t('nav.subscription')}
       </NavLink>
       {isOwner && (
-        <NavLink to={`/shops/${shopId}/settings`} className={({ isActive }) => navItemClass(isActive)}>
-          <Settings size={16} className="flex-shrink-0" />
-          {t('nav.settings')}
-        </NavLink>
+        <>
+          {divider}
+          <NavLink to={`/shops/${shopId}/settings`} className={({ isActive }) => navItemClass(isActive)}>
+            <Settings size={16} className="flex-shrink-0" />
+            {t('nav.settings')}
+          </NavLink>
+        </>
       )}
     </>
   ) : (
@@ -136,7 +144,7 @@ export function TopNav() {
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {shopNavItems}
       </nav>
 
@@ -227,7 +235,7 @@ export function TopNav() {
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {shopNavItems}
       </nav>
 

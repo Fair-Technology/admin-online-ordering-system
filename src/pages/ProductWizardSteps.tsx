@@ -2,6 +2,7 @@
  * Shared step components for the Create / Edit product wizards.
  */
 import { useTranslation } from 'react-i18next';
+import { ArrowRight } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
@@ -140,31 +141,44 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
           {t('products.image')}{' '}
           <span className="text-gray-300 font-normal">{t('products.imageOptionalNote')}</span>
         </p>
-        {(existingImageUrl || imageFile) && (
-          <div className="flex items-start gap-3">
-            {existingImageUrl && (
-              <div className="flex flex-col gap-1 items-center">
-                <img
-                  src={existingImageUrl}
-                  alt={t('products.currentImage')}
-                  className={`w-16 h-16 rounded-xl object-cover border border-gray-200 ${imageFile ? 'opacity-50' : ''}`}
-                />
-                <span className="text-xs text-gray-400">{t('products.currentImage')}</span>
+        {/* Image preview */}
+        {existingImageUrl && imageFile ? (
+          /* Replacing existing: old (with overlay) → arrow → new */
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+                <img src={existingImageUrl} alt={t('products.currentImage')} className="w-full h-full object-cover" />
+                {/* Dark overlay to indicate it's being replaced */}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <span className="text-white text-lg font-light leading-none">×</span>
+                </div>
               </div>
-            )}
-            {imageFile && (
-              <div className="flex flex-col gap-1 items-center">
-                <img
-                  src={URL.createObjectURL(imageFile)}
-                  alt={t('products.newImage')}
-                  className="w-16 h-16 rounded-xl object-cover border border-gray-200"
-                />
-                <span className="text-xs text-gray-400">{t('products.newImage')}</span>
-              </div>
-            )}
+              <span className="text-xs text-gray-400">{t('products.currentImage')}</span>
+            </div>
+
+            <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-0 mb-4" />
+
+            <div className="flex flex-col items-center gap-1">
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt={t('products.newImage')}
+                className="w-16 h-16 rounded-xl object-cover border border-gray-200 flex-shrink-0"
+              />
+              <span className="text-xs text-gray-400">{t('products.newImage')}</span>
+            </div>
           </div>
-        )}
-        {!existingImageUrl && imageFile && (
+        ) : existingImageUrl ? (
+          /* Existing image, no replacement selected yet */
+          <div className="flex flex-col items-center gap-1 w-fit">
+            <img
+              src={existingImageUrl}
+              alt={t('products.currentImage')}
+              className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+            />
+            <span className="text-xs text-gray-400">{t('products.currentImage')}</span>
+          </div>
+        ) : imageFile ? (
+          /* No existing image, new file selected */
           <div className="flex items-center gap-2">
             <img
               src={URL.createObjectURL(imageFile)}
@@ -173,7 +187,7 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
             />
             <p className="text-xs text-gray-400">{imageFile.name}</p>
           </div>
-        )}
+        ) : null}
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
