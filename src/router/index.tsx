@@ -12,7 +12,6 @@ import { ProductsPage } from '../pages/ProductsPage';
 import { EditProductPage } from '../pages/EditProductPage';
 import { OrdersPage } from '../pages/OrdersPage';
 import { SubscriptionPage } from '../pages/SubscriptionPage';
-import { InvitationsPage } from '../pages/InvitationsPage';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -24,7 +23,6 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <DashboardPage /> },
           { path: '/shops', element: <ShopsPage /> },
-          { path: '/invitations', element: <InvitationsPage /> },
           {
             path: '/shops/:shopId',
             element: <ShopLayout />,

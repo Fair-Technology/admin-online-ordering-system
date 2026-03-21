@@ -3,21 +3,23 @@ import { NavLink, useParams, useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
 import { useTranslation } from 'react-i18next';
 import {
-  ChevronDown, LogOut, Menu, X,
-  Package, ClipboardList, Tag, CreditCard, Settings, Store, Mail,
+  ChevronDown, Menu, X,
+  Package, ClipboardList, Tag, CreditCard, Settings, Store,
 } from 'lucide-react';
 import { useGetMyShopsQuery, useGetShopByIdQuery, useGetMyInvitationsQuery } from '../../services/api';
+import { AccountSettingsModal } from './AccountSettingsModal';
 
 export function TopNav() {
   const { shopId } = useParams<{ shopId?: string }>();
-  const { t, i18n } = useTranslation();
-  const { instance, accounts } = useMsal();
+  const { t } = useTranslation();
+  const { accounts } = useMsal();
   const user = accounts[0];
   const navigate = useNavigate();
 
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mobileShopsOpen, setMobileShopsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: myShops } = useGetMyShopsQuery();
@@ -96,21 +98,26 @@ export function TopNav() {
     </NavLink>
   );
 
-  const invitationsNavItem = (
-    <>
-      {divider}
-      <NavLink to="/invitations" className={({ isActive }) => navItemClass(isActive)}>
-        <div className="relative flex-shrink-0">
-          <Mail size={16} />
-          {pendingInviteCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[8px] font-bold leading-none">
-              {pendingInviteCount}
-            </span>
-          )}
+  // ── User row (shared) ─────────────────────────────────────────────────────
+  const userRow = (
+    <button
+      onClick={() => setAccountOpen(true)}
+      className="w-full flex items-center gap-2.5 px-1 py-1 rounded-xl hover:bg-gray-100 transition-colors text-left"
+    >
+      <div className="relative w-8 h-8 flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
+          <span className="text-xs font-semibold text-white">
+            {user?.name?.charAt(0).toUpperCase() ?? '?'}
+          </span>
         </div>
-        {t('nav.invitations')}
-      </NavLink>
-    </>
+        {pendingInviteCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[8px] font-bold leading-none">
+            {pendingInviteCount}
+          </span>
+        )}
+      </div>
+      <span className="flex-1 text-xs text-gray-600 truncate">{user?.name}</span>
+    </button>
   );
 
   // ── Sidebar content (shared between desktop sidebar and mobile drawer) ────────
@@ -166,44 +173,11 @@ export function TopNav() {
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {shopNavItems}
-        {invitationsNavItem}
       </nav>
 
-      {/* Bottom: language + user + sign out */}
-      <div className="px-3 py-4 border-t border-gray-100 space-y-3">
-        {/* Language */}
-        <div className="flex gap-1 px-1">
-          {(['en', 'de'] as const).map((lng) => (
-            <button
-              key={lng}
-              onClick={() => i18n.changeLanguage(lng)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium uppercase transition-colors ${
-                i18n.resolvedLanguage === lng
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {lng}
-            </button>
-          ))}
-        </div>
-
-        {/* User row */}
-        <div className="flex items-center gap-2.5 px-1">
-          <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-white">
-              {user?.name?.charAt(0).toUpperCase() ?? '?'}
-            </span>
-          </div>
-          <span className="flex-1 text-xs text-gray-600 truncate">{user?.name}</span>
-          <button
-            onClick={() => instance.logoutRedirect()}
-            title={t('nav.signOut')}
-            className="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Bottom: user row */}
+      <div className="px-3 py-4 border-t border-gray-100">
+        {userRow}
       </div>
     </div>
   );
@@ -258,41 +232,11 @@ export function TopNav() {
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {shopNavItems}
-        {invitationsNavItem}
       </nav>
 
-      {/* Bottom */}
-      <div className="px-3 py-4 border-t border-gray-100 space-y-3">
-        <div className="flex gap-1 px-1">
-          {(['en', 'de'] as const).map((lng) => (
-            <button
-              key={lng}
-              onClick={() => i18n.changeLanguage(lng)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium uppercase transition-colors ${
-                i18n.resolvedLanguage === lng
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {lng}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2.5 px-1">
-          <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-white">
-              {user?.name?.charAt(0).toUpperCase() ?? '?'}
-            </span>
-          </div>
-          <span className="flex-1 text-xs text-gray-600 truncate">{user?.name}</span>
-          <button
-            onClick={() => instance.logoutRedirect()}
-            title={t('nav.signOut')}
-            className="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Bottom: user row */}
+      <div className="px-3 py-4 border-t border-gray-100">
+        {userRow}
       </div>
     </div>
   );
@@ -344,6 +288,11 @@ export function TopNav() {
             </div>
           </div>
         </>
+      )}
+
+      {/* ── Account settings modal ───────────────────────────────────────── */}
+      {accountOpen && user && (
+        <AccountSettingsModal user={user} onClose={() => setAccountOpen(false)} />
       )}
     </>
   );
