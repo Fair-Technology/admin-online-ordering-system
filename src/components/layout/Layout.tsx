@@ -4,11 +4,13 @@ import { FloatingActionButton } from './FloatingActionButton';
 
 export function Layout() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col lg:flex-row min-h-screen">
       <TopNav />
-      <main className="flex flex-col flex-1 p-6">
-        <Outlet />
-      </main>
+      <div className="flex flex-col flex-1 min-w-0">
+        <main className="flex flex-col flex-1 p-6">
+          <Outlet />
+        </main>
+      </div>
       <FloatingActionButton />
     </div>
   );

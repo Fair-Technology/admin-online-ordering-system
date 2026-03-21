@@ -781,6 +781,7 @@ function ProductTable({
   products: ProductResponse[];
   onSelect: (product: ProductResponse) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="divide-y divide-gray-200">
       {products.map((product) => {
@@ -830,7 +831,7 @@ function ProductTable({
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${product.isAvailable !== false ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                {product.isAvailable !== false ? 'Available' : 'Unavailable'}
+                {product.isAvailable !== false ? t('products.available') : t('products.unavailable')}
               </span>
             </div>
           </div>
