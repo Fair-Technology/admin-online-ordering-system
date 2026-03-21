@@ -20,7 +20,7 @@ import { getCurrencySymbol } from '../utils/currency';
 import { useToast } from '../contexts/ToastContext';
 import {
   type VariantGroup, type VariantOption, type AddonGroup, type AddonOption,
-  type StepNum, type ScheduleState,
+  type StepNum, type ScheduleState, type SpecialInfoItem,
   StepIndicator, Step1Basics, Step2Categories, Step3Customise, Step4Schedule, Step5Review,
 } from './ProductWizardSteps';
 
@@ -56,6 +56,7 @@ export function EditProductPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
+  const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
   const [addonGroups, setAddonGroups] = useState<AddonGroup[]>([]);
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
@@ -85,6 +86,9 @@ export function EditProductPage() {
         price: product.price ?? 0,
       });
       setSelectedCategoryIds(product.categories?.map((c) => c.id!).filter(Boolean) ?? []);
+      setSpecialInfo(
+        (product.specialInfo ?? []).filter((s): s is { icon: string; name: string } => !!s.icon && !!s.name)
+      );
       setSelectedTaxRateId(product.taxRateId ?? null);
       setVariantGroups(
         (product.variantGroups ?? []).map(g => ({
@@ -230,6 +234,7 @@ export function EditProductPage() {
           description: form.description,
           price: form.price,
           categoryIds: selectedCategoryIds,
+          specialInfo: specialInfo.length > 0 ? specialInfo : undefined,
           variantGroups,
           addonGroups,
           taxRateId: selectedTaxRateId,
@@ -322,6 +327,7 @@ export function EditProductPage() {
               currencySymbol={currencySymbol}
               nameError={nameError} descError={descError}
               existingImageUrl={existingImageUrl}
+              specialInfo={specialInfo} setSpecialInfo={setSpecialInfo}
             />
           )}
           {step === 2 && (
@@ -372,6 +378,7 @@ export function EditProductPage() {
               variantGroups={variantGroups} addonGroups={addonGroups}
               scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule}
               currencySymbol={currencySymbol}
+              specialInfo={specialInfo}
             />
           )}
         </div>
