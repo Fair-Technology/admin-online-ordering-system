@@ -197,7 +197,8 @@
     "taxRatesEmpty": "Keine Steuersätze konfiguriert.",
     "taxRatesNote": "Beim Erstellen des Shops aus dem Land ({{country}}) übernommen.",
     "created": "Shop erstellt.",
-    "logoSaved": "Logo aktualisiert."
+    "logoSaved": "Logo aktualisiert.",
+    "shopPausedBanner": "Shop ist nicht LIVE"
   },
   "products": {
     "addProduct": "+ Produkt hinzufügen",

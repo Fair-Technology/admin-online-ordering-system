@@ -197,7 +197,8 @@
     "taxRatesEmpty": "No tax rates configured.",
     "taxRatesNote": "Seeded from country ({{country}}) on shop creation.",
     "created": "Shop created.",
-    "logoSaved": "Logo updated."
+    "logoSaved": "Logo updated.",
+    "shopPausedBanner": "Shop is not LIVE"
   },
   "products": {
     "addProduct": "+ Add Product",
