@@ -10,7 +10,21 @@
     "subscription": "Abonnement",
     "settings": "Einstellungen",
     "signOut": "Abmelden",
-    "myShops": "Meine Shops"
+    "myShops": "Meine Shops",
+    "invitations": "Einladungen"
+  },
+  "invitations": {
+    "title": "Ausstehende Einladungen",
+    "loading": "Einladungen werden geladen…",
+    "loadError": "Einladungen konnten nicht geladen werden.",
+    "empty": "Keine ausstehenden Einladungen.",
+    "role": "Rolle",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "acceptSuccess": "Einladung angenommen.",
+    "acceptFailed": "Einladung konnte nicht angenommen werden.",
+    "declineSuccess": "Einladung abgelehnt.",
+    "declineFailed": "Einladung konnte nicht abgelehnt werden."
   },
   "subscription": {
     "currentPlan": "Aktueller Plan",
@@ -142,6 +156,11 @@
     "membersTitle": "Mitglieder",
     "membersEmpty": "Noch keine Mitglieder.",
     "membersInactive": "inaktiv",
+    "membersInvited": "Eingeladen",
+    "membersEmail": "E-Mail-Adresse",
+    "membersEmailPlaceholder": "E-Mail-Adresse eingeben",
+    "membersEmailRequired": "E-Mail ist erforderlich.",
+    "membersInviteSent": "Einladung gesendet.",
     "membersRemove": "Entfernen",
     "membersRemoveFailed": "Mitglied konnte nicht entfernt werden.",
     "membersAddTitle": "Mitglied hinzufügen",

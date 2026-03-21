@@ -4,9 +4,9 @@ import { useMsal } from '@azure/msal-react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown, LogOut, Menu, X,
-  Package, ClipboardList, Tag, CreditCard, Settings, Store,
+  Package, ClipboardList, Tag, CreditCard, Settings, Store, Mail,
 } from 'lucide-react';
-import { useGetMyShopsQuery, useGetShopByIdQuery } from '../../services/api';
+import { useGetMyShopsQuery, useGetShopByIdQuery, useGetMyInvitationsQuery } from '../../services/api';
 
 export function TopNav() {
   const { shopId } = useParams<{ shopId?: string }>();
@@ -25,6 +25,9 @@ export function TopNav() {
     { shopId: shopId! },
     { skip: !shopId },
   );
+
+  const { data: invitationsData } = useGetMyInvitationsQuery();
+  const pendingInviteCount = invitationsData?.invitations?.length ?? 0;
 
   const currentUserId = user?.localAccountId;
   const role = shopId && currentShop
@@ -93,6 +96,23 @@ export function TopNav() {
     </NavLink>
   );
 
+  const invitationsNavItem = (
+    <>
+      {divider}
+      <NavLink to="/invitations" className={({ isActive }) => navItemClass(isActive)}>
+        <div className="relative flex-shrink-0">
+          <Mail size={16} />
+          {pendingInviteCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-white text-[8px] font-bold leading-none">
+              {pendingInviteCount}
+            </span>
+          )}
+        </div>
+        {t('nav.invitations')}
+      </NavLink>
+    </>
+  );
+
   // ── Sidebar content (shared between desktop sidebar and mobile drawer) ────────
   const sidebarContent = (
     <div className="flex flex-col h-full">
@@ -146,6 +166,7 @@ export function TopNav() {
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {shopNavItems}
+        {invitationsNavItem}
       </nav>
 
       {/* Bottom: language + user + sign out */}
@@ -237,6 +258,7 @@ export function TopNav() {
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         {shopNavItems}
+        {invitationsNavItem}
       </nav>
 
       {/* Bottom */}

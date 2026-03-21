@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMsal } from '@azure/msal-react';
@@ -74,6 +75,7 @@ export function ShopSettingsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const qrRef = useRef<HTMLCanvasElement>(null);
 
   const [hoursState, setHoursState] = useState<OpeningHoursState | null>(null);
   const [isSavingHours, setIsSavingHours] = useState(false);
@@ -112,7 +114,7 @@ export function ShopSettingsPage() {
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const [addressError, setAddressError] = useState<string | null>(null);
 
-  const [newMemberUserId, setNewMemberUserId] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberRoleId, setNewMemberRoleId] = useState<string>('staff');
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [memberAddError, setMemberAddError] = useState<string | null>(null);
@@ -352,8 +354,8 @@ export function ShopSettingsPage() {
   };
 
   const handleAddMember = async () => {
-    if (!newMemberUserId.trim()) {
-      setMemberAddError(t('shops.membersUserIdRequired'));
+    if (!newMemberEmail.trim()) {
+      setMemberAddError(t('shops.membersEmailRequired'));
       return;
     }
     setIsAddingMember(true);
@@ -361,12 +363,12 @@ export function ShopSettingsPage() {
     try {
       await addShopMember({
         shopId: shopId!,
-        userId: newMemberUserId.trim(),
+        email: newMemberEmail.trim(),
         roleId: newMemberRoleId,
       }).unwrap();
-      setNewMemberUserId('');
+      setNewMemberEmail('');
       setNewMemberRoleId('staff');
-      toast.success(t('shops.membersAddSuccess'));
+      toast.success(t('shops.membersInviteSent'));
       refetch();
     } catch (err: any) {
       const msg = err?.data?.error ?? t('shops.membersAddFailed');
@@ -449,6 +451,18 @@ export function ShopSettingsPage() {
     ? toSlug(detailsState.name) || shop.slug
     : shop.slug;
 
+  const shopUrl = `${import.meta.env.VITE_SHOP_BASE_URL ?? 'https://www.example.com'}/shops/${previewSlug}`;
+
+  const handleDownloadQr = () => {
+    const canvas = qrRef.current;
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${previewSlug}-qr.png`;
+    a.click();
+  };
+
   const infoRows = [
     { label: t('shops.labelId'), value: shop.id, mono: true },
     { label: t('shops.labelSlug'), value: `/${previewSlug}`, mono: true },
@@ -477,6 +491,22 @@ export function ShopSettingsPage() {
             </span>
           </div>
         ))}
+      </GlassCard>
+
+      <GlassCard className="p-5 flex flex-col items-center gap-3">
+        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide self-start">
+          QR Code
+        </p>
+        <QRCodeCanvas
+          ref={qrRef}
+          value={shopUrl}
+          size={160}
+          marginSize={1}
+        />
+        <p className="text-xs text-gray-400 font-mono break-all text-center">{shopUrl}</p>
+        <GlassButton type="button" variant="secondary" size="sm" onClick={handleDownloadQr}>
+          Download PNG
+        </GlassButton>
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
@@ -959,7 +989,9 @@ export function ShopSettingsPage() {
                     {roleName}
                   </span>
                   {!member.isActive && (
-                    <span className="text-xs text-gray-400">{t('shops.membersInactive')}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-700 border border-yellow-200">
+                      {t('shops.membersInvited')}
+                    </span>
                   )}
                 </div>
                 <GlassButton
@@ -979,11 +1011,12 @@ export function ShopSettingsPage() {
             {t('shops.membersAddTitle')}
           </p>
           <GlassInput
-            label={t('shops.membersUserId')}
-            value={newMemberUserId}
-            placeholder={t('shops.membersUserIdPlaceholder')}
+            label={t('shops.membersEmail')}
+            type="email"
+            value={newMemberEmail}
+            placeholder={t('shops.membersEmailPlaceholder')}
             onChange={(e) => {
-              setNewMemberUserId(e.target.value);
+              setNewMemberEmail(e.target.value);
               setMemberAddError(null);
             }}
           />

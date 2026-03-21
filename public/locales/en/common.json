@@ -10,7 +10,21 @@
     "subscription": "Subscription",
     "settings": "Settings",
     "signOut": "Sign out",
-    "myShops": "My shops"
+    "myShops": "My shops",
+    "invitations": "Invitations"
+  },
+  "invitations": {
+    "title": "Pending Invitations",
+    "loading": "Loading invitations…",
+    "loadError": "Failed to load invitations.",
+    "empty": "No pending invitations.",
+    "role": "Role",
+    "accept": "Accept",
+    "decline": "Decline",
+    "acceptSuccess": "Invitation accepted.",
+    "acceptFailed": "Failed to accept invitation.",
+    "declineSuccess": "Invitation declined.",
+    "declineFailed": "Failed to decline invitation."
   },
   "subscription": {
     "currentPlan": "Current Plan",
@@ -142,6 +156,11 @@
     "membersTitle": "Members",
     "membersEmpty": "No members yet.",
     "membersInactive": "inactive",
+    "membersInvited": "Invited",
+    "membersEmail": "Email address",
+    "membersEmailPlaceholder": "Enter email address",
+    "membersEmailRequired": "Email is required.",
+    "membersInviteSent": "Invitation sent.",
     "membersRemove": "Remove",
     "membersRemoveFailed": "Failed to remove member.",
     "membersAddTitle": "Add Member",

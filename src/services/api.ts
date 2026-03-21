@@ -188,8 +188,26 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/shops/${queryArg.shopId}/members`,
         method: "POST",
-        body: { userId: queryArg.userId, role: queryArg.roleId },
+        body: { email: queryArg.email, role: queryArg.roleId },
       }),
+    }),
+    getMyInvitations: build.query<GetMyInvitationsApiResponse, void>({
+      query: () => ({ url: `/users/me/invitations` }),
+      providesTags: ['Invitations'],
+    }),
+    acceptShopInvitation: build.mutation<AcceptShopInvitationApiResponse, AcceptShopInvitationApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/invitations/accept`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Invitations', 'Shops'],
+    }),
+    declineShopInvitation: build.mutation<DeclineShopInvitationApiResponse, DeclineShopInvitationApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/invitations/decline`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Invitations'],
     }),
     removeShopMember: build.mutation<RemoveShopMemberApiResponse, RemoveShopMemberApiArg>({
       query: (queryArg) => ({
@@ -470,10 +488,34 @@ export type AddShopMemberApiResponse =
 export type AddShopMemberApiArg = {
   /** Shop ID */
   shopId: string;
-  /** Entra Object ID of the new member */
-  userId: string;
+  /** Email address of the user to invite */
+  email: string;
   /** Role ID to assign ('owner' or a custom role id from shop.roles) */
   roleId: string;
+};
+export type InvitationResponse = {
+  shopId: string;
+  shopName: string;
+  shopSlug: string;
+  role: string;
+};
+export type GetMyInvitationsApiResponse = {
+  invitations: InvitationResponse[];
+};
+export type AcceptShopInvitationApiResponse = {
+  shopId: string;
+  userId: string;
+  role: string;
+};
+export type AcceptShopInvitationApiArg = {
+  shopId: string;
+};
+export type DeclineShopInvitationApiResponse = {
+  shopId: string;
+  userId: string;
+};
+export type DeclineShopInvitationApiArg = {
+  shopId: string;
 };
 export type CreateShopRoleApiResponse = /** status 200 Role created */ ShopRolesResponse;
 export type CreateShopRoleApiArg = {
@@ -1204,4 +1246,7 @@ export const {
   useGetShopSubscriptionQuery,
   useGetPlanPricingQuery,
   useCreateSubscriptionCheckoutMutation,
+  useGetMyInvitationsQuery,
+  useAcceptShopInvitationMutation,
+  useDeclineShopInvitationMutation,
 } = injectedRtkApi;
