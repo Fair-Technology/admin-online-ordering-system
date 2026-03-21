@@ -155,33 +155,41 @@ function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center justify-between px-5 py-4">
-      <div className="flex items-center gap-3">
-        <button
-          {...attributes}
-          {...listeners}
-          className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
-          aria-label={t('categories.dragHandle')}
-          type="button"
-        >
-          <GripVertical size={18} />
-        </button>
-        {cat.icon && (
-          <span className="w-6 h-6 flex items-center justify-center text-gray-500">
-            <LucideIconByName name={cat.icon} size={16} />
-          </span>
+    <div ref={setNodeRef} style={style} className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-3 px-5 py-4">
+      {/* Drag handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+        aria-label={t('categories.dragHandle')}
+        type="button"
+      >
+        <GripVertical size={18} />
+      </button>
+
+      {/* Name */}
+      <p className="font-medium text-gray-900 truncate">{cat.name}</p>
+
+      {/* Icon */}
+      <div className="flex items-center gap-1.5 text-gray-500">
+        {cat.icon ? (
+          <>
+            <LucideIconByName name={cat.icon} size={15} />
+            <span className="text-xs text-gray-400">{cat.icon}</span>
+          </>
+        ) : (
+          <span className="text-xs text-gray-300">—</span>
         )}
-        <p className="font-medium text-gray-900">{cat.name}</p>
       </div>
-      <div className="flex items-center gap-2">
-        <Link
-          to={`/shops/${shopId}/categories/${cat.id}/edit`}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-          aria-label={t('categories.edit')}
-        >
-          <Pencil size={15} />
-        </Link>
-      </div>
+
+      {/* Edit */}
+      <Link
+        to={`/shops/${shopId}/categories/${cat.id}/edit`}
+        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        aria-label={t('categories.edit')}
+      >
+        <Pencil size={15} />
+      </Link>
     </div>
   );
 }
@@ -264,6 +272,13 @@ export function CategoriesPage() {
           {orderedCategories.length > 0 && (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={orderedCategories.map((c) => c.id!)} strategy={verticalListSortingStrategy}>
+                {/* Header row */}
+                <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-3 px-5 py-2 border-b border-gray-100">
+                  <span className="w-4.5" />
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{t('categories.name')}</span>
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Icon</span>
+                  <span className="w-7" />
+                </div>
                 <div className="divide-y divide-gray-200">
                   {orderedCategories.map((cat) => (
                     <SortableCategoryItem key={cat.id} cat={cat} shopId={shopId!} />
