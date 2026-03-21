@@ -9,7 +9,8 @@
     "categories": "Kategorien",
     "subscription": "Abonnement",
     "settings": "Einstellungen",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "myShops": "Meine Shops"
   },
   "subscription": {
     "currentPlan": "Aktueller Plan",
@@ -56,6 +57,7 @@
     "shop": "Shop",
     "addShop": "+ Neuer Shop",
     "newShop": "Neuer Shop",
+    "createSubtitle": "Füllen Sie die Details aus, um Ihren Shop zu erstellen.",
     "loading": "Shops werden geladen...",
     "loadError": "Shops konnten nicht geladen werden.",
     "empty": "Noch keine Shops.",
@@ -255,7 +257,18 @@
     "wizardReviewVariants": "{{count}} Variantengruppe(n)",
     "wizardReviewAddons": "{{count}} Extragruppe(n)",
     "wizardReviewNone": "Keine",
-    "wizardReviewAlwaysAvailable": "Immer verfügbar"
+    "wizardReviewAlwaysAvailable": "Immer verfügbar",
+    "updated": "Produkt aktualisiert.",
+    "save": "Änderungen speichern",
+    "edit": "Bearbeiten",
+    "noDescription": "Keine Beschreibung.",
+    "detailTitle": "Produktdetails",
+    "detailSubtitle": "Produktinformationen anzeigen und bearbeiten.",
+    "detailName": "Produktname",
+    "detailDescription": "Beschreibung",
+    "detailCategories": "Kategorien",
+    "detailPrice": "Preis",
+    "detailStatus": "Status"
   },
   "variants": {
     "title": "Varianten",
@@ -299,6 +312,7 @@
   "categories": {
     "addCategory": "+ Neue Kategorie",
     "newCategory": "Neue Kategorie",
+    "createSubtitle": "Geben Sie einen Namen für Ihre neue Kategorie ein.",
     "loading": "Kategorien werden geladen...",
     "loadError": "Kategorien konnten nicht geladen werden.",
     "empty": "Noch keine Kategorien.",

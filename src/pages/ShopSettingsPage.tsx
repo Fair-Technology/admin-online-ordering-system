@@ -49,6 +49,8 @@ function toSlug(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
+const inputClass = 'w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400';
+
 export function ShopSettingsPage() {
   const { shopId } = useParams<{ shopId: string }>();
   const { t } = useTranslation();
@@ -116,7 +118,6 @@ export function ShopSettingsPage() {
   const [memberAddError, setMemberAddError] = useState<string | null>(null);
   const [memberRemoveError, setMemberRemoveError] = useState<string | null>(null);
 
-  // Roles card state
   const [newRoleName, setNewRoleName] = useState('');
   const [newRolePerms, setNewRolePerms] = useState<ShopPermission[]>([]);
   const [isCreatingRole, setIsCreatingRole] = useState(false);
@@ -130,19 +131,18 @@ export function ShopSettingsPage() {
   const [roleDeleteError, setRoleDeleteError] = useState<string | null>(null);
 
   if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
-  if (isError || !shop) return <p className="text-red-400">{t('shops.failedToLoadShop')}</p>;
+  if (isError || !shop) return <p className="text-red-500">{t('shops.failedToLoadShop')}</p>;
 
   const members = shop.members ?? [];
   const isCurrentUserOwner = members.some(
     (m) => m.userId === currentUserId && m.isActive && m.role === 'owner',
   );
 
-  // Defensive access guard
   if (!isCurrentUserOwner) {
     return (
       <div className="max-w-lg">
         <GlassCard className="p-5">
-          <p className="text-sm text-white/70">{t('shops.membersAccessDenied')}</p>
+          <p className="text-sm text-gray-600">{t('shops.membersAccessDenied')}</p>
         </GlassCard>
       </div>
     );
@@ -223,10 +223,8 @@ export function ShopSettingsPage() {
       setHoursError(t('shops.ohAtLeastOneDay'));
       return;
     }
-
     setIsSavingHours(true);
     setHoursError(null);
-
     try {
       await updateShop({
         shopId: shopId!,
@@ -244,7 +242,6 @@ export function ShopSettingsPage() {
   const handleSaveStatus = async () => {
     setIsSavingStatus(true);
     setStatusError(null);
-
     try {
       await updateShop({
         shopId: shopId!,
@@ -326,28 +323,23 @@ export function ShopSettingsPage() {
   const handleLogoUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!logoFile) return;
-
     setIsUploading(true);
     setUploadError(null);
-
     try {
       const contentType = logoFile.type as 'image/jpeg' | 'image/png' | 'image/webp';
       const uploadData = await generateShopLogoUploadUrl({
         shopId: shopId!,
         generateShopLogoUploadUrlRequest: { contentType },
       }).unwrap();
-
       await fetch(uploadData.uploadUrl, {
         method: 'PUT',
         headers: { 'x-ms-blob-type': 'BlockBlob', 'Content-Type': contentType },
         body: logoFile,
       });
-
       await setShopLogo({
         shopId: shopId!,
         setShopLogoRequest: { imageId: uploadData.imageId, url: uploadData.blobUrl },
       }).unwrap();
-
       setLogoFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       toast.success(t('shops.logoSaved'));
@@ -464,7 +456,6 @@ export function ShopSettingsPage() {
 
   const currentLogoUrl = shop.branding?.logoUrl;
 
-  // Role options for the add-member dropdown: 'owner' + custom roles
   const roleOptions = [
     { id: 'owner', name: 'Owner' },
     ...shopRoles.map((r) => ({ id: r.id ?? '', name: r.name ?? '' })),
@@ -477,11 +468,11 @@ export function ShopSettingsPage() {
           <div
             key={row.label}
             className={`flex items-center justify-between px-5 py-4 ${
-              i > 0 ? 'border-t border-white/8' : ''
+              i > 0 ? 'border-t border-gray-200' : ''
             }`}
           >
-            <span className="text-sm text-white/45">{row.label}</span>
-            <span className={`text-sm text-white ${row.mono ? 'font-mono' : 'font-medium'}`}>
+            <span className="text-sm text-gray-400">{row.label}</span>
+            <span className={`text-sm text-gray-900 ${row.mono ? 'font-mono' : 'font-medium'}`}>
               {row.value}
             </span>
           </div>
@@ -489,10 +480,9 @@ export function ShopSettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.detailsTitle')}
         </p>
-
         <div className="space-y-3">
           <GlassInput
             label={t('shops.detailsName')}
@@ -501,12 +491,12 @@ export function ShopSettingsPage() {
             onChange={(e) => setDetailsState({ ...currentDetails, name: e.target.value })}
           />
           <div>
-            <p className="text-xs text-white/50 mb-1">{t('shops.detailsCurrency')}</p>
-            <p className="text-sm text-white/80">{shop.currency ?? '—'}</p>
+            <p className="text-xs text-gray-500 mb-1">{t('shops.detailsCurrency')}</p>
+            <p className="text-sm text-gray-700">{shop.currency ?? '—'}</p>
           </div>
           <div>
-            <p className="text-xs text-white/50 mb-1">{t('shops.detailsTimezone')}</p>
-            <p className="text-sm text-white/80">{shop.timezone ?? '—'}</p>
+            <p className="text-xs text-gray-500 mb-1">{t('shops.detailsTimezone')}</p>
+            <p className="text-sm text-gray-700">{shop.timezone ?? '—'}</p>
           </div>
           <CurrencyInput
             label={t('shops.detailsMinOrder')}
@@ -514,10 +504,8 @@ export function ShopSettingsPage() {
             onChange={(cents) => setDetailsState({ ...currentDetails, minOrderAmountCents: cents })}
           />
         </div>
-
-        {detailsError && <p className="text-sm text-red-300">{detailsError}</p>}
-
-        <div className="border-t border-white/8 pt-4 flex gap-2">
+        {detailsError && <p className="text-sm text-red-600">{detailsError}</p>}
+        <div className="border-t border-gray-200 pt-4 flex gap-2">
           {detailsState && (
             <GlassButton
               variant="ghost"
@@ -534,28 +522,23 @@ export function ShopSettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.logo')}
         </p>
-
         <div className="flex items-center gap-4">
           {currentLogoUrl ? (
             <img
               src={currentLogoUrl}
               alt="Shop logo"
-              className="w-24 h-24 rounded-xl object-cover border border-white/15"
+              className="w-24 h-24 rounded-xl object-cover border border-gray-200"
             />
           ) : (
-            <div className="w-24 h-24 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
-              <span className="text-xs text-white/30">{t('shops.logoPlaceholder')}</span>
+            <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center">
+              <span className="text-xs text-gray-400">{t('shops.logoPlaceholder')}</span>
             </div>
           )}
         </div>
-
-        {uploadError && (
-          <p className="text-sm text-red-300">{uploadError}</p>
-        )}
-
+        {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
         <form onSubmit={handleLogoUpload} className="space-y-3">
           <div className="flex flex-col gap-1">
             <input
@@ -566,11 +549,10 @@ export function ShopSettingsPage() {
                 setLogoFile(e.target.files?.[0] ?? null);
                 setUploadError(null);
               }}
-              className="block w-full text-sm text-white/45 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-white/15 file:text-white/75 hover:file:bg-white/20 cursor-pointer"
+              className="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
             />
-            {logoFile && <p className="text-xs text-white/35">{logoFile.name}</p>}
+            {logoFile && <p className="text-xs text-gray-400">{logoFile.name}</p>}
           </div>
-
           <GlassButton type="submit" disabled={!logoFile || isUploading}>
             {isUploading ? t('shops.uploadingLogo') : t('shops.uploadLogo')}
           </GlassButton>
@@ -578,10 +560,9 @@ export function ShopSettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.colorsTitle')}
         </p>
-
         <div className="space-y-3">
           {(
             [
@@ -592,13 +573,11 @@ export function ShopSettingsPage() {
             ] as { key: keyof typeof currentColors; label: string }[]
           ).map(({ key, label }) => (
             <div key={key} className="flex items-center gap-3">
-              <span className="text-sm text-white/70 w-28 shrink-0">{label}</span>
+              <span className="text-sm text-gray-600 w-28 shrink-0">{label}</span>
               <input
                 type="color"
                 value={currentColors[key]}
-                onChange={(e) => {
-                  setColorsState({ ...currentColors, [key]: e.target.value });
-                }}
+                onChange={(e) => setColorsState({ ...currentColors, [key]: e.target.value })}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0"
               />
               <input
@@ -611,15 +590,13 @@ export function ShopSettingsPage() {
                     setColorsState({ ...currentColors, [key]: val });
                   }
                 }}
-                className="bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5 text-sm text-white font-mono focus:outline-none focus:border-white/45 w-28"
+                className={`${inputClass} w-28 font-mono`}
               />
             </div>
           ))}
         </div>
-
-        {colorsError && <p className="text-sm text-red-300">{colorsError}</p>}
-
-        <div className="border-t border-white/8 pt-4">
+        {colorsError && <p className="text-sm text-red-600">{colorsError}</p>}
+        <div className="border-t border-gray-200 pt-4">
           <GlassButton onClick={handleSaveColors} disabled={isSavingColors}>
             {isSavingColors ? t('shops.colorsSaving') : t('shops.colorsSave')}
           </GlassButton>
@@ -627,10 +604,9 @@ export function ShopSettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.addressTitle')}
         </p>
-
         <div className="space-y-3">
           <GlassInput
             label={t('shops.addressStreet')}
@@ -658,10 +634,8 @@ export function ShopSettingsPage() {
             onChange={(e) => setAddressState({ ...currentAddress, country: e.target.value })}
           />
         </div>
-
-        {addressError && <p className="text-sm text-red-300">{addressError}</p>}
-
-        <div className="border-t border-white/8 pt-4">
+        {addressError && <p className="text-sm text-red-600">{addressError}</p>}
+        <div className="border-t border-gray-200 pt-4">
           <GlassButton onClick={handleSaveAddress} disabled={isSavingAddress}>
             {isSavingAddress ? t('shops.addressSaving') : t('shops.addressSave')}
           </GlassButton>
@@ -670,44 +644,40 @@ export function ShopSettingsPage() {
 
       {/* Tax Rates card */}
       <GlassCard className="p-5 space-y-3">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.taxRatesTitle')}
         </p>
-
         {(shop.taxRates ?? []).length === 0 ? (
-          <p className="text-sm text-white/35">{t('shops.taxRatesEmpty')}</p>
+          <p className="text-sm text-gray-400">{t('shops.taxRatesEmpty')}</p>
         ) : (
           <div className="space-y-0">
             {(shop.taxRates ?? []).map((rate) => (
               <div
                 key={rate.id}
-                className="flex items-center justify-between border-t border-white/8 py-2.5 first:border-t-0 first:pt-0"
+                className="flex items-center justify-between border-t border-gray-200 py-2.5 first:border-t-0 first:pt-0"
               >
-                <span className="text-sm text-white/80">{rate.label}</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-white/55 font-mono">
+                <span className="text-sm text-gray-700">{rate.label}</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-500 font-mono">
                   {rate.rate != null ? `${(rate.rate * 100).toFixed(1).replace(/\.0$/, '')}%` : '—'}
                 </span>
               </div>
             ))}
           </div>
         )}
-
         {shop.countryCode && (
-          <p className="text-xs text-white/30">
+          <p className="text-xs text-gray-400">
             {t('shops.taxRatesNote', { country: shop.countryCode })}
           </p>
         )}
       </GlassCard>
 
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.statusTitle')}
         </p>
-
         <div className="space-y-3">
-          {/* Paused toggle */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-white/70">{t('shops.statusPaused')}</span>
+            <span className="text-sm text-gray-600">{t('shops.statusPaused')}</span>
             <div className="flex gap-1.5">
               <GlassButton
                 variant={currentStatus.isPaused ? 'primary' : 'ghost'}
@@ -723,11 +693,9 @@ export function ShopSettingsPage() {
               </GlassButton>
             </div>
           </div>
-
-          {/* Pause message */}
           {currentStatus.isPaused && (
             <div className="space-y-1.5">
-              <span className="text-sm text-white/70">{t('shops.statusPauseMessage')}</span>
+              <span className="text-sm text-gray-600">{t('shops.statusPauseMessage')}</span>
               <GlassInput
                 value={currentStatus.pausedMessage}
                 placeholder={t('shops.statusPauseMessagePlaceholder')}
@@ -736,10 +704,8 @@ export function ShopSettingsPage() {
             </div>
           )}
         </div>
-
-        {statusError && <p className="text-sm text-red-300">{statusError}</p>}
-
-        <div className="border-t border-white/8 pt-4">
+        {statusError && <p className="text-sm text-red-600">{statusError}</p>}
+        <div className="border-t border-gray-200 pt-4">
           <GlassButton onClick={handleSaveStatus} disabled={isSavingStatus}>
             {isSavingStatus ? t('shops.statusSaving') : t('shops.statusSave')}
           </GlassButton>
@@ -747,32 +713,29 @@ export function ShopSettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-5">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide mb-1">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
           {t('shops.openingHours')}
         </p>
-
         <div className="space-y-0">
           {DAYS.map(({ key, label }) => {
             const slots = currentHours[key];
             const isOpen = slots.length > 0;
-
             return (
-              <div key={key} className="border-t border-white/8 pt-3 pb-3">
+              <div key={key} className="border-t border-gray-200 pt-3 pb-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/70 w-28 shrink-0">{label}</span>
+                  <span className="text-sm text-gray-600 w-28 shrink-0">{label}</span>
                   <button
                     type="button"
                     onClick={() => toggleDay(key)}
                     className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
                       isOpen
-                        ? 'bg-white/15 border-white/20 text-white'
-                        : 'bg-transparent border-white/10 text-white/35 hover:border-white/20 hover:text-white/50'
+                        ? 'bg-gray-900 border-gray-900 text-white'
+                        : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-600'
                     }`}
                   >
                     {isOpen ? t('shops.ohOpen') : t('shops.ohClosed')}
                   </button>
                 </div>
-
                 {isOpen && (
                   <div className="mt-2.5 space-y-2 pl-0">
                     {slots.map((slot, idx) => (
@@ -781,20 +744,20 @@ export function ShopSettingsPage() {
                           type="time"
                           value={slot.open}
                           onChange={(e) => updateSlot(key, idx, 'open', e.target.value)}
-                          className="bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-white/45 w-28"
+                          className={`${inputClass} w-28`}
                         />
-                        <span className="text-xs text-white/35">{t('shops.ohTo')}</span>
+                        <span className="text-xs text-gray-400">{t('shops.ohTo')}</span>
                         <input
                           type="time"
                           value={slot.close}
                           onChange={(e) => updateSlot(key, idx, 'close', e.target.value)}
-                          className="bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-white/45 w-28"
+                          className={`${inputClass} w-28`}
                         />
                         {slots.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeSlot(key, idx)}
-                            className="text-sm text-white/25 hover:text-red-400 transition-colors px-1 leading-none"
+                            className="text-sm text-gray-300 hover:text-red-500 transition-colors px-1 leading-none"
                             aria-label="Remove slot"
                           >
                             ×
@@ -805,7 +768,7 @@ export function ShopSettingsPage() {
                     <button
                       type="button"
                       onClick={() => addSlot(key)}
-                      className="text-xs text-white/35 hover:text-white/60 transition-colors mt-1"
+                      className="text-xs text-gray-400 hover:text-gray-700 transition-colors mt-1"
                     >
                       {t('shops.ohAddSlot')}
                     </button>
@@ -815,10 +778,8 @@ export function ShopSettingsPage() {
             );
           })}
         </div>
-
-        {hoursError && <p className="text-sm text-red-300 mt-2">{hoursError}</p>}
-
-        <div className="mt-4 border-t border-white/8 pt-4">
+        {hoursError && <p className="text-sm text-red-600 mt-2">{hoursError}</p>}
+        <div className="mt-4 border-t border-gray-200 pt-4">
           <GlassButton onClick={handleSaveHours} disabled={isSavingHours}>
             {isSavingHours ? t('shops.ohSavingHours') : t('shops.ohSaveHours')}
           </GlassButton>
@@ -827,25 +788,22 @@ export function ShopSettingsPage() {
 
       {/* Roles card */}
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.rolesTitle')}
         </p>
-
         {shopRoles.length === 0 && (
-          <p className="text-sm text-white/35">{t('shops.rolesEmpty')}</p>
+          <p className="text-sm text-gray-400">{t('shops.rolesEmpty')}</p>
         )}
-
         <div className="space-y-0">
           {shopRoles.map((role) => {
             const isEditing = editingRoleId === role.id;
             const membersUsingRole = members.filter(
               (m) => m.isActive && m.role === role.id,
             ).length;
-
             return (
               <div
                 key={role.id}
-                className="border-t border-white/8 py-3 first:border-t-0 first:pt-0"
+                className="border-t border-gray-200 py-3 first:border-t-0 first:pt-0"
               >
                 {isEditing ? (
                   <div className="space-y-3">
@@ -855,7 +813,7 @@ export function ShopSettingsPage() {
                       onChange={(e) => setEditRoleName(e.target.value)}
                     />
                     <div className="space-y-1">
-                      <span className="text-xs text-white/50">{t('shops.rolesTitle')}</span>
+                      <span className="text-xs text-gray-500">{t('shops.rolesTitle')}</span>
                       <div className="flex flex-wrap gap-2">
                         {ALL_PERMISSIONS.map((perm) => (
                           <label key={perm} className="flex items-center gap-1.5 cursor-pointer">
@@ -869,14 +827,14 @@ export function ShopSettingsPage() {
                                     : editRolePerms.filter((p) => p !== perm),
                                 );
                               }}
-                              className="accent-white/70"
+                              className="accent-gray-900"
                             />
-                            <span className="text-xs text-white/70">{PERM_LABELS[perm]}</span>
+                            <span className="text-xs text-gray-600">{PERM_LABELS[perm]}</span>
                           </label>
                         ))}
                       </div>
                     </div>
-                    {roleSaveError && <p className="text-sm text-red-300">{roleSaveError}</p>}
+                    {roleSaveError && <p className="text-sm text-red-600">{roleSaveError}</p>}
                     <div className="flex gap-2">
                       <GlassButton onClick={handleSaveRole} disabled={isSavingRole}>
                         {isSavingRole ? t('shops.rolesAdding') : t('shops.rolesSave')}
@@ -889,11 +847,11 @@ export function ShopSettingsPage() {
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm text-white font-medium">{role.name}</span>
+                      <span className="text-sm text-gray-900 font-medium">{role.name}</span>
                       {(role.permissions ?? []).map((perm) => (
                         <span
                           key={perm}
-                          className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-white/55"
+                          className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500"
                         >
                           {PERM_LABELS[perm as ShopPermission] ?? perm}
                         </span>
@@ -901,7 +859,7 @@ export function ShopSettingsPage() {
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
                       <GlassButton variant="ghost" onClick={() => startEditRole(role)}>
-                        {t('shops.detailsSave').charAt(0) === 'S' ? 'Edit' : t('shops.rolesSave')}
+                        Edit
                       </GlassButton>
                       <GlassButton
                         variant="ghost"
@@ -917,12 +875,9 @@ export function ShopSettingsPage() {
             );
           })}
         </div>
-
-        {roleDeleteError && <p className="text-sm text-red-300">{roleDeleteError}</p>}
-
-        {/* Add new role */}
-        <div className="border-t border-white/8 pt-4 space-y-3">
-          <p className="text-xs text-white/40 uppercase tracking-wide">{t('shops.rolesAdd')}</p>
+        {roleDeleteError && <p className="text-sm text-red-600">{roleDeleteError}</p>}
+        <div className="border-t border-gray-200 pt-4 space-y-3">
+          <p className="text-xs text-gray-400 uppercase tracking-wide">{t('shops.rolesAdd')}</p>
           <GlassInput
             label={t('shops.detailsName')}
             value={newRoleName}
@@ -933,7 +888,7 @@ export function ShopSettingsPage() {
             }}
           />
           <div className="space-y-1">
-            <span className="text-xs text-white/50">{t('shops.rolesTitle')}</span>
+            <span className="text-xs text-gray-500">{t('shops.rolesTitle')}</span>
             <div className="flex flex-wrap gap-2">
               {ALL_PERMISSIONS.map((perm) => (
                 <label key={perm} className="flex items-center gap-1.5 cursor-pointer">
@@ -947,14 +902,14 @@ export function ShopSettingsPage() {
                           : newRolePerms.filter((p) => p !== perm),
                       );
                     }}
-                    className="accent-white/70"
+                    className="accent-gray-900"
                   />
-                  <span className="text-xs text-white/70">{PERM_LABELS[perm]}</span>
+                  <span className="text-xs text-gray-600">{PERM_LABELS[perm]}</span>
                 </label>
               ))}
             </div>
           </div>
-          {roleCreateError && <p className="text-sm text-red-300">{roleCreateError}</p>}
+          {roleCreateError && <p className="text-sm text-red-600">{roleCreateError}</p>}
           <GlassButton
             onClick={handleCreateRole}
             disabled={isCreatingRole || !newRoleName.trim()}
@@ -966,13 +921,12 @@ export function ShopSettingsPage() {
 
       {/* Members card */}
       <GlassCard className="p-5 space-y-4">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.membersTitle')}
         </p>
-
         <div className="space-y-0">
           {members.length === 0 && (
-            <p className="text-sm text-white/35">{t('shops.membersEmpty')}</p>
+            <p className="text-sm text-gray-400">{t('shops.membersEmpty')}</p>
           )}
           {members.map((member) => {
             const activeOwnerCount = members.filter(
@@ -986,11 +940,11 @@ export function ShopSettingsPage() {
             return (
               <div
                 key={member.userId}
-                className="flex items-center justify-between border-t border-white/8 py-3 first:border-t-0 first:pt-0"
+                className="flex items-center justify-between border-t border-gray-200 py-3 first:border-t-0 first:pt-0"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span
-                    className="text-sm text-white font-mono truncate"
+                    className="text-sm text-gray-900 font-mono truncate"
                     title={member.userId}
                   >
                     {(member.userId ?? '').slice(0, 8)}…
@@ -998,14 +952,14 @@ export function ShopSettingsPage() {
                   <span
                     className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                       member.role === 'owner'
-                        ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-white/10 text-white/55'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-gray-100 text-gray-500'
                     }`}
                   >
                     {roleName}
                   </span>
                   {!member.isActive && (
-                    <span className="text-xs text-white/30">{t('shops.membersInactive')}</span>
+                    <span className="text-xs text-gray-400">{t('shops.membersInactive')}</span>
                   )}
                 </div>
                 <GlassButton
@@ -1019,13 +973,9 @@ export function ShopSettingsPage() {
             );
           })}
         </div>
-
-        {memberRemoveError && (
-          <p className="text-sm text-red-300">{memberRemoveError}</p>
-        )}
-
-        <div className="border-t border-white/8 pt-4 space-y-3">
-          <p className="text-xs text-white/40 uppercase tracking-wide">
+        {memberRemoveError && <p className="text-sm text-red-600">{memberRemoveError}</p>}
+        <div className="border-t border-gray-200 pt-4 space-y-3">
+          <p className="text-xs text-gray-400 uppercase tracking-wide">
             {t('shops.membersAddTitle')}
           </p>
           <GlassInput
@@ -1037,23 +987,21 @@ export function ShopSettingsPage() {
               setMemberAddError(null);
             }}
           />
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-white/50">{t('shops.membersRoleLabel')}</span>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-gray-700">{t('shops.membersRoleLabel')}</span>
             <select
               value={newMemberRoleId}
               onChange={(e) => setNewMemberRoleId(e.target.value)}
-              className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+              className={inputClass}
             >
               {roleOptions.map((opt) => (
-                <option key={opt.id} value={opt.id} className="bg-gray-900 text-white">
+                <option key={opt.id} value={opt.id}>
                   {opt.name}
                 </option>
               ))}
             </select>
           </div>
-
-          {memberAddError && <p className="text-sm text-red-300">{memberAddError}</p>}
-
+          {memberAddError && <p className="text-sm text-red-600">{memberAddError}</p>}
           <GlassButton onClick={handleAddMember} disabled={isAddingMember}>
             {isAddingMember ? t('shops.membersAdding') : t('shops.membersAdd')}
           </GlassButton>
@@ -1061,8 +1009,8 @@ export function ShopSettingsPage() {
       </GlassCard>
 
       <GlassCard className="p-4">
-        <p className="text-xs text-white/25 mb-2 uppercase tracking-wide">Debug</p>
-        <pre className="text-white/45 text-xs whitespace-pre-wrap">
+        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Debug</p>
+        <pre className="text-gray-500 text-xs whitespace-pre-wrap">
           {JSON.stringify(shop, null, 2)}
         </pre>
       </GlassCard>

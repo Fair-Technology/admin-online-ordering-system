@@ -18,14 +18,14 @@ export function ToastContainer({ toasts }: ToastContainerProps) {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="bg-white/15 backdrop-blur-xl border border-white/25 rounded-xl px-4 py-3 shadow-lg flex items-center gap-2 animate-fade-in"
+          className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-lg flex items-center gap-2 animate-fade-in"
         >
           {toast.type === 'success' ? (
-            <CheckCircle size={16} className="text-emerald-200 shrink-0" />
+            <CheckCircle size={16} className="text-green-500 shrink-0" />
           ) : (
-            <XCircle size={16} className="text-red-300 shrink-0" />
+            <XCircle size={16} className="text-red-500 shrink-0" />
           )}
-          <span className={`text-sm ${toast.type === 'success' ? 'text-emerald-200' : 'text-red-300'}`}>
+          <span className={`text-sm ${toast.type === 'success' ? 'text-gray-900' : 'text-red-600'}`}>
             {toast.message}
           </span>
         </div>

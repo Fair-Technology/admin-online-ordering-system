@@ -45,11 +45,11 @@ export function CreateCategoryPage() {
         { label: shop?.name ?? t('shops.shop'), to: `/shops/${shopId}` },
         { label: t('categories.newCategory') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">{t('categories.createTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">{t('categories.createTitle')}</h1>
 
       {isError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">
             {(error as { data?: { error?: string } })?.data?.error ?? t('categories.failedToCreate')}
           </p>
         </GlassCard>
@@ -65,12 +65,12 @@ export function CreateCategoryPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input
               type="checkbox"
               checked={hasStar}
               onChange={(e) => setHasStar(e.target.checked)}
-              className="h-4 w-4 rounded"
+              className="h-4 w-4 rounded accent-gray-900"
             />
             {t('categories.hasStar')}
           </label>

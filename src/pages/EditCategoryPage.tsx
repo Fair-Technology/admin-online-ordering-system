@@ -37,7 +37,7 @@ export function EditCategoryPage() {
   }, [category]);
 
   if (isLoading) return <GlassSpinner label={t('categories.loadingCategory')} />;
-  if (isError || !category) return <p className="text-red-400">{t('categories.failedToLoad')}</p>;
+  if (isError || !category) return <p className="text-red-500">{t('categories.failedToLoad')}</p>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,17 +72,17 @@ export function EditCategoryPage() {
         { label: t('nav.categories'), to: `/shops/${shopId}/categories` },
         { label: t('categories.editTitle') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">{t('categories.editTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">{t('categories.editTitle')}</h1>
 
       {isUpdateError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">{t('categories.failedToUpdate')}</p>
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">{t('categories.failedToUpdate')}</p>
         </GlassCard>
       )}
 
       {isDeleteError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">{t('categories.failedToDelete')}</p>
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">{t('categories.failedToDelete')}</p>
         </GlassCard>
       )}
 
@@ -114,8 +114,8 @@ export function EditCategoryPage() {
 
       <GlassCard className="p-6">
         <div className="space-y-3">
-          <p className="text-sm font-medium text-white">{t('categories.dangerZone')}</p>
-          <p className="text-xs text-white/50">{t('categories.deleteWarning')}</p>
+          <p className="text-sm font-medium text-gray-900">{t('categories.dangerZone')}</p>
+          <p className="text-xs text-gray-400">{t('categories.deleteWarning')}</p>
           {confirmingDelete ? (
             <div className="space-y-3">
               <GlassInput

@@ -10,11 +10,11 @@ import { GlassButton } from '../components/ui/GlassButton';
 const PAGE_SIZE = 10;
 
 const STATUS_COLORS: Record<OrderResponse['status'], string> = {
-  paid: 'bg-green-500/20 text-green-300 border border-green-400/30',
-  pending_payment: 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30',
-  failed: 'bg-red-500/20 text-red-300 border border-red-400/30',
-  cancelled: 'bg-white/10 text-white/50 border border-white/20',
-  refunded: 'bg-white/10 text-white/50 border border-white/20',
+  paid: 'bg-green-50 text-green-700 border border-green-200',
+  pending_payment: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
+  failed: 'bg-red-50 text-red-700 border border-red-200',
+  cancelled: 'bg-gray-100 text-gray-500 border border-gray-200',
+  refunded: 'bg-gray-100 text-gray-500 border border-gray-200',
 };
 
 function formatCurrency(cents: number, currency: string): string {
@@ -42,54 +42,54 @@ function OrderRow({ order }: OrderRowProps) {
   return (
     <>
       <div
-        className="px-5 py-4 cursor-pointer hover:bg-white/5 transition-colors"
+        className="px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded((v) => !v)}
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-mono font-semibold text-white">{order.orderRef}</span>
+            <span className="font-mono font-semibold text-gray-900">{order.orderRef}</span>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[order.status]}`}>
               {t(`orders.status.${order.status}`)}
             </span>
           </div>
-          <span className="text-sm font-semibold text-white">
+          <span className="text-sm font-semibold text-gray-900">
             {formatCurrency(order.subtotalCents, order.currency)}
           </span>
         </div>
-        <div className="mt-1 flex flex-col gap-0.5 text-sm text-white/60">
+        <div className="mt-1 flex flex-col gap-0.5 text-sm text-gray-500">
           <span>{order.customerName} &middot; {order.customerEmail} &middot; {order.customerPhone}</span>
           <span>{formatDate(order.createdAt)}</span>
         </div>
       </div>
 
       {expanded && (
-        <div className="px-5 pb-4 bg-black/10">
-          <div className="divide-y divide-white/8 rounded-xl overflow-hidden border border-white/10">
+        <div className="px-5 pb-4 bg-gray-50">
+          <div className="divide-y divide-gray-200 rounded-xl overflow-hidden border border-gray-200">
             {order.items.map((item, i) => (
               <div key={i} className="flex items-start justify-between px-4 py-2 text-sm gap-3">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-white/80">
+                  <span className="text-gray-700">
                     {item.productName} &times; {item.quantity} @ {formatCurrency(item.unitPriceCents, order.currency)}
                   </span>
                   {item.selectedVariantOptionName && (
-                    <span className="text-xs text-white/50">
+                    <span className="text-xs text-gray-400">
                       {item.selectedVariantOptionName}
                     </span>
                   )}
                   {item.selectedAddonOptionNames && item.selectedAddonOptionNames.length > 0 && (
-                    <span className="text-xs text-white/50">
+                    <span className="text-xs text-gray-400">
                       + {item.selectedAddonOptionNames.join(', ')}
                     </span>
                   )}
                 </div>
-                <span className="text-white font-medium shrink-0">
+                <span className="text-gray-900 font-medium shrink-0">
                   {formatCurrency(item.lineTotalCents, order.currency)}
                 </span>
               </div>
             ))}
           </div>
           {order.customerNotes && (
-            <p className="mt-2 text-xs text-white/50 italic">&ldquo;{order.customerNotes}&rdquo;</p>
+            <p className="mt-2 text-xs text-gray-400 italic">&ldquo;{order.customerNotes}&rdquo;</p>
           )}
         </div>
       )}
@@ -113,7 +113,7 @@ export function OrdersPage() {
   });
 
   if (isLoading) return <GlassSpinner label={t('orders.loading')} />;
-  if (isError) return <p className="text-red-400">{t('orders.loadError')}</p>;
+  if (isError) return <p className="text-red-500">{t('orders.loadError')}</p>;
 
   const orders = data?.orders ?? [];
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
@@ -123,9 +123,9 @@ export function OrdersPage() {
     <div className="space-y-4">
       <GlassCard>
         {orders.length === 0 ? (
-          <p className="p-5 text-white/40 text-sm">{t('orders.empty')}</p>
+          <p className="p-5 text-gray-400 text-sm">{t('orders.empty')}</p>
         ) : (
-          <div className="divide-y divide-white/8">
+          <div className="divide-y divide-gray-200">
             {orders.map((order) => (
               <OrderRow key={order.id} order={order} />
             ))}
@@ -143,7 +143,7 @@ export function OrdersPage() {
           >
             {t('orders.previousPage')}
           </GlassButton>
-          <span className="text-sm text-white/60">
+          <span className="text-sm text-gray-500">
             {t('orders.pageInfo', { page, total: totalPages })}
           </span>
           <GlassButton

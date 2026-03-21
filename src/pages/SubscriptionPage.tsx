@@ -77,7 +77,6 @@ function PlanCard({
   const { t } = useTranslation();
   const { data: pricingList } = useGetPlanPricingQuery({ planId: plan.id });
 
-  // Match by currency only — don't filter by isActive so partially-configured plans still show a price
   const pricing = pricingList?.find(
     (p) => p.currency.toUpperCase() === currency.toUpperCase(),
   );
@@ -85,7 +84,6 @@ function PlanCard({
   const isFree = plan.internalKey === 'free';
   const tagline = PLAN_TAGLINES[index] ?? 'The right plan for your business.';
 
-  // Price resolution — show amount whenever it exists; canUpgrade requires a Stripe price ID too
   let priceDisplay = '';
   let periodLabel = '';
   let hasPrice = false;
@@ -102,7 +100,6 @@ function PlanCard({
     }
   }
 
-  // Build feature list: real limits first, then base + paid extras
   const limitFeatures = plan.limits.map(
     (l) => `${l.value === -1 ? 'Unlimited' : l.value.toLocaleString()} ${formatLimitKey(l.key)}`,
   );
@@ -111,19 +108,16 @@ function PlanCard({
 
   return (
     <div
-      className={`relative flex flex-col flex-1 min-w-[220px] rounded-2xl backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.35)] overflow-hidden transition-all duration-200 ${
+      className={`relative flex flex-col flex-1 min-w-[220px] rounded-2xl overflow-hidden transition-all duration-200 ${
         isCurrentPlan
-          ? 'bg-white/15 border border-emerald-400/40'
-          : 'bg-white/10 border border-white/20 hover:bg-white/13 hover:border-white/30'
+          ? 'bg-white border-2 border-gray-900 shadow-sm'
+          : 'bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
       }`}
     >
-      {/* Top shimmer */}
-      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-
       {/* Current plan badge */}
       {isCurrentPlan && (
         <div className="absolute top-4 right-4">
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-900 text-white">
             {t('subscription.currentPlanBadge')}
           </span>
         </div>
@@ -132,43 +126,43 @@ function PlanCard({
       <div className="flex flex-col flex-1 p-6">
         {/* Plan name + tagline */}
         <div className="mb-6 pr-6">
-          <h3 className="text-xl font-bold text-white mb-1.5">{plan.name}</h3>
-          <p className="text-sm text-white/50 leading-relaxed">{tagline}</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-1.5">{plan.name}</h3>
+          <p className="text-sm text-gray-500 leading-relaxed">{tagline}</p>
         </div>
 
         {/* Price */}
         <div className="mb-7">
           {isFree ? (
-            <p className="text-4xl font-bold text-white">{t('subscription.free')}</p>
+            <p className="text-4xl font-bold text-gray-900">{t('subscription.free')}</p>
           ) : hasPrice ? (
             <div className="flex items-baseline gap-2.5">
-              <p className="text-4xl font-bold text-white">{priceDisplay}</p>
-              <span className="text-sm text-white/50">{periodLabel}</span>
+              <p className="text-4xl font-bold text-gray-900">{priceDisplay}</p>
+              <span className="text-sm text-gray-400">{periodLabel}</span>
             </div>
           ) : (
-            <p className="text-2xl font-semibold text-white/40">—</p>
+            <p className="text-2xl font-semibold text-gray-300">—</p>
           )}
         </div>
 
         {/* Features */}
         <ul className="flex flex-col gap-3 flex-1 mb-8">
           {features.map((feature) => (
-            <li key={feature} className="flex items-start gap-2.5 text-sm text-white/75">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-600">
+              <CheckCircle2 className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
               {feature}
             </li>
           ))}
         </ul>
 
-        {/* CTA button — pinned to bottom, always rendered */}
+        {/* CTA button */}
         {isCurrentPlan ? (
-          <div className="w-full py-2.5 rounded-xl text-sm font-medium bg-white/6 border border-white/10 text-white/35 text-center cursor-default select-none">
+          <div className="w-full py-2.5 rounded-xl text-sm font-medium bg-gray-100 border border-gray-200 text-gray-400 text-center cursor-default select-none">
             {t('subscription.currentPlanBadge')}
           </div>
         ) : isDowngrade && isOwner ? (
           <button
             onClick={() => onUpgrade(plan.id)}
-            className="w-full py-3 rounded-xl text-sm font-semibold bg-red-500/80 hover:bg-red-500 text-white border border-red-400/40 shadow-[0_4px_20px_rgba(239,68,68,0.3)] hover:shadow-[0_4px_28px_rgba(239,68,68,0.5)] transition-all duration-150"
+            className="w-full py-3 rounded-xl text-sm font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all duration-150"
           >
             {`${t('subscription.downgrade')} to ${plan.name}`}
           </button>
@@ -176,7 +170,7 @@ function PlanCard({
           <button
             disabled={isUpgrading}
             onClick={() => onUpgrade(plan.id)}
-            className="w-full py-3 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_4px_24px_rgba(52,211,153,0.45)] hover:shadow-[0_4px_32px_rgba(52,211,153,0.65)] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl text-sm font-semibold bg-gray-900 hover:bg-gray-800 text-white transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isUpgrading ? t('subscription.upgrading') : `${t('subscription.upgrade')} to ${plan.name}`}
           </button>
@@ -244,39 +238,37 @@ export function SubscriptionPage() {
     <div className="flex flex-col gap-6">
       {/* Payment result banners */}
       {paymentParam === 'success' && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-sm">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 text-sm">
           <span>{t('subscription.paymentSuccess')}</span>
           <button
             onClick={dismissBanner}
-            className="text-emerald-300/60 hover:text-emerald-300 text-lg leading-none"
+            className="text-gray-400 hover:text-gray-700 text-lg leading-none"
           >
             ×
           </button>
         </div>
       )}
       {paymentParam === 'cancelled' && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-300 text-sm">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-600 text-sm">
           <span>{t('subscription.paymentCancelled')}</span>
           <button
             onClick={dismissBanner}
-            className="text-amber-300/60 hover:text-amber-300 text-lg leading-none"
+            className="text-gray-400 hover:text-gray-700 text-lg leading-none"
           >
             ×
           </button>
         </div>
       )}
 
-      {/* Header row: toggle right */}
+      {/* Billing interval toggle */}
       <div className="flex justify-end">
-
-        {/* Pill toggle matching the screenshot */}
-        <div className="flex items-center p-1 rounded-xl bg-white/10 border border-white/15 shrink-0">
+        <div className="flex items-center p-1 rounded-xl bg-gray-100 border border-gray-200 shrink-0">
           <button
             onClick={() => setBillingInterval('monthly')}
             className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 ${
               billingInterval === 'monthly'
-                ? 'bg-white/20 text-white border border-white/20 shadow-sm'
-                : 'text-white/50 hover:text-white'
+                ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {t('subscription.monthly')}
@@ -285,8 +277,8 @@ export function SubscriptionPage() {
             onClick={() => setBillingInterval('yearly')}
             className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 ${
               billingInterval === 'yearly'
-                ? 'bg-white/20 text-white border border-white/20 shadow-sm'
-                : 'text-white/50 hover:text-white'
+                ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {t('subscription.yearly')}
@@ -314,8 +306,7 @@ export function SubscriptionPage() {
         </div>
       )}
 
-      {/* Upgrade error */}
-      {upgradeError && <p className="text-sm text-red-400">{upgradeError}</p>}
+      {upgradeError && <p className="text-sm text-red-600">{upgradeError}</p>}
     </div>
   );
 }
