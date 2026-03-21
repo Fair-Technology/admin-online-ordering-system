@@ -2,14 +2,16 @@
  * Shared step components for the Create / Edit product wizards.
  */
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X as XIcon } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
+import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
+export type SpecialInfoItem = { icon: string; name: string };
 export type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 export type VariantGroup  = { id: string; name: string; options: VariantOption[] };
 export type AddonOption   = { id: string; name: string; priceDelta: number; isAvailable: boolean };
@@ -101,9 +103,11 @@ interface Step1Props {
   nameError: boolean;
   descError: boolean;
   existingImageUrl?: string | null;
+  specialInfo: SpecialInfoItem[];
+  setSpecialInfo: (items: SpecialInfoItem[]) => void;
 }
 
-export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySymbol, nameError, descError, existingImageUrl }: Step1Props) {
+export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySymbol, nameError, descError, existingImageUrl, specialInfo, setSpecialInfo }: Step1Props) {
   const { t } = useTranslation();
   return (
     <div className="space-y-4">
@@ -136,6 +140,44 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
         valueCents={form.price}
         onChange={(cents) => setForm((f) => ({ ...f, price: cents }))}
       />
+      {/* Special Info */}
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium text-gray-700">Special Info <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
+        <IconPicker
+          value={null}
+          onChange={(icon) => setSpecialInfo([...specialInfo, { icon, name: '' }])}
+        />
+        {specialInfo.length > 0 && (
+          <div className="flex flex-col gap-2 mt-1">
+            {specialInfo.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 flex-shrink-0">
+                  <LucideIconByName name={item.icon} size={16} />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Label (e.g. Spicy)"
+                  value={item.name}
+                  onChange={(e) => {
+                    const updated = specialInfo.map((si, i) => i === idx ? { ...si, name: e.target.value } : si);
+                    setSpecialInfo(updated);
+                  }}
+                  className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSpecialInfo(specialInfo.filter((_, i) => i !== idx))}
+                  className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
+                  aria-label="Remove"
+                >
+                  <XIcon size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-gray-400">Click an icon above to add a labelled info item.</p>
+      </div>
       <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-gray-700">
           {t('products.image')}{' '}
@@ -621,11 +663,12 @@ interface Step5Props {
   noEndDate: boolean;
   schedule: ScheduleState;
   currencySymbol: string;
+  specialInfo: SpecialInfoItem[];
 }
 
 export function Step5Review({
   form, imageFile, existingImageUrl, selectedCategoryIds, categories, taxRates, selectedTaxRateId,
-  variantGroups, addonGroups, scheduleEnabled, noEndDate, schedule, currencySymbol,
+  variantGroups, addonGroups, scheduleEnabled, noEndDate, schedule, currencySymbol, specialInfo,
 }: Step5Props) {
   const { t } = useTranslation();
 
@@ -703,6 +746,18 @@ export function Step5Review({
         <ReviewRow label={t('products.scheduleTitle')}>
           <span className="text-right text-xs text-gray-600 max-w-[200px]">{scheduleLabel()}</span>
         </ReviewRow>
+        {specialInfo.length > 0 && (
+          <ReviewRow label="Special Info">
+            <div className="flex flex-wrap gap-1.5 justify-end">
+              {specialInfo.map((item, idx) => (
+                <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200 text-xs text-gray-700">
+                  <LucideIconByName name={item.icon} size={11} />
+                  {item.name || item.icon}
+                </span>
+              ))}
+            </div>
+          </ReviewRow>
+        )}
       </div>
     </div>
   );

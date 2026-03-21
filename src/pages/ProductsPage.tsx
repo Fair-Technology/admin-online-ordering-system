@@ -21,9 +21,10 @@ import { Calendar, Pencil, Trash2, X } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import {
   type VariantGroup, type VariantOption, type AddonGroup, type AddonOption,
-  type StepNum, type ScheduleState,
+  type StepNum, type ScheduleState, type SpecialInfoItem,
   StepIndicator, Step1Basics, Step2Categories, Step3Customise, Step4Schedule, Step5Review,
 } from './ProductWizardSteps';
+import { LucideIconByName } from '../components/ui/IconPicker';
 
 // ── Product detail view (read-only) ───────────────────────────────────────────
 
@@ -125,6 +126,26 @@ function ProductDetailView({
                   className="text-xs px-2.5 py-0.5 rounded-full bg-gray-100 border border-gray-200 text-gray-600"
                 >
                   {c.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Special Info */}
+        {(product.specialInfo?.length ?? 0) > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              Special Info
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {product.specialInfo!.map((item, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 text-xs text-gray-700"
+                >
+                  <LucideIconByName name={item.icon} size={12} />
+                  {item.name}
                 </span>
               ))}
             </div>
@@ -250,6 +271,7 @@ function ProductEditView({
   const [schedule, setSchedule] = useState<ScheduleState>({
     startDate: '', endDate: '', startTime: '', endTime: '', daysOfWeek: [],
   });
+  const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -305,6 +327,9 @@ function ProductEditView({
           daysOfWeek: product.schedule.daysOfWeek ?? [],
         });
       }
+      setSpecialInfo(
+        (product.specialInfo ?? []).map((si) => ({ icon: si.icon, name: si.name })),
+      );
       setInitialized(true);
     }
   }, [product, initialized]);
@@ -376,6 +401,7 @@ function ProductEditView({
           addonGroups,
           taxRateId: selectedTaxRateId,
           schedule: schedulePayload,
+          specialInfo: specialInfo.length > 0 ? specialInfo : undefined,
         },
       }).unwrap();
 
@@ -494,7 +520,7 @@ function ProductEditView({
         )}
         <div key={step} className={direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left'}>
           {step === 1 && (
-            <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} existingImageUrl={existingImageUrl} />
+            <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} existingImageUrl={existingImageUrl} specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
           )}
           {step === 2 && (
             <Step2Categories categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} />
@@ -506,7 +532,7 @@ function ProductEditView({
             <Step4Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />
           )}
           {step === 5 && (
-            <Step5Review form={form} imageFile={imageFile} existingImageUrl={existingImageUrl} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} />
+            <Step5Review form={form} imageFile={imageFile} existingImageUrl={existingImageUrl} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />
           )}
         </div>
       </div>
@@ -652,6 +678,7 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [noEndDate, setNoEndDate] = useState(false);
   const [schedule, setSchedule] = useState<ScheduleState>({ startDate: '', endDate: '', startTime: '', endTime: '', daysOfWeek: [] });
+  const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const [nameError, setNameError] = useState(false);
@@ -726,6 +753,7 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
           variantGroups: variantGroups.length > 0 ? variantGroups : undefined,
           addonGroups: addonGroups.length > 0 ? addonGroups : undefined,
           schedule: schedulePayload,
+          specialInfo: specialInfo.length > 0 ? specialInfo : undefined,
         },
       }).unwrap();
 
@@ -800,11 +828,11 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
               </div>
             )}
             <div key={step} className={direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left'}>
-              {step === 1 && <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} />}
+              {step === 1 && <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />}
               {step === 2 && <Step2Categories categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} />}
               {step === 3 && <Step3Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />}
               {step === 4 && <Step4Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />}
-              {step === 5 && <Step5Review form={form} imageFile={imageFile} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} />}
+              {step === 5 && <Step5Review form={form} imageFile={imageFile} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />}
             </div>
           </div>
 
