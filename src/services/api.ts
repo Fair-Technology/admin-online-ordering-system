@@ -188,8 +188,26 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/shops/${queryArg.shopId}/members`,
         method: "POST",
-        body: { userId: queryArg.userId, role: queryArg.roleId },
+        body: { email: queryArg.email, role: queryArg.roleId },
       }),
+    }),
+    getMyInvitations: build.query<GetMyInvitationsApiResponse, void>({
+      query: () => ({ url: `/users/me/invitations` }),
+      providesTags: ['Invitations'],
+    }),
+    acceptShopInvitation: build.mutation<AcceptShopInvitationApiResponse, AcceptShopInvitationApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/invitations/accept`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Invitations', 'Shops'],
+    }),
+    declineShopInvitation: build.mutation<DeclineShopInvitationApiResponse, DeclineShopInvitationApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/invitations/decline`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Invitations'],
     }),
     removeShopMember: build.mutation<RemoveShopMemberApiResponse, RemoveShopMemberApiArg>({
       query: (queryArg) => ({
@@ -470,10 +488,34 @@ export type AddShopMemberApiResponse =
 export type AddShopMemberApiArg = {
   /** Shop ID */
   shopId: string;
-  /** Entra Object ID of the new member */
-  userId: string;
+  /** Email address of the user to invite */
+  email: string;
   /** Role ID to assign ('owner' or a custom role id from shop.roles) */
   roleId: string;
+};
+export type InvitationResponse = {
+  shopId: string;
+  shopName: string;
+  shopSlug: string;
+  role: string;
+};
+export type GetMyInvitationsApiResponse = {
+  invitations: InvitationResponse[];
+};
+export type AcceptShopInvitationApiResponse = {
+  shopId: string;
+  userId: string;
+  role: string;
+};
+export type AcceptShopInvitationApiArg = {
+  shopId: string;
+};
+export type DeclineShopInvitationApiResponse = {
+  shopId: string;
+  userId: string;
+};
+export type DeclineShopInvitationApiArg = {
+  shopId: string;
 };
 export type CreateShopRoleApiResponse = /** status 200 Role created */ ShopRolesResponse;
 export type CreateShopRoleApiArg = {
@@ -768,8 +810,8 @@ export type CategoryResponse = {
   name?: string;
   /** Sort order for display */
   sortOrder?: number;
-  /** Whether to show a star icon in the frontend */
-  hasStar?: boolean;
+  /** Lucide icon name */
+  icon?: string;
   /** Whether category is deleted */
   isDeleted?: boolean;
   /** Creation timestamp */
@@ -783,16 +825,16 @@ export type CreateCategoryRequest = {
   name: string;
   /** Sort order for display */
   sortOrder?: number;
-  /** Whether to show a star icon in the frontend */
-  hasStar?: boolean;
+  /** Lucide icon name */
+  icon?: string;
 };
 export type UpdateCategoryRequest = {
   /** Category name */
   name?: string;
   /** Sort order for display */
   sortOrder?: number;
-  /** Whether to show a star icon in the frontend */
-  hasStar?: boolean;
+  /** Lucide icon name */
+  icon?: string;
 };
 export type ProductResponse = {
   /** Product ID */
@@ -803,8 +845,6 @@ export type ProductResponse = {
   name?: string;
   /** Product description */
   description?: string;
-  /** Sort order for display */
-  sortOrder?: number;
   /** Product price in cents */
   price?: number;
   /** Product categories with full details */
@@ -825,8 +865,8 @@ export type ProductResponse = {
     /** Whether this is the primary image */
     isPrimary?: boolean;
   }[];
-  /** Allergy information */
-  allergyInfo?: string[];
+  /** Special info items (dietary labels, badges, etc.) */
+  specialInfo?: { name: string; icon: string }[];
   /** Product variant groups (optional) */
   variantGroups?: {
     /** Variant group ID */
@@ -888,8 +928,6 @@ export type CreateProductRequest = {
   description: string;
   /** Product price in cents */
   price: number;
-  /** Sort order for display */
-  sortOrder?: number;
   /** Category IDs */
   categoryIds?: string[];
   images?: {
@@ -897,8 +935,8 @@ export type CreateProductRequest = {
     url?: string;
     isPrimary?: boolean;
   }[];
-  /** Allergy information */
-  allergyInfo?: string[];
+  /** Special info items (dietary labels, badges, etc.) */
+  specialInfo?: { name: string; icon: string }[];
   /** Whether product is available */
   isAvailable?: boolean;
   /** Tax rate ID from the shop's taxRates list, or null to clear */
@@ -927,8 +965,6 @@ export type UpdateProductRequest = {
   description?: string;
   /** Product price in cents */
   price?: number;
-  /** Sort order for display */
-  sortOrder?: number;
   /** Category IDs */
   categoryIds?: string[];
   images?: {
@@ -936,8 +972,8 @@ export type UpdateProductRequest = {
     url?: string;
     isPrimary?: boolean;
   }[];
-  /** Allergy information */
-  allergyInfo?: string[];
+  /** Special info items (dietary labels, badges, etc.) */
+  specialInfo?: { name: string; icon: string }[];
   /** Whether product is available */
   isAvailable?: boolean;
   /** Tax rate ID from the shop's taxRates list, or null to clear */
@@ -1210,4 +1246,7 @@ export const {
   useGetShopSubscriptionQuery,
   useGetPlanPricingQuery,
   useCreateSubscriptionCheckoutMutation,
+  useGetMyInvitationsQuery,
+  useAcceptShopInvitationMutation,
+  useDeclineShopInvitationMutation,
 } = injectedRtkApi;

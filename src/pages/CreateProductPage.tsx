@@ -220,14 +220,14 @@ export function CreateProductPage() {
         { label: shop?.name ?? t('shops.shop'), to: `/shops/${shopId}` },
         { label: t('products.newProduct') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">{t('products.createTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">{t('products.createTitle')}</h1>
 
       <StepIndicator currentStep={step} onJump={jumpTo} />
-      <p className="text-sm text-white/50">{stepSubtitles[step]}</p>
+      <p className="text-sm text-gray-400">{stepSubtitles[step]}</p>
 
       {isError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">
             {(error as { data?: { error?: string } })?.data?.error ?? t('products.failedToCreate')}
           </p>
         </GlassCard>

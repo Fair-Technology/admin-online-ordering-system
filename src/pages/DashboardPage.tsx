@@ -49,26 +49,26 @@ export function DashboardPage() {
 
       {/* Welcome */}
       <div>
-        <h1 className="text-3xl font-semibold text-white tracking-tight">
+        <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
           {firstName ? t('dashboard.welcomeBack', { name: firstName }) : t('dashboard.title')}
         </h1>
-        <p className="text-white/45 mt-1 text-sm">{t('dashboard.subtitle')}</p>
+        <p className="text-gray-400 mt-1 text-sm">{t('dashboard.subtitle')}</p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4">
         <GlassCard className="p-5">
-          <p className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
             {t('dashboard.totalShops')}
           </p>
-          <p className="text-4xl font-semibold text-white">{shopCount}</p>
+          <p className="text-4xl font-semibold text-gray-900">{shopCount}</p>
         </GlassCard>
 
         <GlassCard className="p-5">
-          <p className="text-xs font-medium text-white/45 uppercase tracking-wider mb-2">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
             {t('dashboard.totalOrders')}
           </p>
-          <p className="text-4xl font-semibold text-white">
+          <p className="text-4xl font-semibold text-gray-900">
             {ordersLoaded ? totalOrders : '—'}
           </p>
         </GlassCard>

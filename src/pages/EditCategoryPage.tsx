@@ -9,6 +9,7 @@ import { GlassInput } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { useToast } from '../contexts/ToastContext';
+import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
 
 export function EditCategoryPage() {
   const { shopId, categoryId } = useParams<{ shopId: string; categoryId: string }>();
@@ -27,17 +28,19 @@ export function EditCategoryPage() {
     useDeleteCategoryMutation();
 
   const [name, setName] = useState('');
+  const [icon, setIcon] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
 
   useEffect(() => {
     if (category) {
       setName(category.name ?? '');
+      setIcon(category.icon ?? null);
     }
   }, [category]);
 
   if (isLoading) return <GlassSpinner label={t('categories.loadingCategory')} />;
-  if (isError || !category) return <p className="text-red-400">{t('categories.failedToLoad')}</p>;
+  if (isError || !category) return <p className="text-red-500">{t('categories.failedToLoad')}</p>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +48,7 @@ export function EditCategoryPage() {
       await updateCategory({
         shopId: shopId!,
         categoryId: categoryId!,
-        updateCategoryRequest: { name },
+        updateCategoryRequest: { name, icon: icon ?? undefined },
       }).unwrap();
       toast.success(t('categories.saved'));
       navigate(`/shops/${shopId}/categories`);
@@ -72,17 +75,17 @@ export function EditCategoryPage() {
         { label: t('nav.categories'), to: `/shops/${shopId}/categories` },
         { label: t('categories.editTitle') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">{t('categories.editTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">{t('categories.editTitle')}</h1>
 
       {isUpdateError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">{t('categories.failedToUpdate')}</p>
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">{t('categories.failedToUpdate')}</p>
         </GlassCard>
       )}
 
       {isDeleteError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">{t('categories.failedToDelete')}</p>
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">{t('categories.failedToDelete')}</p>
         </GlassCard>
       )}
 
@@ -95,6 +98,15 @@ export function EditCategoryPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+          <div className="flex flex-col gap-1.5">
+            <p className="text-sm font-medium text-gray-700">Icon <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
+            <IconPicker value={icon} onChange={(n) => setIcon(icon === n ? null : n)} />
+            {icon && (
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                Selected: <LucideIconByName name={icon} size={13} /> {icon}
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             <GlassButton
               type="button"
@@ -114,8 +126,8 @@ export function EditCategoryPage() {
 
       <GlassCard className="p-6">
         <div className="space-y-3">
-          <p className="text-sm font-medium text-white">{t('categories.dangerZone')}</p>
-          <p className="text-xs text-white/50">{t('categories.deleteWarning')}</p>
+          <p className="text-sm font-medium text-gray-900">{t('categories.dangerZone')}</p>
+          <p className="text-xs text-gray-400">{t('categories.deleteWarning')}</p>
           {confirmingDelete ? (
             <div className="space-y-3">
               <GlassInput

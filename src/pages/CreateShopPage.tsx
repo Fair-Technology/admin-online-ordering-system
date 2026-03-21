@@ -87,11 +87,11 @@ export function CreateShopPage() {
   return (
     <div className="max-w-lg space-y-5">
       <Breadcrumb items={[{ label: t('nav.shops'), to: '/shops' }, { label: t('shops.newShop') }]} />
-      <h1 className="text-2xl font-semibold text-white">{t('shops.createTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">{t('shops.createTitle')}</h1>
 
       {isError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">
             {(error as { data?: { error?: string } })?.data?.error ?? t('shops.failedToCreate')}
           </p>
         </GlassCard>
@@ -109,20 +109,20 @@ export function CreateShopPage() {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+            <label className="text-sm font-medium text-gray-700">
               {t('shops.shopCountry')}
             </label>
             <select
               required
               value={form.countryCode ?? 'AU'}
               onChange={(e) => handleCountryChange(e.target.value)}
-              className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+              className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
             >
-              <option value="" disabled className="bg-gray-900 text-white/50">
+              <option value="" disabled className="text-gray-400">
                 {t('shops.shopCountryPlaceholder')}
               </option>
               {COUNTRY_OPTIONS.map((c) => (
-                <option key={c.code} value={c.code} className="bg-gray-900 text-white">
+                <option key={c.code} value={c.code}>
                   {c.label}
                 </option>
               ))}

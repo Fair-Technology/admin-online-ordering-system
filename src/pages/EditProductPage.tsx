@@ -127,7 +127,7 @@ export function EditProductPage() {
   }, [product]);
 
   if (isLoading) return <GlassSpinner label={t('products.loadingProduct')} />;
-  if (isError || !product) return <p className="text-red-400">{t('products.failedToLoad')}</p>;
+  if (isError || !product) return <p className="text-red-500">{t('products.failedToLoad')}</p>;
 
   const existingImageUrl = product.images?.find((img) => img.isPrimary)?.url ?? product.images?.[0]?.url ?? null;
 
@@ -302,14 +302,14 @@ export function EditProductPage() {
         { label: t('nav.products'), to: `/shops/${shopId}` },
         { label: product.name ?? t('products.editTitle') },
       ]} />
-      <h1 className="text-2xl font-semibold text-white">{t('products.editTitle')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-900">{t('products.editTitle')}</h1>
 
       <StepIndicator currentStep={step} onJump={jumpTo} />
-      <p className="text-sm text-white/50">{stepSubtitles[step]}</p>
+      <p className="text-sm text-gray-400">{stepSubtitles[step]}</p>
 
       {isUpdateError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">{t('products.failedToUpdate')}</p>
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">{t('products.failedToUpdate')}</p>
         </GlassCard>
       )}
 
@@ -414,16 +414,16 @@ export function EditProductPage() {
         )}
       </div>
 
-      {/* Danger zone — outside the wizard */}
+      {/* Danger zone */}
       {isDeleteError && (
-        <GlassCard className="p-4 !bg-red-500/15 !border-red-400/30">
-          <p className="text-sm text-red-300">{t('products.failedToDelete')}</p>
+        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <p className="text-sm text-red-600">{t('products.failedToDelete')}</p>
         </GlassCard>
       )}
       <GlassCard className="p-6">
         <div className="space-y-3">
-          <p className="text-sm font-medium text-white">{t('products.dangerZone')}</p>
-          <p className="text-xs text-white/50">{t('products.deleteWarning')}</p>
+          <p className="text-sm font-medium text-gray-900">{t('products.dangerZone')}</p>
+          <p className="text-xs text-gray-400">{t('products.deleteWarning')}</p>
           {confirmingDelete ? (
             <div className="space-y-3">
               <GlassInput

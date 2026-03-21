@@ -9,7 +9,22 @@
     "categories": "Kategorien",
     "subscription": "Abonnement",
     "settings": "Einstellungen",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "myShops": "Meine Shops",
+    "invitations": "Einladungen"
+  },
+  "invitations": {
+    "title": "Ausstehende Einladungen",
+    "loading": "Einladungen werden geladen…",
+    "loadError": "Einladungen konnten nicht geladen werden.",
+    "empty": "Keine ausstehenden Einladungen.",
+    "role": "Rolle",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "acceptSuccess": "Einladung angenommen.",
+    "acceptFailed": "Einladung konnte nicht angenommen werden.",
+    "declineSuccess": "Einladung abgelehnt.",
+    "declineFailed": "Einladung konnte nicht abgelehnt werden."
   },
   "subscription": {
     "currentPlan": "Aktueller Plan",
@@ -56,6 +71,7 @@
     "shop": "Shop",
     "addShop": "+ Neuer Shop",
     "newShop": "Neuer Shop",
+    "createSubtitle": "Füllen Sie die Details aus, um Ihren Shop zu erstellen.",
     "loading": "Shops werden geladen...",
     "loadError": "Shops konnten nicht geladen werden.",
     "empty": "Noch keine Shops.",
@@ -140,6 +156,11 @@
     "membersTitle": "Mitglieder",
     "membersEmpty": "Noch keine Mitglieder.",
     "membersInactive": "inaktiv",
+    "membersInvited": "Eingeladen",
+    "membersEmail": "E-Mail-Adresse",
+    "membersEmailPlaceholder": "E-Mail-Adresse eingeben",
+    "membersEmailRequired": "E-Mail ist erforderlich.",
+    "membersInviteSent": "Einladung gesendet.",
     "membersRemove": "Entfernen",
     "membersRemoveFailed": "Mitglied konnte nicht entfernt werden.",
     "membersAddTitle": "Mitglied hinzufügen",
@@ -255,7 +276,18 @@
     "wizardReviewVariants": "{{count}} Variantengruppe(n)",
     "wizardReviewAddons": "{{count}} Extragruppe(n)",
     "wizardReviewNone": "Keine",
-    "wizardReviewAlwaysAvailable": "Immer verfügbar"
+    "wizardReviewAlwaysAvailable": "Immer verfügbar",
+    "updated": "Produkt aktualisiert.",
+    "save": "Änderungen speichern",
+    "edit": "Bearbeiten",
+    "noDescription": "Keine Beschreibung.",
+    "detailTitle": "Produktdetails",
+    "detailSubtitle": "Produktinformationen anzeigen und bearbeiten.",
+    "detailName": "Produktname",
+    "detailDescription": "Beschreibung",
+    "detailCategories": "Kategorien",
+    "detailPrice": "Preis",
+    "detailStatus": "Status"
   },
   "variants": {
     "title": "Varianten",
@@ -299,6 +331,7 @@
   "categories": {
     "addCategory": "+ Neue Kategorie",
     "newCategory": "Neue Kategorie",
+    "createSubtitle": "Geben Sie einen Namen für Ihre neue Kategorie ein.",
     "loading": "Kategorien werden geladen...",
     "loadError": "Kategorien konnten nicht geladen werden.",
     "empty": "Noch keine Kategorien.",

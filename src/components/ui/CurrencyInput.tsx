@@ -1,7 +1,7 @@
 const BASE =
-  'w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-sm text-white ' +
-  'placeholder:text-white/35 focus:outline-none focus:border-white/45 focus:bg-white/15 ' +
-  'transition-all duration-150 backdrop-blur-sm';
+  'w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 ' +
+  'focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 ' +
+  'transition-all duration-150';
 
 interface CurrencyInputProps {
   label?: string;
@@ -30,7 +30,7 @@ export function CurrencyInput({ label, valueCents, onChange, className = '' }: C
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label className="text-xs font-medium text-white/50 uppercase tracking-wide">{label}</label>
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</label>
       )}
       <input
         type="text"

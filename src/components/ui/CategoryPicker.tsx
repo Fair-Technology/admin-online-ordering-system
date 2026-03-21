@@ -44,19 +44,19 @@ export function CategoryPicker({ label, categories, selectedIds, onChange }: Cat
   return (
     <div className="flex flex-col gap-1.5" ref={containerRef}>
       {label && (
-        <label className="text-xs font-medium text-white/50 uppercase tracking-wide">{label}</label>
+        <label className="text-sm font-medium text-gray-700">{label}</label>
       )}
 
-      {/* Trigger area — looks like a glass input */}
+      {/* Trigger area */}
       <button
         type="button"
         onClick={() => remaining.length > 0 && setOpen((v) => !v)}
-        className={`w-full min-h-[38px] bg-white/10 border rounded-xl px-3 py-2 text-left transition-all duration-150 backdrop-blur-sm flex flex-wrap items-center gap-1.5 ${
-          open ? 'border-white/45 bg-white/15' : 'border-white/20 hover:border-white/35'
+        className={`w-full min-h-[38px] bg-white border rounded-lg px-3 py-2 text-left transition-all duration-150 flex flex-wrap items-center gap-1.5 ${
+          open ? 'border-gray-400 ring-2 ring-gray-900/20' : 'border-gray-200 hover:border-gray-300'
         } ${remaining.length === 0 ? 'cursor-default' : 'cursor-pointer'}`}
       >
         {selected.length === 0 && (
-          <span className="text-sm text-white/35 flex-1">
+          <span className="text-sm text-gray-400 flex-1">
             {remaining.length === 0 ? '—' : 'Select categories…'}
           </span>
         )}
@@ -64,13 +64,13 @@ export function CategoryPicker({ label, categories, selectedIds, onChange }: Cat
         {selected.map((cat) => (
           <span
             key={cat.id}
-            className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full text-xs bg-white/20 border border-white/25 text-white"
+            className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full text-xs bg-gray-100 border border-gray-200 text-gray-700"
           >
             {cat.name}
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); remove(cat.id!); }}
-              className="text-white/50 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-gray-700 transition-colors"
               aria-label={`Remove ${cat.name}`}
             >
               <X size={11} strokeWidth={2.5} />
@@ -79,7 +79,7 @@ export function CategoryPicker({ label, categories, selectedIds, onChange }: Cat
         ))}
 
         {remaining.length > 0 && (
-          <span className="ml-auto pl-1 text-white/35">
+          <span className="ml-auto pl-1 text-gray-400">
             <ChevronDown
               size={14}
               className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
@@ -91,14 +91,14 @@ export function CategoryPicker({ label, categories, selectedIds, onChange }: Cat
       {/* Dropdown */}
       {open && remaining.length > 0 && (
         <div className="relative z-20">
-          <div className="absolute top-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border border-white/30 rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.4)] overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
             <div className="max-h-48 overflow-y-auto">
               {remaining.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => add(cat.id!)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-black/8 hover:text-gray-900 transition-colors"
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                 >
                   {cat.name}
                 </button>

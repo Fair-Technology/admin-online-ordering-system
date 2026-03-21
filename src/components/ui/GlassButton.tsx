@@ -9,10 +9,10 @@ interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary:   'bg-white/20 hover:bg-white/30 border border-white/25 text-white',
-  secondary: 'bg-white/10 hover:bg-white/20 border border-white/20 text-white/80',
-  ghost:     'bg-transparent hover:bg-white/10 border border-white/15 text-white/65 hover:text-white',
-  danger:    'bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 text-red-300 hover:text-red-200',
+  primary:   'bg-gray-900 text-white hover:bg-gray-800 border border-gray-900',
+  secondary: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50',
+  ghost:     'bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent',
+  danger:    'bg-white text-red-600 border border-red-200 hover:bg-red-50',
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -22,7 +22,7 @@ const sizeClasses: Record<Size, string> = {
 };
 
 const BASE =
-  'inline-flex items-center justify-center font-medium backdrop-blur-md transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed';
 
 export function GlassButton({
   variant = 'primary',

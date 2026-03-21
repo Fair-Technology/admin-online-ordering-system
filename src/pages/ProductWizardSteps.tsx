@@ -2,13 +2,16 @@
  * Shared step components for the Create / Edit product wizards.
  */
 import { useTranslation } from 'react-i18next';
+import { ArrowRight, X as XIcon } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
+import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
+export type SpecialInfoItem = { icon: string; name: string };
 export type VariantOption = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 export type VariantGroup  = { id: string; name: string; options: VariantOption[] };
 export type AddonOption   = { id: string; name: string; priceDelta: number; isAvailable: boolean };
@@ -52,8 +55,8 @@ export function StepIndicator({ currentStep, onJump }: StepIndicatorProps) {
         const circleClass = isCompleted
           ? 'bg-emerald-500 border-emerald-500 text-white cursor-pointer hover:bg-emerald-400'
           : isActive
-          ? 'bg-white border-white text-gray-900'
-          : 'bg-transparent border-white/25 text-white/30';
+          ? 'bg-gray-900 border-gray-900 text-white'
+          : 'bg-transparent border-gray-200 text-gray-300';
 
         return (
           <div key={n} className="flex items-center flex-1 min-w-0">
@@ -69,7 +72,7 @@ export function StepIndicator({ currentStep, onJump }: StepIndicatorProps) {
               </button>
               <span
                 className={`text-[10px] font-medium leading-tight text-center truncate max-w-[52px] transition-colors duration-200 ${
-                  isCompleted ? 'text-emerald-400' : isActive ? 'text-white' : 'text-white/30'
+                  isCompleted ? 'text-emerald-500' : isActive ? 'text-gray-900' : 'text-gray-300'
                 }`}
               >
                 {label}
@@ -78,7 +81,7 @@ export function StepIndicator({ currentStep, onJump }: StepIndicatorProps) {
             {n < 5 && (
               <div
                 className={`flex-1 h-px mx-1 mb-4 transition-colors duration-200 ${
-                  n < currentStep ? 'bg-emerald-500' : 'bg-white/15'
+                  n < currentStep ? 'bg-emerald-500' : 'bg-gray-200'
                 }`}
               />
             )}
@@ -100,9 +103,11 @@ interface Step1Props {
   nameError: boolean;
   descError: boolean;
   existingImageUrl?: string | null;
+  specialInfo: SpecialInfoItem[];
+  setSpecialInfo: (items: SpecialInfoItem[]) => void;
 }
 
-export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySymbol, nameError, descError, existingImageUrl }: Step1Props) {
+export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySymbol, nameError, descError, existingImageUrl, specialInfo, setSpecialInfo }: Step1Props) {
   const { t } = useTranslation();
   return (
     <div className="space-y-4">
@@ -115,7 +120,7 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
         />
         {nameError && (
-          <p className="mt-1 text-xs text-red-400">{t('products.name')} is required.</p>
+          <p className="mt-1 text-xs text-red-500">{t('products.name')} is required.</p>
         )}
       </div>
       <div>
@@ -127,7 +132,7 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
         />
         {descError && (
-          <p className="mt-1 text-xs text-red-400">{t('products.description')} is required.</p>
+          <p className="mt-1 text-xs text-red-500">{t('products.description')} is required.</p>
         )}
       </div>
       <CurrencyInput
@@ -135,50 +140,101 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
         valueCents={form.price}
         onChange={(cents) => setForm((f) => ({ ...f, price: cents }))}
       />
-      <div className="flex flex-col gap-1.5">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
-          {t('products.image')}{' '}
-          <span className="text-white/25 normal-case font-normal">{t('products.imageOptionalNote')}</span>
-        </p>
-        {(existingImageUrl || imageFile) && (
-          <div className="flex items-start gap-3">
-            {existingImageUrl && (
-              <div className="flex flex-col gap-1 items-center">
-                <img
-                  src={existingImageUrl}
-                  alt={t('products.currentImage')}
-                  className={`w-16 h-16 rounded-xl object-cover border border-white/20 ${imageFile ? 'opacity-50' : ''}`}
+      {/* Special Info */}
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium text-gray-700">Special Info <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
+        <IconPicker
+          value={null}
+          onChange={(icon) => setSpecialInfo([...specialInfo, { icon, name: '' }])}
+        />
+        {specialInfo.length > 0 && (
+          <div className="flex flex-col gap-2 mt-1">
+            {specialInfo.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 flex-shrink-0">
+                  <LucideIconByName name={item.icon} size={16} />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Label (e.g. Spicy)"
+                  value={item.name}
+                  onChange={(e) => {
+                    const updated = specialInfo.map((si, i) => i === idx ? { ...si, name: e.target.value } : si);
+                    setSpecialInfo(updated);
+                  }}
+                  className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
                 />
-                <span className="text-xs text-white/35">{t('products.currentImage')}</span>
+                <button
+                  type="button"
+                  onClick={() => setSpecialInfo(specialInfo.filter((_, i) => i !== idx))}
+                  className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
+                  aria-label="Remove"
+                >
+                  <XIcon size={14} />
+                </button>
               </div>
-            )}
-            {imageFile && (
-              <div className="flex flex-col gap-1 items-center">
-                <img
-                  src={URL.createObjectURL(imageFile)}
-                  alt={t('products.newImage')}
-                  className="w-16 h-16 rounded-xl object-cover border border-white/20"
-                />
-                <span className="text-xs text-white/35">{t('products.newImage')}</span>
-              </div>
-            )}
+            ))}
           </div>
         )}
-        {!existingImageUrl && imageFile && (
+        <p className="text-xs text-gray-400">Click an icon above to add a labelled info item.</p>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <p className="text-sm font-medium text-gray-700">
+          {t('products.image')}{' '}
+          <span className="text-gray-300 font-normal">{t('products.imageOptionalNote')}</span>
+        </p>
+        {/* Image preview */}
+        {existingImageUrl && imageFile ? (
+          /* Replacing existing: old (with overlay) → arrow → new */
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center gap-1">
+              <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+                <img src={existingImageUrl} alt={t('products.currentImage')} className="w-full h-full object-cover" />
+                {/* Dark overlay to indicate it's being replaced */}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <span className="text-white text-lg font-light leading-none">×</span>
+                </div>
+              </div>
+              <span className="text-xs text-gray-400">{t('products.currentImage')}</span>
+            </div>
+
+            <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mt-0 mb-4" />
+
+            <div className="flex flex-col items-center gap-1">
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt={t('products.newImage')}
+                className="w-16 h-16 rounded-xl object-cover border border-gray-200 flex-shrink-0"
+              />
+              <span className="text-xs text-gray-400">{t('products.newImage')}</span>
+            </div>
+          </div>
+        ) : existingImageUrl ? (
+          /* Existing image, no replacement selected yet */
+          <div className="flex flex-col items-center gap-1 w-fit">
+            <img
+              src={existingImageUrl}
+              alt={t('products.currentImage')}
+              className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+            />
+            <span className="text-xs text-gray-400">{t('products.currentImage')}</span>
+          </div>
+        ) : imageFile ? (
+          /* No existing image, new file selected */
           <div className="flex items-center gap-2">
             <img
               src={URL.createObjectURL(imageFile)}
               alt="preview"
-              className="w-12 h-12 rounded-lg object-cover border border-white/20"
+              className="w-12 h-12 rounded-lg object-cover border border-gray-200"
             />
-            <p className="text-xs text-white/35">{imageFile.name}</p>
+            <p className="text-xs text-gray-400">{imageFile.name}</p>
           </div>
-        )}
+        ) : null}
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-          className="block w-full text-sm text-white/45 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-white/15 file:text-white/75 hover:file:bg-white/20 cursor-pointer"
+          className="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
         />
       </div>
     </div>
@@ -223,7 +279,7 @@ export function Step2Categories({
     <div className="space-y-4">
       {categories.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          <label className="text-sm font-medium text-gray-700">
             {t('products.categories')}
           </label>
           {selected.length > 0 && (
@@ -231,13 +287,13 @@ export function Step2Categories({
               {selected.map((cat) => (
                 <span
                   key={cat.id}
-                  className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full text-xs bg-white/20 border border-white/25 text-white"
+                  className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full text-xs bg-gray-100 border border-gray-200 text-gray-700"
                 >
                   {cat.name}
                   <button
                     type="button"
                     onClick={() => removeCategory(cat.id)}
-                    className="text-white/50 hover:text-white transition-colors leading-none"
+                    className="text-gray-400 hover:text-gray-700 transition-colors leading-none"
                     aria-label={`Remove ${cat.name}`}
                   >
                     ×
@@ -250,45 +306,45 @@ export function Step2Categories({
             <select
               value=""
               onChange={(e) => { addCategory(e.target.value); e.target.value = ''; }}
-              className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+              className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
             >
-              <option value="" className="bg-gray-900 text-white">
+              <option value="" className="text-gray-400">
                 {selected.length === 0 ? 'Select a category…' : 'Add another category…'}
               </option>
               {remaining.map((cat) => (
-                <option key={cat.id} value={cat.id} className="bg-gray-900 text-white">
+                <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
               ))}
             </select>
           )}
           {categoryError && (
-            <p className="text-xs text-red-400">{t('products.categoryRequired')}</p>
+            <p className="text-xs text-red-500">{t('products.categoryRequired')}</p>
           )}
         </div>
       )}
 
       {taxRates.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          <label className="text-sm font-medium text-gray-700">
             {t('products.taxRate')}
           </label>
           <select
             value={selectedTaxRateId ?? ''}
             onChange={(e) => setSelectedTaxRateId(e.target.value || null)}
-            className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+            className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
           >
-            <option value="" className="bg-gray-900 text-white">
+            <option value="">
               {t('products.taxRateNone')}
             </option>
             {taxRates.map((rate) => (
-              <option key={rate.id} value={rate.id} className="bg-gray-900 text-white">
+              <option key={rate.id} value={rate.id}>
                 {rate.label}
               </option>
             ))}
           </select>
           {taxRateError && (
-            <p className="text-xs text-red-400">{t('products.taxRateRequired')}</p>
+            <p className="text-xs text-red-500">{t('products.taxRateRequired')}</p>
           )}
         </div>
       )}
@@ -327,13 +383,13 @@ export function Step3Customise({
       {/* Variant Groups */}
       <GlassCard className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-white/70">{t('variants.title')}</span>
+          <span className="text-sm font-medium text-gray-700">{t('variants.title')}</span>
           <GlassButton type="button" variant="secondary" size="sm" onClick={addVariantGroup}>
             {t('variants.addGroup')}
           </GlassButton>
         </div>
         {variantGroups.map(group => (
-          <div key={group.id} className="border border-white/15 rounded-xl p-3 space-y-3">
+          <div key={group.id} className="border border-gray-200 rounded-xl p-3 space-y-3">
             <GlassInput
               placeholder={t('variants.groupNamePlaceholder')}
               value={group.name}
@@ -353,12 +409,12 @@ export function Step3Customise({
                     onChange={(cents) => updateVariantOption(group.id, option.id, { priceDelta: cents })}
                     className="w-24"
                   />
-                  <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">
+                  <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap">
                     <input
                       type="checkbox"
                       checked={option.isAvailable}
                       onChange={(e) => updateVariantOption(group.id, option.id, { isAvailable: e.target.checked })}
-                      className="accent-white/80"
+                      className="accent-gray-900"
                     />
                     {t('variants.available')}
                   </label>
@@ -372,14 +428,14 @@ export function Step3Customise({
               <button
                 type="button"
                 onClick={() => addVariantOption(group.id)}
-                className="text-xs text-white/60 hover:text-white/90 transition-colors"
+                className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
               >
                 {t('variants.addOption')}
               </button>
               <GlassButton
                 type="button" variant="ghost" size="sm"
                 onClick={() => removeVariantGroup(group.id)}
-                className="text-red-400/80 hover:text-red-400"
+                className="text-red-500 hover:text-red-600"
               >
                 {t('variants.removeGroup')}
               </GlassButton>
@@ -391,13 +447,13 @@ export function Step3Customise({
       {/* Addon Groups */}
       <GlassCard className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-white/70">{t('addons.title')}</span>
+          <span className="text-sm font-medium text-gray-700">{t('addons.title')}</span>
           <GlassButton type="button" variant="secondary" size="sm" onClick={addAddonGroup}>
             {t('addons.addGroup')}
           </GlassButton>
         </div>
         {addonGroups.map(group => (
-          <div key={group.id} className="border border-white/15 rounded-xl p-3 space-y-3">
+          <div key={group.id} className="border border-gray-200 rounded-xl p-3 space-y-3">
             <GlassInput
               placeholder={t('addons.groupNamePlaceholder')}
               value={group.name}
@@ -431,12 +487,12 @@ export function Step3Customise({
                     onChange={(cents) => updateAddonOption(group.id, option.id, { priceDelta: cents })}
                     className="w-24"
                   />
-                  <label className="flex items-center gap-1 text-xs text-white/60 whitespace-nowrap">
+                  <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap">
                     <input
                       type="checkbox"
                       checked={option.isAvailable}
                       onChange={(e) => updateAddonOption(group.id, option.id, { isAvailable: e.target.checked })}
-                      className="accent-white/80"
+                      className="accent-gray-900"
                     />
                     {t('addons.available')}
                   </label>
@@ -450,14 +506,14 @@ export function Step3Customise({
               <button
                 type="button"
                 onClick={() => addAddonOption(group.id)}
-                className="text-xs text-white/60 hover:text-white/90 transition-colors"
+                className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
               >
                 {t('addons.addOption')}
               </button>
               <GlassButton
                 type="button" variant="ghost" size="sm"
                 onClick={() => removeAddonGroup(group.id)}
-                className="text-red-400/80 hover:text-red-400"
+                className="text-red-500 hover:text-red-600"
               >
                 {t('addons.removeGroup')}
               </GlassButton>
@@ -495,66 +551,66 @@ export function Step4Schedule({
           type="checkbox"
           checked={scheduleEnabled}
           onChange={(e) => setScheduleEnabled(e.target.checked)}
-          className="accent-white/80"
+          className="accent-gray-900"
         />
-        <span className="text-sm font-medium text-white/70">{t('products.scheduleTitle')}</span>
+        <span className="text-sm font-medium text-gray-700">{t('products.scheduleTitle')}</span>
       </label>
-      <p className="text-xs text-white/40">{t('products.scheduleToggle')}</p>
+      <p className="text-xs text-gray-400">{t('products.scheduleToggle')}</p>
       {scheduleEnabled && (
         <div className="space-y-3 pt-1">
           <div className="flex gap-3">
             <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleStartDate')}</label>
+              <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleStartDate')}</label>
               <input
                 type="date"
                 value={schedule.startDate}
                 onChange={(e) => setSchedule((s) => ({ ...s, startDate: e.target.value }))}
-                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
               />
             </div>
             {!noEndDate && (
               <div className="flex flex-col gap-1 flex-1">
-                <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleEndDate')}</label>
+                <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleEndDate')}</label>
                 <input
                   type="date"
                   value={schedule.endDate}
                   onChange={(e) => setSchedule((s) => ({ ...s, endDate: e.target.value }))}
-                  className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                  className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
                 />
               </div>
             )}
           </div>
-          <label className="flex items-center gap-2 text-xs text-white/50 cursor-pointer">
+          <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
             <input
               type="checkbox"
               checked={noEndDate}
               onChange={(e) => setNoEndDate(e.target.checked)}
-              className="accent-white/80"
+              className="accent-gray-900"
             />
             {t('products.scheduleNoEndDate')}
           </label>
           <div className="flex gap-3">
             <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleStartTime')}</label>
+              <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleStartTime')}</label>
               <input
                 type="time"
                 value={schedule.startTime}
                 onChange={(e) => setSchedule((s) => ({ ...s, startTime: e.target.value }))}
-                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
               />
             </div>
             <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleEndTime')}</label>
+              <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleEndTime')}</label>
               <input
                 type="time"
                 value={schedule.endTime}
                 onChange={(e) => setSchedule((s) => ({ ...s, endTime: e.target.value }))}
-                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/45"
+                className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
               />
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/50 uppercase tracking-wide">{t('products.scheduleDaysOfWeek')}</label>
+            <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleDaysOfWeek')}</label>
             <div className="flex flex-wrap gap-1.5">
               {([1,2,3,4,5,6,0] as number[]).map((day) => {
                 const keys = ['scheduleSun','scheduleMon','scheduleTue','scheduleWed','scheduleThu','scheduleFri','scheduleSat'];
@@ -572,8 +628,8 @@ export function Step4Schedule({
                     }))}
                     className={`text-xs px-2.5 py-1 rounded-md border transition-colors ${
                       isSelected
-                        ? 'bg-white/20 border-white/40 text-white'
-                        : 'bg-transparent border-white/15 text-white/40 hover:border-white/30 hover:text-white/60'
+                        ? 'bg-gray-900 border-gray-900 text-white'
+                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }`}
                   >
                     {label}
@@ -583,7 +639,7 @@ export function Step4Schedule({
             </div>
           </div>
           {scheduleError && (
-            <p className="text-xs text-red-400">{t('products.scheduleInvalid')}</p>
+            <p className="text-xs text-red-500">{t('products.scheduleInvalid')}</p>
           )}
         </div>
       )}
@@ -607,11 +663,12 @@ interface Step5Props {
   noEndDate: boolean;
   schedule: ScheduleState;
   currencySymbol: string;
+  specialInfo: SpecialInfoItem[];
 }
 
 export function Step5Review({
   form, imageFile, existingImageUrl, selectedCategoryIds, categories, taxRates, selectedTaxRateId,
-  variantGroups, addonGroups, scheduleEnabled, noEndDate, schedule, currencySymbol,
+  variantGroups, addonGroups, scheduleEnabled, noEndDate, schedule, currencySymbol, specialInfo,
 }: Step5Props) {
   const { t } = useTranslation();
 
@@ -647,48 +704,60 @@ export function Step5Review({
           <img
             src={displayImageUrl}
             alt="preview"
-            className="w-20 h-20 rounded-xl object-cover border border-white/20 shrink-0"
+            className="w-20 h-20 rounded-xl object-cover border border-gray-200 shrink-0"
           />
         )}
         <div className="min-w-0">
-          <p className="text-lg font-semibold text-white truncate">{form.name}</p>
-          <p className="text-sm text-white/50 mt-0.5 line-clamp-2">{form.description}</p>
-          <p className="text-base font-medium text-emerald-400 mt-1">
+          <p className="text-lg font-semibold text-gray-900 truncate">{form.name}</p>
+          <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{form.description}</p>
+          <p className="text-base font-medium text-emerald-600 mt-1">
             {currencySymbol}{priceFormatted}
           </p>
         </div>
       </div>
 
-      <div className="divide-y divide-white/10">
+      <div className="divide-y divide-gray-200">
         <ReviewRow label={t('products.categories')}>
           {selectedCategories.length > 0 ? (
             <div className="flex flex-wrap gap-1 justify-end">
               {selectedCategories.map(c => (
-                <span key={c.id} className="text-xs bg-white/10 rounded-full px-2 py-0.5 text-white/80">
+                <span key={c.id} className="text-xs bg-gray-100 rounded-full px-2 py-0.5 text-gray-700">
                   {c.name}
                 </span>
               ))}
             </div>
           ) : (
-            <span className="text-white/40">{t('products.wizardReviewNone')}</span>
+            <span className="text-gray-400">{t('products.wizardReviewNone')}</span>
           )}
         </ReviewRow>
         <ReviewRow label={t('products.taxRate')}>
-          {taxRate ? taxRate.label : <span className="text-white/40">{t('products.taxRateNone')}</span>}
+          {taxRate ? taxRate.label : <span className="text-gray-400">{t('products.taxRateNone')}</span>}
         </ReviewRow>
         <ReviewRow label={t('variants.title')}>
           {variantGroups.length > 0
             ? t('products.wizardReviewVariants', { count: variantGroups.length })
-            : <span className="text-white/40">{t('products.wizardReviewNone')}</span>}
+            : <span className="text-gray-400">{t('products.wizardReviewNone')}</span>}
         </ReviewRow>
         <ReviewRow label={t('addons.title')}>
           {addonGroups.length > 0
             ? t('products.wizardReviewAddons', { count: addonGroups.length })
-            : <span className="text-white/40">{t('products.wizardReviewNone')}</span>}
+            : <span className="text-gray-400">{t('products.wizardReviewNone')}</span>}
         </ReviewRow>
         <ReviewRow label={t('products.scheduleTitle')}>
-          <span className="text-right text-xs text-white/70 max-w-[200px]">{scheduleLabel()}</span>
+          <span className="text-right text-xs text-gray-600 max-w-[200px]">{scheduleLabel()}</span>
         </ReviewRow>
+        {specialInfo.length > 0 && (
+          <ReviewRow label="Special Info">
+            <div className="flex flex-wrap gap-1.5 justify-end">
+              {specialInfo.map((item, idx) => (
+                <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200 text-xs text-gray-700">
+                  <LucideIconByName name={item.icon} size={11} />
+                  {item.name || item.icon}
+                </span>
+              ))}
+            </div>
+          </ReviewRow>
+        )}
       </div>
     </div>
   );
@@ -697,8 +766,8 @@ export function Step5Review({
 function ReviewRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5">
-      <span className="text-xs text-white/40 uppercase tracking-wide shrink-0">{label}</span>
-      <span className="text-sm text-white/80 text-right">{children}</span>
+      <span className="text-xs text-gray-400 uppercase tracking-wide shrink-0">{label}</span>
+      <span className="text-sm text-gray-700 text-right">{children}</span>
     </div>
   );
 }
