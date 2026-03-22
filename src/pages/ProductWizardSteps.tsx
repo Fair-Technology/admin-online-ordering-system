@@ -357,6 +357,20 @@ export function Step3Categories({
     const name = newName.trim();
     if (!name) return;
     setCreateError('');
+
+    // If a category with this name already exists, select it instead of creating
+    const existing = categories.find(
+      (c) => c.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (existing) {
+      if (!selectedCategoryIds.includes(existing.id)) {
+        setSelectedCategoryIds([...selectedCategoryIds, existing.id]);
+      }
+      setNewName('');
+      setShowCreate(false);
+      return;
+    }
+
     try {
       const created = await createCategory({
         shopId,
