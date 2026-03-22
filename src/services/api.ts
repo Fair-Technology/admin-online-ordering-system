@@ -604,6 +604,8 @@ export type ShopResponse = {
   countryCode?: string;
   /** Tax rates seeded from country on shop creation */
   taxRates?: { id?: string; label?: string; rate?: number }[];
+  /** Industry / business type */
+  industry?: string;
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
   /** Shop opening hours per day of the week. */
@@ -669,6 +671,8 @@ export type CreateShopRequest = {
     /** Country */
     country: string;
   };
+  /** Industry / business type */
+  industry?: string;
   /** Message when shop is paused (optional) */
   pausedMessage?: string;
   /** Order acceptance mode (optional, defaults to auto) */

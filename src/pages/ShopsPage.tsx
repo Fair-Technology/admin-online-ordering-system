@@ -28,6 +28,20 @@ const COUNTRY_OPTIONS = [
   { code: 'JP', label: 'Japan' },
 ] as const;
 
+const INDUSTRY_OPTIONS = [
+  'Food & Beverage',
+  'Fashion & Apparel',
+  'Beauty & Personal Care',
+  'Grocery & Essentials',
+  'Toys, Kids & Baby',
+  'Electronics & Gadgets',
+  'Home & Living',
+  'Health & Fitness',
+  'Pet Supplies',
+  'Services & Custom Orders',
+  'Other',
+] as const;
+
 const COUNTRY_DEFAULTS: Record<string, { currency: string; timezone: string }> = {
   AU: { currency: 'AUD', timezone: 'Australia/Sydney' },
   NZ: { currency: 'NZD', timezone: 'Pacific/Auckland' },
@@ -49,6 +63,7 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const [createShop, { isLoading, isError, error }] = useCreateShopMutation();
 
+  const [industryOther, setIndustryOther] = useState('');
   const [form, setForm] = useState<Partial<CreateShopRequest>>({
     name: '',
     countryCode: 'AU',
@@ -80,7 +95,14 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const shop = await createShop({ createShopRequest: form as CreateShopRequest }).unwrap();
+      const resolvedIndustry =
+        form.industry === 'Other' ? industryOther.trim() : form.industry;
+      const shop = await createShop({
+        createShopRequest: {
+          ...form,
+          industry: resolvedIndustry || undefined,
+        } as CreateShopRequest,
+      }).unwrap();
       toast.success(t('shops.created'));
       onClose();
       navigate(`/shops/${shop.id}`);
@@ -127,6 +149,30 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Industry</label>
+                <select
+                  value={form.industry ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                >
+                  <option value="" disabled>Select an industry…</option>
+                  {INDUSTRY_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+
+                {form.industry === 'Other' && (
+                  <input
+                    type="text"
+                    placeholder="Describe your industry…"
+                    value={industryOther}
+                    onChange={(e) => setIndustryOther(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                  />
+                )}
+              </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">{t('shops.shopCountry')}</label>
