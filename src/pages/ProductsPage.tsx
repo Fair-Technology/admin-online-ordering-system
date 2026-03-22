@@ -61,7 +61,7 @@ function ProductDetailView({
 
   const handleDelete = async () => {
     try {
-      await deleteProduct({ productId: product.id, shopId }).unwrap();
+      await deleteProduct({ productId: product.id!, shopId }).unwrap();
       toast.success(t('products.deleted'));
       onDeleted();
     } catch {
@@ -956,7 +956,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
 // ── Bulk Import Modal ──────────────────────────────────────────────────────────
 
 function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => void }) {
-  const { t } = useTranslation();
   const { data: shop } = useGetShopByIdQuery({ shopId });
   const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
   const taxRatesList = (shop?.taxRates ?? []).filter(
