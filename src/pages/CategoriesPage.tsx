@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, X } from 'lucide-react';
-import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
+import { IconPickerInline } from '../components/ui/IconPicker';
 import {
   useGetCategoriesByShopQuery,
   useUpdateCategoryMutation,
@@ -92,22 +92,16 @@ function CreateCategoryModal({
                   </p>
                 </div>
               )}
-              <GlassInput
-                label={t('categories.name')}
-                type="text"
-                required
-                placeholder={t('categories.namePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <div className="flex flex-col gap-1.5">
-                <p className="text-sm font-medium text-gray-700">Icon <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
-                <IconPicker value={icon} onChange={(name) => setIcon(icon === name ? null : name)} />
-                {icon && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                    Selected: <LucideIconByName name={icon} size={13} /> {icon}
-                  </p>
-                )}
+              <div className="flex items-center gap-2">
+                <IconPickerInline value={icon} onChange={setIcon} />
+                <GlassInput
+                  type="text"
+                  required
+                  placeholder={t('categories.namePlaceholder')}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="flex-1"
+                />
               </div>
             </div>
 
@@ -136,6 +130,7 @@ interface SortableCategoryItemProps {
 
 function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
   const { t } = useTranslation();
+  const [updateCategory] = useUpdateCategoryMutation();
   const {
     attributes,
     listeners,
@@ -151,8 +146,16 @@ function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
     opacity: isDragging ? 0.4 : 1,
   };
 
+  const handleIconChange = (icon: string | null) => {
+    updateCategory({
+      shopId,
+      categoryId: cat.id!,
+      updateCategoryRequest: { icon },
+    });
+  };
+
   return (
-    <div ref={setNodeRef} style={style} className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-3 px-5 py-4">
+    <div ref={setNodeRef} style={style} className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-3 px-5 py-4">
       {/* Drag handle */}
       <button
         {...attributes}
@@ -164,20 +167,11 @@ function SortableCategoryItem({ cat, shopId }: SortableCategoryItemProps) {
         <GripVertical size={18} />
       </button>
 
+      {/* Icon picker */}
+      <IconPickerInline value={cat.icon ?? null} onChange={handleIconChange} />
+
       {/* Name */}
       <p className="font-medium text-gray-900 truncate">{cat.name}</p>
-
-      {/* Icon */}
-      <div className="flex items-center gap-1.5 text-gray-500">
-        {cat.icon ? (
-          <>
-            <LucideIconByName name={cat.icon} size={15} />
-            <span className="text-xs text-gray-400">{cat.icon}</span>
-          </>
-        ) : (
-          <span className="text-xs text-gray-300">—</span>
-        )}
-      </div>
 
       {/* Edit */}
       <Link
@@ -270,10 +264,10 @@ export function CategoriesPage() {
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={orderedCategories.map((c) => c.id!)} strategy={verticalListSortingStrategy}>
                 {/* Header row */}
-                <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-3 px-5 py-2 border-b border-gray-100">
+                <div className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-3 px-5 py-2 border-b border-gray-100">
                   <span className="w-4.5" />
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{t('categories.name')}</span>
                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Icon</span>
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{t('categories.name')}</span>
                   <span className="w-7" />
                 </div>
                 <div className="divide-y divide-gray-200">

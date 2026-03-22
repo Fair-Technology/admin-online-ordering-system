@@ -9,7 +9,6 @@ import { GlassInput } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { useToast } from '../contexts/ToastContext';
-import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
 
 export function EditCategoryPage() {
   const { shopId, categoryId } = useParams<{ shopId: string; categoryId: string }>();
@@ -95,18 +94,10 @@ export function EditCategoryPage() {
             label={t('categories.name')}
             type="text"
             required
+            placeholder={t('categories.namePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-medium text-gray-700">Icon <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
-            <IconPicker value={icon} onChange={(n) => setIcon(icon === n ? null : n)} />
-            {icon && (
-              <p className="text-xs text-gray-500 flex items-center gap-1">
-                Selected: <LucideIconByName name={icon} size={13} /> {icon}
-              </p>
-            )}
-          </div>
           <div className="flex gap-2">
             <GlassButton
               type="button"

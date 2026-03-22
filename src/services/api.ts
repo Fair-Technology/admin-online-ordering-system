@@ -837,8 +837,8 @@ export type UpdateCategoryRequest = {
   name?: string;
   /** Sort order for display */
   sortOrder?: number;
-  /** Lucide icon name */
-  icon?: string;
+  /** Lucide icon name, null to remove */
+  icon?: string | null;
 };
 export type ProductResponse = {
   /** Product ID */

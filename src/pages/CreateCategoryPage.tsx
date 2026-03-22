@@ -11,7 +11,7 @@ import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { useToast } from '../contexts/ToastContext';
-import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
+import { IconPickerInline } from '../components/ui/IconPicker';
 
 export function CreateCategoryPage() {
   const { shopId } = useParams<{ shopId: string }>();
@@ -58,22 +58,16 @@ export function CreateCategoryPage() {
 
       <GlassCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <GlassInput
-            label={t('categories.name')}
-            type="text"
-            required
-            placeholder={t('categories.namePlaceholder')}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-medium text-gray-700">Icon <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
-            <IconPicker value={icon} onChange={(name) => setIcon(icon === name ? null : name)} />
-            {icon && (
-              <p className="text-xs text-gray-500 flex items-center gap-1">
-                Selected: <LucideIconByName name={icon} size={13} /> {icon}
-              </p>
-            )}
+          <div className="flex items-center gap-2">
+            <IconPickerInline value={icon} onChange={setIcon} />
+            <GlassInput
+              type="text"
+              required
+              placeholder={t('categories.namePlaceholder')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="flex-1"
+            />
           </div>
           <GlassButton type="submit" disabled={isLoading} className="w-full">
             {isLoading ? t('categories.creating') : t('categories.create')}
