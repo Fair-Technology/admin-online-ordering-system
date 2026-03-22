@@ -12,7 +12,6 @@ import {
   useDeleteProductMutation,
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
-  useCreateCategoryMutation,
 } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
@@ -965,8 +964,6 @@ function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => v
   );
   const defaultTaxRateId = taxRatesList[0]?.id ?? null;
   const [createProduct] = useCreateProductMutation();
-  const { data: categories } = useGetCategoriesByShopQuery({ shopId });
-  const [createCategory] = useCreateCategoryMutation();
 
   const [step, setStep] = useState<ImportStep>('upload');
   const [rows, setRows] = useState<ImportRow[]>([]);
@@ -1016,23 +1013,6 @@ function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => v
     setStep('importing');
     setProgress(0);
 
-    // Resolve 'Uncategorised' category — find existing or create
-    const categoriesList = (categories ?? []).filter((c) => !c.isDeleted);
-    let uncategorisedId: string | null =
-      categoriesList.find((c) => c.name === 'Uncategorised')?.id ?? null;
-
-    if (!uncategorisedId) {
-      try {
-        const created = await createCategory({
-          shopId,
-          createCategoryRequest: { name: 'Uncategorised', sortOrder: 0 },
-        }).unwrap();
-        uncategorisedId = created.id ?? null;
-      } catch {
-        // proceed without category — backend will reject, errors captured below
-      }
-    }
-
     const errs: { name: string; error: string }[] = [];
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -1045,7 +1025,7 @@ function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => v
             description: row.description,
             price: Math.round(row.price! * 100),
             taxRateId: defaultTaxRateId,
-            categoryIds: uncategorisedId ? [uncategorisedId] : [],
+            categoryIds: [],
             images: row.image_url
               ? [{ id: crypto.randomUUID(), url: row.image_url }]
               : undefined,
@@ -1212,6 +1192,7 @@ function ProductTable({
   shopId: string;
 }) {
   const { t } = useTranslation();
+  const toast = useToast();
   const [updateProduct] = useUpdateProductMutation();
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
 
@@ -1219,6 +1200,13 @@ function ProductTable({
     e.stopPropagation();
     const id = product.id!;
     if (togglingIds.has(id)) return;
+
+    // Block turning ON if product has no categories
+    if (product.isAvailable === false && !product.categories?.length) {
+      toast.error(t('products.availabilityRequiresCategory'));
+      return;
+    }
+
     setTogglingIds(prev => new Set(prev).add(id));
     try {
       await updateProduct({

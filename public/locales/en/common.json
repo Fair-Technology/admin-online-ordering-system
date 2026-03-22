@@ -207,6 +207,7 @@
     "loadError": "Failed to load products.",
     "empty": "No products yet.",
     "uncategorized": "Uncategorized",
+    "availabilityRequiresCategory": "Add a category to this product before making it available.",
     "createTitle": "Create Product",
     "editTitle": "Edit Product",
     "name": "Name",

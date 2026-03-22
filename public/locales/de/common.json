@@ -207,6 +207,7 @@
     "loadError": "Produkte konnten nicht geladen werden.",
     "empty": "Noch keine Produkte.",
     "uncategorized": "Nicht kategorisiert",
+    "availabilityRequiresCategory": "Füge diesem Produkt eine Kategorie hinzu, bevor du es verfügbar machst.",
     "createTitle": "Produkt erstellen",
     "editTitle": "Produkt bearbeiten",
     "name": "Name",

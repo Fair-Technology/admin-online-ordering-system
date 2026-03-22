@@ -89,6 +89,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/products`,
         params: {
           shopId: queryArg.shopId,
+          includeUncategorized: true,
         },
       }),
       providesTags: (_result, _error, arg) => [{ type: 'Products' as const, id: `LIST-${arg.shopId}` }],
