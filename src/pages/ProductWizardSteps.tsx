@@ -1,13 +1,15 @@
 /**
  * Shared step components for the Create / Edit product wizards.
  */
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, X as XIcon } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
-import { IconPicker, LucideIconByName } from '../components/ui/IconPicker';
+import { LucideIconByName, ICON_NAMES, ICON_DEFAULT_LABELS } from '../components/ui/IconPicker';
+import { useCreateCategoryMutation } from '../services/api';
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
@@ -213,43 +215,97 @@ interface Step2Props {
 }
 
 export function Step2SpecialInfo({ specialInfo, setSpecialInfo }: Step2Props) {
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const remaining = ICON_NAMES.filter(n => !specialInfo.find(i => i.icon === n));
+
+  const addIcon = (iconName: string) => {
+    if (!iconName) return;
+    const newIdx = specialInfo.length;
+    setSpecialInfo([...specialInfo, { icon: iconName, name: '' }]);
+    setEditingIdx(newIdx);
+    setDropdownOpen(false);
+  };
+
+  const removeIcon = (idx: number) => {
+    setSpecialInfo(specialInfo.filter((_, i) => i !== idx));
+    if (editingIdx === idx) setEditingIdx(null);
+  };
+
+  const updateLabel = (idx: number, label: string) => {
+    setSpecialInfo(specialInfo.map((item, i) => i === idx ? { ...item, name: label } : item));
+  };
+
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium text-gray-700">Special Info <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
-      <IconPicker
-        value={null}
-        onChange={(icon) => setSpecialInfo([...specialInfo, { icon, name: '' }])}
-      />
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-medium text-gray-700">
+        Special Info <span className="text-gray-400 font-normal text-xs">(optional)</span>
+      </label>
+
       {specialInfo.length > 0 && (
-        <div className="flex flex-col gap-2 mt-1">
+        <div className="flex flex-wrap gap-1.5">
           {specialInfo.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 flex-shrink-0">
-                <LucideIconByName name={item.icon} size={16} />
-              </span>
-              <input
-                type="text"
-                placeholder="Label (e.g. Spicy)"
-                value={item.name}
-                onChange={(e) => {
-                  const updated = specialInfo.map((si, i) => i === idx ? { ...si, name: e.target.value } : si);
-                  setSpecialInfo(updated);
-                }}
-                className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
-              />
-              <button
-                type="button"
-                onClick={() => setSpecialInfo(specialInfo.filter((_, i) => i !== idx))}
-                className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
-                aria-label="Remove"
-              >
-                <XIcon size={14} />
-              </button>
-            </div>
+            <span key={idx} className="inline-flex items-center gap-1 pl-2 pr-1.5 py-0.5 rounded-full text-xs bg-gray-100 border border-gray-200 text-gray-700">
+              <LucideIconByName name={item.icon} size={11} />
+              {editingIdx === idx ? (
+                <input
+                  autoFocus
+                  type="text"
+                  value={item.name}
+                  onChange={(e) => updateLabel(idx, e.target.value)}
+                  onBlur={() => setEditingIdx(null)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') setEditingIdx(null); }}
+                  className="w-20 bg-transparent outline-none border-b border-gray-400 text-xs"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setEditingIdx(idx)}
+                  className="hover:underline decoration-dotted underline-offset-2"
+                  title="Click to edit label"
+                >
+                  {item.name || <span className="text-gray-400 italic">add label</span>}
+                </button>
+              )}
+              <button type="button" onClick={() => removeIcon(idx)} className="text-gray-400 hover:text-gray-700 transition-colors leading-none ml-0.5">×</button>
+            </span>
           ))}
         </div>
       )}
-      <p className="text-xs text-gray-400">Click an icon above to add a labelled info item.</p>
+
+      {remaining.length > 0 && (
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setDropdownOpen(o => !o)}
+            className="w-full flex items-center justify-between border border-gray-200 rounded-lg bg-white text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+          >
+            <span>{specialInfo.length === 0 ? 'Select a tag…' : 'Add another tag…'}</span>
+            <ChevronDown size={14} className="text-gray-400" />
+          </button>
+          {dropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-[9]" onClick={() => setDropdownOpen(false)} />
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md max-h-48 overflow-y-auto">
+                {remaining.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => addIcon(name)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left"
+                  >
+                    <LucideIconByName name={name} size={14} />
+                    <span>{ICON_DEFAULT_LABELS[name] ?? name}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <p className="text-xs text-gray-400">Click a label to rename it.</p>
     </div>
   );
 }
@@ -257,6 +313,7 @@ export function Step2SpecialInfo({ specialInfo, setSpecialInfo }: Step2Props) {
 // ── Step 3: Categories & Tax ──────────────────────────────────────────────────
 
 interface Step3Props {
+  shopId: string;
   categories: { id: string; name: string }[];
   selectedCategoryIds: string[];
   setSelectedCategoryIds: (ids: string[]) => void;
@@ -269,6 +326,7 @@ interface Step3Props {
 }
 
 export function Step3Categories({
+  shopId,
   categories,
   selectedCategoryIds,
   setSelectedCategoryIds,
@@ -280,6 +338,10 @@ export function Step3Categories({
   hideTaxRate = false,
 }: Step3Props) {
   const { t } = useTranslation();
+  const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [createError, setCreateError] = useState('');
 
   const remaining = categories.filter((c) => !selectedCategoryIds.includes(c.id));
   const selected  = categories.filter((c) => selectedCategoryIds.includes(c.id));
@@ -290,10 +352,27 @@ export function Step3Categories({
   const removeCategory = (id: string) =>
     setSelectedCategoryIds(selectedCategoryIds.filter((s) => s !== id));
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = newName.trim();
+    if (!name) return;
+    setCreateError('');
+    try {
+      const created = await createCategory({
+        shopId,
+        createCategoryRequest: { name, sortOrder: categories.length },
+      }).unwrap();
+      if (created.id) setSelectedCategoryIds([...selectedCategoryIds, created.id]);
+      setNewName('');
+      setShowCreate(false);
+    } catch {
+      setCreateError('Failed to create category. Please try again.');
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {categories.length > 0 && (
-        <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">
             {t('products.categories')}
           </label>
@@ -333,11 +412,48 @@ export function Step3Categories({
               ))}
             </select>
           )}
+
+          {!showCreate && (
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-2 self-start"
+            >
+              + New category
+            </button>
+          )}
+
+          {showCreate && (
+            <form onSubmit={handleCreate} className="flex gap-2 items-center">
+              <input
+                autoFocus
+                type="text"
+                placeholder="Category name…"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+              />
+              <GlassButton type="submit" disabled={isCreating || !newName.trim()} className="shrink-0 text-sm py-2">
+                {isCreating ? 'Creating…' : 'Create'}
+              </GlassButton>
+              <button
+                type="button"
+                onClick={() => { setShowCreate(false); setNewName(''); setCreateError(''); }}
+                className="text-gray-400 hover:text-gray-700 text-xs shrink-0"
+              >
+                Cancel
+              </button>
+            </form>
+          )}
+
+          {createError && (
+            <p className="text-xs text-red-500">{createError}</p>
+          )}
+
           {categoryError && (
             <p className="text-xs text-red-500">{t('products.categoryRequired')}</p>
           )}
         </div>
-      )}
 
       {!hideTaxRate && taxRates.length > 0 && (
         <div className="flex flex-col gap-1.5">

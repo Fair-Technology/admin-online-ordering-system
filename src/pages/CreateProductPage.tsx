@@ -282,6 +282,7 @@ export function CreateProductPage() {
           )}
           {step === 3 && (
             <Step3Categories
+              shopId={shopId!}
               categories={categoriesList}
               selectedCategoryIds={selectedCategoryIds}
               setSelectedCategoryIds={setSelectedCategoryIds}
