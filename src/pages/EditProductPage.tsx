@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProductSchedule } from '../services/api';
@@ -21,7 +21,7 @@ import { useToast } from '../contexts/ToastContext';
 import {
   type VariantGroup, type VariantOption, type AddonGroup, type AddonOption,
   type StepNum, type ScheduleState, type SpecialInfoItem,
-  StepIndicator, Step1Basics, Step2Categories, Step3Customise, Step4Schedule, Step5Review,
+  StepIndicator, Step1Basics, Step2SpecialInfo, Step3Categories, Step4Customise, Step5Schedule, Step6Review,
 } from './ProductWizardSteps';
 
 export function EditProductPage() {
@@ -48,8 +48,24 @@ export function EditProductPage() {
   const taxRatesList = taxRates.filter((r): r is { id: string; label: string } => !!r.id && !!r.label);
 
   // ── Wizard state ──────────────────────────────────────────────────
+  const [mode, setMode] = useState<'simple' | 'extended'>('simple');
   const [step, setStep] = useState<StepNum>(1);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+
+  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 5, 6];
+  const isFirstStep = step === stepSequence[0];
+  const isLastStep = step === stepSequence[stepSequence.length - 1];
+
+  const modeInitialized = useRef(false);
+  useEffect(() => {
+    if (!modeInitialized.current) { modeInitialized.current = true; return; }
+    if (mode === 'simple') {
+      setSelectedTaxRateId(taxRatesList[0]?.id ?? null);
+    } else {
+      setSelectedTaxRateId(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   // ── Form state ────────────────────────────────────────────────────
   const [form, setForm] = useState({ name: '', description: '', price: 0 });
@@ -181,14 +197,14 @@ export function EditProductPage() {
       setDescError(de);
       return !ne && !de;
     }
-    if (s === 2) {
+    if (s === 3) {
       const hasNoCategory = selectedCategoryIds.length === 0;
-      const hasNoTax = hasTaxRates && selectedTaxRateId === null;
+      const hasNoTax = mode === 'extended' && hasTaxRates && selectedTaxRateId === null;
       setCategoryError(hasNoCategory);
       setTaxRateError(hasNoTax);
       return !hasNoCategory && !hasNoTax;
     }
-    if (s === 4 && scheduleEnabled) {
+    if (s === 5 && scheduleEnabled) {
       const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
       const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
       const invalid = !!(endDateInvalid || endTimeInvalid);
@@ -200,12 +216,14 @@ export function EditProductPage() {
 
   function goNext() {
     if (!validateStep(step)) return;
+    const idx = stepSequence.indexOf(step);
     setDirection('forward');
-    setStep(s => (s + 1) as StepNum);
+    setStep(stepSequence[idx + 1]);
   }
   function goBack() {
+    const idx = stepSequence.indexOf(step);
     setDirection('back');
-    setStep(s => (s - 1) as StepNum);
+    setStep(stepSequence[idx - 1]);
   }
   function jumpTo(n: StepNum) {
     setDirection(n < step ? 'back' : 'forward');
@@ -297,6 +315,7 @@ export function EditProductPage() {
     3: t('products.wizardStep3Subtitle'),
     4: t('products.wizardStep4Subtitle'),
     5: t('products.wizardStep5Subtitle'),
+    6: t('products.wizardStep6Subtitle'),
   };
 
   return (
@@ -307,9 +326,24 @@ export function EditProductPage() {
         { label: t('nav.products'), to: `/shops/${shopId}` },
         { label: product.name ?? t('products.editTitle') },
       ]} />
-      <h1 className="text-2xl font-semibold text-gray-900">{t('products.editTitle')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900">{t('products.editTitle')}</h1>
+        <div className="flex gap-1">
+          {(['simple', 'extended'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => { setMode(m); setStep(1); setDirection('forward'); }}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                mode === m ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {t(m === 'simple' ? 'products.modeSimple' : 'products.modeExtended')}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <StepIndicator currentStep={step} onJump={jumpTo} />
+      <StepIndicator currentStep={step} onJump={jumpTo} stepSequence={stepSequence} />
       <p className="text-sm text-gray-400">{stepSubtitles[step]}</p>
 
       {isUpdateError && (
@@ -327,11 +361,13 @@ export function EditProductPage() {
               currencySymbol={currencySymbol}
               nameError={nameError} descError={descError}
               existingImageUrl={existingImageUrl}
-              specialInfo={specialInfo} setSpecialInfo={setSpecialInfo}
             />
           )}
           {step === 2 && (
-            <Step2Categories
+            <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
+          )}
+          {step === 3 && (
+            <Step3Categories
               categories={categoriesList}
               selectedCategoryIds={selectedCategoryIds}
               setSelectedCategoryIds={setSelectedCategoryIds}
@@ -340,10 +376,11 @@ export function EditProductPage() {
               setSelectedTaxRateId={setSelectedTaxRateId}
               categoryError={categoryError}
               taxRateError={taxRateError}
+              hideTaxRate={mode === 'simple'}
             />
           )}
-          {step === 3 && (
-            <Step3Customise
+          {step === 4 && (
+            <Step4Customise
               variantGroups={variantGroups}
               addVariantGroup={addVariantGroup}
               removeVariantGroup={removeVariantGroup}
@@ -360,16 +397,16 @@ export function EditProductPage() {
               updateAddonOption={updateAddonOption}
             />
           )}
-          {step === 4 && (
-            <Step4Schedule
+          {step === 5 && (
+            <Step5Schedule
               scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled}
               noEndDate={noEndDate} setNoEndDate={setNoEndDate}
               schedule={schedule} setSchedule={setSchedule}
               scheduleError={scheduleError}
             />
           )}
-          {step === 5 && (
-            <Step5Review
+          {step === 6 && (
+            <Step6Review
               form={form} imageFile={imageFile} existingImageUrl={existingImageUrl}
               selectedCategoryIds={selectedCategoryIds}
               categories={categoriesList}
@@ -386,7 +423,7 @@ export function EditProductPage() {
 
       {/* Navigation footer */}
       <div className="flex items-center gap-2">
-        {step === 1 && (
+        {isFirstStep && (
           <>
             <GlassButton type="button" variant="secondary" onClick={() => navigate(-1)}>
               {t('products.cancel')}
@@ -395,22 +432,17 @@ export function EditProductPage() {
             <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
           </>
         )}
-        {step === 2 && (
+        {!isFirstStep && !isLastStep && (
           <>
             <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />
+            {mode === 'extended' && (step === 2 || step === 4 || step === 5) && (
+              <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+            )}
             <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
           </>
         )}
-        {(step === 3 || step === 4) && (
-          <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
-            <div className="flex-1" />
-            <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
-          </>
-        )}
-        {step === 5 && (
+        {isLastStep && (
           <>
             <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />

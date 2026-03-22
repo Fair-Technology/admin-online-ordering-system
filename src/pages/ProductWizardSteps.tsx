@@ -16,7 +16,7 @@ export type VariantOption = { id: string; name: string; priceDelta: number; isAv
 export type VariantGroup  = { id: string; name: string; options: VariantOption[] };
 export type AddonOption   = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 export type AddonGroup    = { id: string; name: string; minSelectable: number; maxSelectable: number; options: AddonOption[] };
-export type StepNum = 1 | 2 | 3 | 4 | 5;
+export type StepNum = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface ScheduleState {
   startDate: string;
@@ -31,24 +31,28 @@ export interface ScheduleState {
 interface StepIndicatorProps {
   currentStep: StepNum;
   onJump: (n: StepNum) => void;
+  stepSequence?: StepNum[];
 }
 
-export function StepIndicator({ currentStep, onJump }: StepIndicatorProps) {
+export function StepIndicator({ currentStep, onJump, stepSequence = [1, 2, 3, 4, 5, 6] }: StepIndicatorProps) {
   const { t } = useTranslation();
-  const labels = [
-    t('products.wizardStep1'),
-    t('products.wizardStep2'),
-    t('products.wizardStep3'),
-    t('products.wizardStep4'),
-    t('products.wizardStep5'),
-  ];
+  const STEP_LABELS: Record<StepNum, string> = {
+    1: t('products.wizardStep1'),
+    2: t('products.wizardStep2'),
+    3: t('products.wizardStep3'),
+    4: t('products.wizardStep4'),
+    5: t('products.wizardStep5'),
+    6: t('products.wizardStep6'),
+  };
+
+  const currentIdx = stepSequence.indexOf(currentStep);
 
   return (
     <div className="flex items-center justify-between w-full">
-      {labels.map((label, i) => {
-        const n = (i + 1) as StepNum;
-        const isCompleted = n < currentStep;
+      {stepSequence.map((n, i) => {
+        const isCompleted = i < currentIdx;
         const isActive = n === currentStep;
+        const isLast = i === stepSequence.length - 1;
 
         const circleBase =
           'flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 transition-colors duration-200 shrink-0';
@@ -68,20 +72,20 @@ export function StepIndicator({ currentStep, onJump }: StepIndicatorProps) {
                 disabled={!isCompleted}
                 aria-current={isActive ? 'step' : undefined}
               >
-                {isCompleted ? '✓' : n}
+                {isCompleted ? '✓' : i + 1}
               </button>
               <span
                 className={`text-[10px] font-medium leading-tight text-center truncate max-w-[52px] transition-colors duration-200 ${
                   isCompleted ? 'text-emerald-500' : isActive ? 'text-gray-900' : 'text-gray-300'
                 }`}
               >
-                {label}
+                {STEP_LABELS[n]}
               </span>
             </div>
-            {n < 5 && (
+            {!isLast && (
               <div
                 className={`flex-1 h-px mx-1 mb-4 transition-colors duration-200 ${
-                  n < currentStep ? 'bg-emerald-500' : 'bg-gray-200'
+                  isCompleted ? 'bg-emerald-500' : 'bg-gray-200'
                 }`}
               />
             )}
@@ -103,11 +107,9 @@ interface Step1Props {
   nameError: boolean;
   descError: boolean;
   existingImageUrl?: string | null;
-  specialInfo: SpecialInfoItem[];
-  setSpecialInfo: (items: SpecialInfoItem[]) => void;
 }
 
-export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySymbol, nameError, descError, existingImageUrl, specialInfo, setSpecialInfo }: Step1Props) {
+export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySymbol, nameError, descError, existingImageUrl }: Step1Props) {
   const { t } = useTranslation();
   return (
     <div className="space-y-4">
@@ -140,44 +142,6 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
         valueCents={form.price}
         onChange={(cents) => setForm((f) => ({ ...f, price: cents }))}
       />
-      {/* Special Info */}
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-gray-700">Special Info <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
-        <IconPicker
-          value={null}
-          onChange={(icon) => setSpecialInfo([...specialInfo, { icon, name: '' }])}
-        />
-        {specialInfo.length > 0 && (
-          <div className="flex flex-col gap-2 mt-1">
-            {specialInfo.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 flex-shrink-0">
-                  <LucideIconByName name={item.icon} size={16} />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Label (e.g. Spicy)"
-                  value={item.name}
-                  onChange={(e) => {
-                    const updated = specialInfo.map((si, i) => i === idx ? { ...si, name: e.target.value } : si);
-                    setSpecialInfo(updated);
-                  }}
-                  className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setSpecialInfo(specialInfo.filter((_, i) => i !== idx))}
-                  className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
-                  aria-label="Remove"
-                >
-                  <XIcon size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        <p className="text-xs text-gray-400">Click an icon above to add a labelled info item.</p>
-      </div>
       <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-gray-700">
           {t('products.image')}{' '}
@@ -241,9 +205,58 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
   );
 }
 
-// ── Step 2: Categories & Tax ──────────────────────────────────────────────────
+// ── Step 2: Special Info ──────────────────────────────────────────────────────
 
 interface Step2Props {
+  specialInfo: SpecialInfoItem[];
+  setSpecialInfo: (items: SpecialInfoItem[]) => void;
+}
+
+export function Step2SpecialInfo({ specialInfo, setSpecialInfo }: Step2Props) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-sm font-medium text-gray-700">Special Info <span className="text-gray-400 font-normal text-xs">(optional)</span></p>
+      <IconPicker
+        value={null}
+        onChange={(icon) => setSpecialInfo([...specialInfo, { icon, name: '' }])}
+      />
+      {specialInfo.length > 0 && (
+        <div className="flex flex-col gap-2 mt-1">
+          {specialInfo.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 flex-shrink-0">
+                <LucideIconByName name={item.icon} size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder="Label (e.g. Spicy)"
+                value={item.name}
+                onChange={(e) => {
+                  const updated = specialInfo.map((si, i) => i === idx ? { ...si, name: e.target.value } : si);
+                  setSpecialInfo(updated);
+                }}
+                className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+              />
+              <button
+                type="button"
+                onClick={() => setSpecialInfo(specialInfo.filter((_, i) => i !== idx))}
+                className="p-1 text-gray-400 hover:text-gray-700 transition-colors"
+                aria-label="Remove"
+              >
+                <XIcon size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="text-xs text-gray-400">Click an icon above to add a labelled info item.</p>
+    </div>
+  );
+}
+
+// ── Step 3: Categories & Tax ──────────────────────────────────────────────────
+
+interface Step3Props {
   categories: { id: string; name: string }[];
   selectedCategoryIds: string[];
   setSelectedCategoryIds: (ids: string[]) => void;
@@ -252,9 +265,10 @@ interface Step2Props {
   setSelectedTaxRateId: (id: string | null) => void;
   categoryError: boolean;
   taxRateError: boolean;
+  hideTaxRate?: boolean;
 }
 
-export function Step2Categories({
+export function Step3Categories({
   categories,
   selectedCategoryIds,
   setSelectedCategoryIds,
@@ -263,7 +277,8 @@ export function Step2Categories({
   setSelectedTaxRateId,
   categoryError,
   taxRateError,
-}: Step2Props) {
+  hideTaxRate = false,
+}: Step3Props) {
   const { t } = useTranslation();
 
   const remaining = categories.filter((c) => !selectedCategoryIds.includes(c.id));
@@ -324,7 +339,7 @@ export function Step2Categories({
         </div>
       )}
 
-      {taxRates.length > 0 && (
+      {!hideTaxRate && taxRates.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">
             {t('products.taxRate')}
@@ -352,9 +367,9 @@ export function Step2Categories({
   );
 }
 
-// ── Step 3: Customise (Variants + Addons) ─────────────────────────────────────
+// ── Step 4: Customise (Variants + Addons) ─────────────────────────────────────
 
-interface Step3Props {
+interface Step4Props {
   variantGroups: VariantGroup[];
   addVariantGroup: () => void;
   removeVariantGroup: (id: string) => void;
@@ -371,12 +386,12 @@ interface Step3Props {
   updateAddonOption: (groupId: string, optionId: string, patch: Partial<AddonOption>) => void;
 }
 
-export function Step3Customise({
+export function Step4Customise({
   variantGroups, addVariantGroup, removeVariantGroup, updateVariantGroupName,
   addVariantOption, removeVariantOption, updateVariantOption,
   addonGroups, addAddonGroup, removeAddonGroup, updateAddonGroup,
   addAddonOption, removeAddonOption, updateAddonOption,
-}: Step3Props) {
+}: Step4Props) {
   const { t } = useTranslation();
   return (
     <div className="space-y-4">
@@ -525,9 +540,9 @@ export function Step3Customise({
   );
 }
 
-// ── Step 4: Schedule ──────────────────────────────────────────────────────────
+// ── Step 5: Schedule ──────────────────────────────────────────────────────────
 
-interface Step4Props {
+interface Step5Props {
   scheduleEnabled: boolean;
   setScheduleEnabled: (v: boolean) => void;
   noEndDate: boolean;
@@ -537,12 +552,12 @@ interface Step4Props {
   scheduleError: boolean;
 }
 
-export function Step4Schedule({
+export function Step5Schedule({
   scheduleEnabled, setScheduleEnabled,
   noEndDate, setNoEndDate,
   schedule, setSchedule,
   scheduleError,
-}: Step4Props) {
+}: Step5Props) {
   const { t } = useTranslation();
   return (
     <GlassCard className="p-4 space-y-3">
@@ -647,9 +662,9 @@ export function Step4Schedule({
   );
 }
 
-// ── Step 5: Review ────────────────────────────────────────────────────────────
+// ── Step 6: Review ────────────────────────────────────────────────────────────
 
-interface Step5Props {
+interface Step6Props {
   form: { name: string; description: string; price: number };
   imageFile: File | null;
   existingImageUrl?: string | null;
@@ -666,10 +681,10 @@ interface Step5Props {
   specialInfo: SpecialInfoItem[];
 }
 
-export function Step5Review({
+export function Step6Review({
   form, imageFile, existingImageUrl, selectedCategoryIds, categories, taxRates, selectedTaxRateId,
   variantGroups, addonGroups, scheduleEnabled, noEndDate, schedule, currencySymbol, specialInfo,
-}: Step5Props) {
+}: Step6Props) {
   const { t } = useTranslation();
 
   const selectedCategories = categories.filter(c => selectedCategoryIds.includes(c.id));

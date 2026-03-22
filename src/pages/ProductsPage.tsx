@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProductResponse, ProductSchedule } from '../services/api';
@@ -12,6 +12,7 @@ import {
   useDeleteProductMutation,
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
+  useCreateCategoryMutation,
 } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
@@ -22,25 +23,52 @@ import { useToast } from '../contexts/ToastContext';
 import {
   type VariantGroup, type VariantOption, type AddonGroup, type AddonOption,
   type StepNum, type ScheduleState, type SpecialInfoItem,
-  StepIndicator, Step1Basics, Step2Categories, Step3Customise, Step4Schedule, Step5Review,
+  StepIndicator, Step1Basics, Step2SpecialInfo, Step3Categories, Step4Customise, Step5Schedule, Step6Review,
 } from './ProductWizardSteps';
 import { LucideIconByName } from '../components/ui/IconPicker';
+
+// ── Bulk import types ──────────────────────────────────────────────────────────
+
+type ImportRow = {
+  name: string;
+  description: string;
+  price: number | null;
+  image_url: string | null;
+};
+type ImportStep = 'upload' | 'preview' | 'importing' | 'done';
 
 // ── Product detail view (read-only) ───────────────────────────────────────────
 
 function ProductDetailView({
   product,
   currencySymbol,
+  shopId,
   onEdit,
+  onDeleted,
   onClose,
 }: {
   product: ProductResponse;
   currencySymbol: string;
+  shopId: string;
   onEdit: () => void;
+  onDeleted: () => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const toast = useToast();
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const imageUrl = product.images?.length ? product.images[product.images.length - 1].url : undefined;
+
+  const handleDelete = async () => {
+    try {
+      await deleteProduct({ productId: product.id, shopId }).unwrap();
+      toast.success(t('products.deleted'));
+      onDeleted();
+    } catch {
+      toast.error(t('products.failedToDelete'));
+    }
+  };
 
   return (
     <>
@@ -53,10 +81,17 @@ function ProductDetailView({
         <div className="flex items-center gap-2">
           <button
             onClick={onEdit}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            title={t('products.edit')}
           >
-            <Pencil size={13} />
-            {t('products.edit')}
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            title={t('products.delete')}
+          >
+            <Trash2 size={16} />
           </button>
           <button
             onClick={onClose}
@@ -66,6 +101,26 @@ function ProductDetailView({
           </button>
         </div>
       </div>
+
+      {/* Delete confirmation strip */}
+      {confirmDelete && (
+        <div className="px-6 py-2.5 bg-red-50 border-b border-red-100 flex items-center gap-3 flex-shrink-0">
+          <span className="flex-1 text-sm text-red-700">{t('products.deleteWarning')}</span>
+          <button
+            disabled={isDeleting}
+            onClick={handleDelete}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-40 transition-colors"
+          >
+            {isDeleting ? '…' : t('products.confirmDelete')}
+          </button>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            {t('products.cancel')}
+          </button>
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-6 space-y-5">
@@ -231,7 +286,6 @@ function ProductEditView({
   taxRatesList,
   hasTaxRates,
   onSaved,
-  onDeleted,
   onBack,
 }: {
   productId: string;
@@ -241,7 +295,6 @@ function ProductEditView({
   taxRatesList: { id: string; label: string }[];
   hasTaxRates: boolean;
   onSaved: () => void;
-  onDeleted: () => void;
   onBack: () => void;
 }) {
   const { t } = useTranslation();
@@ -252,13 +305,17 @@ function ProductEditView({
     { refetchOnMountOrArgChange: true },
   );
   const [updateProduct, { isLoading: isUpdating, isError: isUpdateError }] = useUpdateProductMutation();
-  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [generateUploadUrl] = useGenerateUploadUrlMutation();
   const [addProductImage] = useAddProductImageMutation();
 
+  const [mode, setMode] = useState<'simple' | 'extended'>('simple');
   const [step, setStep] = useState<StepNum>(1);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [initialized, setInitialized] = useState(false);
+
+  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 5, 6];
+  const isFirstStep = step === stepSequence[0];
+  const isLastStep = step === stepSequence[stepSequence.length - 1];
 
   const [form, setForm] = useState({ name: '', description: '', price: 0 });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -273,13 +330,23 @@ function ProductEditView({
   });
   const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [nameError, setNameError] = useState(false);
   const [descError, setDescError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
   const [scheduleError, setScheduleError] = useState(false);
+
+  const modeInitialized = useRef(false);
+  useEffect(() => {
+    if (!modeInitialized.current) { modeInitialized.current = true; return; }
+    if (mode === 'simple') {
+      setSelectedTaxRateId(taxRatesList[0]?.id ?? null);
+    } else {
+      setSelectedTaxRateId(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   useEffect(() => {
     if (product && !initialized) {
@@ -357,13 +424,13 @@ function ProductEditView({
       setNameError(ne); setDescError(de);
       return !ne && !de;
     }
-    if (s === 2) {
+    if (s === 3) {
       const hasNoCategory = selectedCategoryIds.length === 0;
-      const hasNoTax = hasTaxRates && selectedTaxRateId === null;
+      const hasNoTax = mode === 'extended' && hasTaxRates && selectedTaxRateId === null;
       setCategoryError(hasNoCategory); setTaxRateError(hasNoTax);
       return !hasNoCategory && !hasNoTax;
     }
-    if (s === 4 && scheduleEnabled) {
+    if (s === 5 && scheduleEnabled) {
       const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
       const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
       const invalid = !!(endDateInvalid || endTimeInvalid);
@@ -373,8 +440,17 @@ function ProductEditView({
     return true;
   }
 
-  function goNext() { if (!validateStep(step)) return; setDirection('forward'); setStep((s) => (s + 1) as StepNum); }
-  function goBack() { setDirection('back'); setStep((s) => (s - 1) as StepNum); }
+  function goNext() {
+    if (!validateStep(step)) return;
+    const idx = stepSequence.indexOf(step);
+    setDirection('forward');
+    setStep(stepSequence[idx + 1]);
+  }
+  function goBack() {
+    const idx = stepSequence.indexOf(step);
+    setDirection('back');
+    setStep(stepSequence[idx - 1]);
+  }
   function jumpTo(n: StepNum) { setDirection(n < step ? 'back' : 'forward'); setStep(n); }
 
   const handleSubmit = async () => {
@@ -433,16 +509,6 @@ function ProductEditView({
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      await deleteProduct({ productId, shopId }).unwrap();
-      toast.success(t('products.deleted'));
-      onDeleted();
-    } catch {
-      toast.error(t('products.failedToDelete'));
-    }
-  };
-
   const existingImageUrl = product?.images?.find((img) => img.isPrimary)?.url ?? product?.images?.[0]?.url ?? null;
   const isBusy = isUpdating || isUploading;
   const submitLabel = isUpdating ? t('products.saving') : isUploading ? t('products.uploadingImage') : t('products.saveChanges');
@@ -452,6 +518,7 @@ function ProductEditView({
     3: t('products.wizardStep3Subtitle'),
     4: t('products.wizardStep4Subtitle'),
     5: t('products.wizardStep5Subtitle'),
+    6: t('products.wizardStep6Subtitle'),
   };
 
   if (productLoading || !initialized) {
@@ -471,31 +538,19 @@ function ProductEditView({
           <p className="text-xs text-gray-400 mt-0.5">{stepSubtitles[step]}</p>
         </div>
         <div className="flex items-center gap-2">
-          {!confirmDelete ? (
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
-            >
-              <Trash2 size={13} />
-              {t('products.delete')}
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5">
+          <div className="flex gap-1">
+            {(['simple', 'extended'] as const).map((m) => (
               <button
-                disabled={isDeleting}
-                onClick={handleDelete}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-40 transition-colors"
+                key={m}
+                onClick={() => { setMode(m); setStep(1); setDirection('forward'); }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  mode === m ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                }`}
               >
-                {isDeleting ? '…' : t('products.confirmDelete')}
+                {t(m === 'simple' ? 'products.modeSimple' : 'products.modeExtended')}
               </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                {t('products.cancel')}
-              </button>
-            </div>
-          )}
+            ))}
+          </div>
           <button
             onClick={onBack}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
@@ -508,7 +563,7 @@ function ProductEditView({
 
       {/* Step indicator */}
       <div className="px-6 pt-4 flex-shrink-0">
-        <StepIndicator currentStep={step} onJump={jumpTo} />
+        <StepIndicator currentStep={step} onJump={jumpTo} stepSequence={stepSequence} />
       </div>
 
       {/* Step content */}
@@ -520,48 +575,46 @@ function ProductEditView({
         )}
         <div key={step} className={direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left'}>
           {step === 1 && (
-            <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} existingImageUrl={existingImageUrl} specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
+            <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} existingImageUrl={existingImageUrl} />
           )}
           {step === 2 && (
-            <Step2Categories categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} />
+            <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
           )}
           {step === 3 && (
-            <Step3Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />
+            <Step3Categories categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} hideTaxRate={mode === 'simple'} />
           )}
           {step === 4 && (
-            <Step4Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />
+            <Step4Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />
           )}
           {step === 5 && (
-            <Step5Review form={form} imageFile={imageFile} existingImageUrl={existingImageUrl} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />
+            <Step5Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />
+          )}
+          {step === 6 && (
+            <Step6Review form={form} imageFile={imageFile} existingImageUrl={existingImageUrl} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />
           )}
         </div>
       </div>
 
       {/* Footer navigation */}
       <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200 flex-shrink-0">
-        {step === 1 && (
+        {isFirstStep && (
           <>
             <GlassButton type="button" variant="secondary" onClick={onBack}>← {t('products.cancel')}</GlassButton>
             <div className="flex-1" />
             <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
           </>
         )}
-        {step === 2 && (
+        {!isFirstStep && !isLastStep && (
           <>
             <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />
+            {mode === 'extended' && (step === 2 || step === 4 || step === 5) && (
+              <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+            )}
             <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
           </>
         )}
-        {(step === 3 || step === 4) && (
-          <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
-            <div className="flex-1" />
-            <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
-          </>
-        )}
-        {step === 5 && (
+        {isLastStep && (
           <>
             <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />
@@ -615,7 +668,9 @@ function ProductModal({
             <ProductDetailView
               product={fullProduct}
               currencySymbol={currencySymbol}
+              shopId={shopId}
               onEdit={() => setMode('edit')}
+              onDeleted={onDeleted}
               onClose={onClose}
             />
           ) : (
@@ -627,7 +682,6 @@ function ProductModal({
               taxRatesList={taxRatesList}
               hasTaxRates={hasTaxRates}
               onSaved={onClose}
-              onDeleted={onDeleted}
               onBack={() => setMode('view')}
             />
           )}
@@ -660,8 +714,13 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   const categoriesList = (categories ?? []).filter((c): c is { id: string; name: string } => !!c.id && !!c.name);
   const taxRatesList = taxRates.filter((r): r is { id: string; label: string } => !!r.id && !!r.label);
 
+  const [mode, setMode] = useState<'simple' | 'extended'>('simple');
   const [step, setStep] = useState<StepNum>(1);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+
+  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 5, 6];
+  const isFirstStep = step === stepSequence[0];
+  const isLastStep = step === stepSequence[stepSequence.length - 1];
 
   const [form, setForm] = useState({ name: '', description: '', price: 0 });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -680,6 +739,15 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
   const [scheduleError, setScheduleError] = useState(false);
+
+  useEffect(() => {
+    if (mode === 'simple') {
+      setSelectedTaxRateId(taxRatesList[0]?.id ?? null);
+    } else {
+      setSelectedTaxRateId(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   // Variant helpers
   const addVariantGroup = () => setVariantGroups((gs) => [...gs, { id: crypto.randomUUID(), name: '', options: [] }]);
@@ -704,13 +772,13 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
       setNameError(ne); setDescError(de);
       return !ne && !de;
     }
-    if (s === 2) {
+    if (s === 3) {
       const hasNoCategory = selectedCategoryIds.length === 0;
-      const hasNoTax = hasTaxRates && selectedTaxRateId === null;
+      const hasNoTax = mode === 'extended' && hasTaxRates && selectedTaxRateId === null;
       setCategoryError(hasNoCategory); setTaxRateError(hasNoTax);
       return !hasNoCategory && !hasNoTax;
     }
-    if (s === 4 && scheduleEnabled) {
+    if (s === 5 && scheduleEnabled) {
       const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
       const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
       const invalid = !!(endDateInvalid || endTimeInvalid);
@@ -720,8 +788,17 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
     return true;
   }
 
-  function goNext() { if (!validateStep(step)) return; setDirection('forward'); setStep((s) => (s + 1) as StepNum); }
-  function goBack() { setDirection('back'); setStep((s) => (s - 1) as StepNum); }
+  function goNext() {
+    if (!validateStep(step)) return;
+    const idx = stepSequence.indexOf(step);
+    setDirection('forward');
+    setStep(stepSequence[idx + 1]);
+  }
+  function goBack() {
+    const idx = stepSequence.indexOf(step);
+    setDirection('back');
+    setStep(stepSequence[idx - 1]);
+  }
   function jumpTo(n: StepNum) { setDirection(n < step ? 'back' : 'forward'); setStep(n); }
 
   const handleSubmit = async () => {
@@ -786,6 +863,7 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
     3: t('products.wizardStep3Subtitle'),
     4: t('products.wizardStep4Subtitle'),
     5: t('products.wizardStep5Subtitle'),
+    6: t('products.wizardStep6Subtitle'),
   };
 
   return (
@@ -799,14 +877,29 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
               <h2 className="text-base font-semibold text-gray-900">{t('products.newProduct')}</h2>
               <p className="text-xs text-gray-400 mt-0.5">{stepSubtitles[step]}</p>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-              <X size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                {(['simple', 'extended'] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => { setMode(m); setStep(1); setDirection('forward'); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      mode === m ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {t(m === 'simple' ? 'products.modeSimple' : 'products.modeExtended')}
+                  </button>
+                ))}
+              </div>
+              <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Step indicator */}
           <div className="px-6 pt-4 flex-shrink-0">
-            <StepIndicator currentStep={step} onJump={jumpTo} />
+            <StepIndicator currentStep={step} onJump={jumpTo} stepSequence={stepSequence} />
           </div>
 
           {/* Step content */}
@@ -819,39 +912,35 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
               </div>
             )}
             <div key={step} className={direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left'}>
-              {step === 1 && <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />}
-              {step === 2 && <Step2Categories categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} />}
-              {step === 3 && <Step3Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />}
-              {step === 4 && <Step4Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />}
-              {step === 5 && <Step5Review form={form} imageFile={imageFile} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />}
+              {step === 1 && <Step1Basics form={form} setForm={setForm} imageFile={imageFile} setImageFile={setImageFile} currencySymbol={currencySymbol} nameError={nameError} descError={descError} />}
+              {step === 2 && <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />}
+              {step === 3 && <Step3Categories categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} hideTaxRate={mode === 'simple'} />}
+              {step === 4 && <Step4Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />}
+              {step === 5 && <Step5Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />}
+              {step === 6 && <Step6Review form={form} imageFile={imageFile} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />}
             </div>
           </div>
 
           {/* Footer navigation */}
           <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200 flex-shrink-0">
-            {step === 1 && (
+            {isFirstStep && (
               <>
                 <GlassButton type="button" variant="secondary" onClick={onClose}>{t('products.cancel')}</GlassButton>
                 <div className="flex-1" />
                 <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
               </>
             )}
-            {step === 2 && (
+            {!isFirstStep && !isLastStep && (
               <>
                 <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
                 <div className="flex-1" />
+                {mode === 'extended' && (step === 2 || step === 4 || step === 5) && (
+                  <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+                )}
                 <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
               </>
             )}
-            {(step === 3 || step === 4) && (
-              <>
-                <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
-                <div className="flex-1" />
-                <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
-                <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
-              </>
-            )}
-            {step === 5 && (
+            {isLastStep && (
               <>
                 <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
                 <div className="flex-1" />
@@ -865,16 +954,282 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   );
 }
 
+// ── Bulk Import Modal ──────────────────────────────────────────────────────────
+
+function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => void }) {
+  const { t } = useTranslation();
+  const { data: shop } = useGetShopByIdQuery({ shopId });
+  const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
+  const taxRatesList = (shop?.taxRates ?? []).filter(
+    (r): r is { id: string; label: string; rate: number } => !!r.id && !!r.label,
+  );
+  const defaultTaxRateId = taxRatesList[0]?.id ?? null;
+  const [createProduct] = useCreateProductMutation();
+  const { data: categories } = useGetCategoriesByShopQuery({ shopId });
+  const [createCategory] = useCreateCategoryMutation();
+
+  const [step, setStep] = useState<ImportStep>('upload');
+  const [rows, setRows] = useState<ImportRow[]>([]);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [failures, setFailures] = useState<{ name: string; error: string }[]>([]);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string);
+        if (!Array.isArray(parsed)) throw new Error('JSON must be an array');
+        const mapped: ImportRow[] = parsed.map((item: Record<string, unknown>, idx: number) => {
+          if (typeof item.name !== 'string' || !item.name.trim())
+            throw new Error(`Item ${idx + 1}: "name" is required`);
+          if (typeof item.description !== 'string')
+            throw new Error(`Item ${idx + 1}: "description" is required`);
+          return {
+            name: item.name,
+            description: item.description,
+            price: item.price == null ? null : Number(item.price),
+            image_url: typeof item.image_url === 'string' ? item.image_url : null,
+          };
+        });
+        setParseError(null);
+        setRows(mapped);
+        setStep('preview');
+      } catch (err) {
+        setParseError((err as Error).message);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const updatePrice = (idx: number, value: string) => {
+    setRows((prev) =>
+      prev.map((r, i) => (i === idx ? { ...r, price: value === '' ? null : Number(value) } : r)),
+    );
+  };
+
+  const canImport = rows.length > 0 && rows.every((r) => r.price !== null && r.price >= 0);
+
+  const handleImport = async () => {
+    setStep('importing');
+    setProgress(0);
+
+    // Resolve 'Uncategorised' category — find existing or create
+    const categoriesList = (categories ?? []).filter((c) => !c.isDeleted);
+    let uncategorisedId: string | null =
+      categoriesList.find((c) => c.name === 'Uncategorised')?.id ?? null;
+
+    if (!uncategorisedId) {
+      try {
+        const created = await createCategory({
+          shopId,
+          createCategoryRequest: { name: 'Uncategorised', sortOrder: 0 },
+        }).unwrap();
+        uncategorisedId = created.id ?? null;
+      } catch {
+        // proceed without category — backend will reject, errors captured below
+      }
+    }
+
+    const errs: { name: string; error: string }[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      setProgress(i + 1);
+      try {
+        await createProduct({
+          createProductRequest: {
+            shopId,
+            name: row.name,
+            description: row.description,
+            price: Math.round(row.price! * 100),
+            taxRateId: defaultTaxRateId,
+            categoryIds: uncategorisedId ? [uncategorisedId] : [],
+            images: row.image_url
+              ? [{ id: crypto.randomUUID(), url: row.image_url }]
+              : undefined,
+          },
+        }).unwrap();
+      } catch {
+        errs.push({ name: row.name, error: 'Failed to create' });
+      }
+    }
+    setFailures(errs);
+    setStep('done');
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-200 flex-shrink-0">
+            <h2 className="text-base font-semibold text-gray-900">Import Products</h2>
+            {step !== 'importing' && (
+              <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto p-6">
+
+            {/* Upload step */}
+            {step === 'upload' && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  Upload a JSON file containing an array of products with{' '}
+                  <code className="text-xs bg-gray-100 px-1 rounded">name</code>,{' '}
+                  <code className="text-xs bg-gray-100 px-1 rounded">description</code>,{' '}
+                  <code className="text-xs bg-gray-100 px-1 rounded">price</code>, and{' '}
+                  <code className="text-xs bg-gray-100 px-1 rounded">image_url</code>.
+                </p>
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-gray-400 transition-colors">
+                  <span className="text-sm text-gray-400">Click to select a .json file</span>
+                  <input type="file" accept=".json" className="hidden" onChange={handleFile} />
+                </label>
+                {parseError && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    {parseError}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Preview step */}
+            {step === 'preview' && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500">
+                  {rows.length} products found. Fix any prices marked in red before importing.
+                </p>
+                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="px-3 py-2 text-left w-10">Image</th>
+                        <th className="px-3 py-2 text-left">Name</th>
+                        <th className="px-3 py-2 text-left">Description</th>
+                        <th className="px-3 py-2 text-left w-24">Price ({currencySymbol})</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {rows.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-3 py-2">
+                            {row.image_url ? (
+                              <img src={row.image_url} alt="" className="w-8 h-8 rounded object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-gray-100" />
+                            )}
+                          </td>
+                          <td className="px-3 py-2 font-medium text-gray-900">{row.name}</td>
+                          <td className="px-3 py-2 text-gray-500 max-w-xs">
+                            <span className="line-clamp-2">{row.description}</span>
+                          </td>
+                          <td className="px-3 py-2">
+                            {row.price === null ? (
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="w-20 px-2 py-1 text-sm border border-red-400 rounded-lg focus:outline-none focus:ring-1 focus:ring-red-400"
+                                onBlur={(e) => updatePrice(idx, e.target.value)}
+                              />
+                            ) : (
+                              <span className="text-gray-700">{row.price.toFixed(2)}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Importing step */}
+            {step === 'importing' && (
+              <div className="flex flex-col items-center justify-center gap-4 py-10">
+                <GlassSpinner label={`Creating product ${progress} of ${rows.length}…`} />
+              </div>
+            )}
+
+            {/* Done step */}
+            {step === 'done' && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">{rows.length - failures.length} of {rows.length}</span> products created successfully.
+                </p>
+                {failures.length > 0 && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-3 space-y-1">
+                    <p className="text-xs font-semibold text-red-600 uppercase tracking-wider">Failed</p>
+                    {failures.map((f, i) => (
+                      <p key={i} className="text-sm text-red-700">{f.name} — {f.error}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+
+          {/* Footer */}
+          {step === 'preview' && (
+            <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200 flex-shrink-0">
+              <GlassButton variant="secondary" onClick={() => setStep('upload')}>← Back</GlassButton>
+              <div className="flex-1" />
+              <GlassButton disabled={!canImport} onClick={handleImport}>
+                Import {rows.length} products
+              </GlassButton>
+            </div>
+          )}
+          {step === 'done' && (
+            <div className="flex justify-end px-6 py-4 border-t border-gray-200 flex-shrink-0">
+              <GlassButton onClick={onClose}>Close</GlassButton>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Products table ─────────────────────────────────────────────────────────────
 
 function ProductTable({
   products,
   onSelect,
+  shopId,
 }: {
   products: ProductResponse[];
   onSelect: (id: string) => void;
+  shopId: string;
 }) {
   const { t } = useTranslation();
+  const [updateProduct] = useUpdateProductMutation();
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+
+  const handleToggle = async (e: React.MouseEvent, product: ProductResponse) => {
+    e.stopPropagation();
+    const id = product.id!;
+    if (togglingIds.has(id)) return;
+    setTogglingIds(prev => new Set(prev).add(id));
+    try {
+      await updateProduct({
+        productId: id,
+        updateProductRequest: { shopId, isAvailable: product.isAvailable === false },
+      }).unwrap();
+    } finally {
+      setTogglingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+    }
+  };
+
   return (
     <div className="divide-y divide-gray-200">
       {products.map((product) => {
@@ -886,8 +1241,12 @@ function ProductTable({
           <div
             key={product.id}
             onClick={() => onSelect(product.id!)}
-            className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer group transition-colors"
+            className="relative flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer group transition-colors"
           >
+            {product.isAvailable === false && (
+              <div className="absolute inset-0 bg-white/60 pointer-events-none rounded" />
+            )}
+
             {/* Thumbnail */}
             <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
               {imageUrl ? (
@@ -914,18 +1273,21 @@ function ProductTable({
               ${((product.price ?? 0) / 100).toFixed(2)}
             </span>
 
-            {/* Availability badge */}
-            <div className="flex-shrink-0 w-28 flex justify-center">
-              <span
-                className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${
-                  product.isAvailable !== false
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                    : 'bg-gray-100 border-gray-200 text-gray-400'
-                }`}
+            {/* Availability toggle */}
+            <div className="flex-shrink-0 w-14 flex justify-center" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                disabled={togglingIds.has(product.id!)}
+                onClick={(e) => handleToggle(e, product)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  product.isAvailable !== false ? 'bg-emerald-500' : 'bg-gray-200'
+                } ${togglingIds.has(product.id!) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                aria-label={product.isAvailable !== false ? t('products.available') : t('products.unavailable')}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${product.isAvailable !== false ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                {product.isAvailable !== false ? t('products.available') : t('products.unavailable')}
-              </span>
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                  product.isAvailable !== false ? 'translate-x-4' : 'translate-x-0.5'
+                }`} />
+              </button>
             </div>
           </div>
         );
@@ -945,6 +1307,20 @@ export function ProductsPage() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const showAddModal = searchParams.get('addProduct') === '1';
   const closeAddModal = () => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('addProduct'); return n; });
+  const showImportModal = searchParams.get('importProducts') === '1';
+  const closeImportModal = () => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('importProducts'); return n; });
+
+  // Capture sort order once on initial load. Subsequent mutation-triggered refetches
+  // will not change this ref, so products won't reorder until the page is remounted.
+  const stableSortRef = useRef<Map<string, number> | null>(null);
+  if (products && stableSortRef.current === null) {
+    const m = new Map<string, number>();
+    [...products]
+      .sort((a, b) => Number(a.isAvailable === false) - Number(b.isAvailable === false))
+      .forEach((p, i) => m.set(p.id!, i));
+    stableSortRef.current = m;
+  }
+  const stableIndex = (p: ProductResponse) => stableSortRef.current?.get(p.id!) ?? Infinity;
 
   if (isLoading) return <GlassSpinner label={t('products.loading')} />;
   if (isError) return <p className="text-red-500">{t('products.loadError')}</p>;
@@ -966,16 +1342,29 @@ export function ProductsPage() {
   for (const cat of sortedCategories) {
     byCategory.set(
       cat.id,
-      (products ?? []).filter((p) => p.categories?.some((c) => c.id === cat.id)),
+      [...(products ?? []).filter((p) => p.categories?.some((c) => c.id === cat.id))].sort(
+        (a, b) => stableIndex(a) - stableIndex(b),
+      ),
     );
   }
 
-  const uncategorized = (products ?? []).filter((p) => !p.categories?.length);
+  const uncategorized = [...(products ?? []).filter((p) => !p.categories?.length)].sort(
+    (a, b) => stableIndex(a) - stableIndex(b),
+  );
   const isEmpty = !products?.length;
 
   return (
     <>
       <div className="space-y-6">
+        <div className="flex justify-end">
+          <GlassButton
+            variant="secondary"
+            onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('importProducts', '1'); return n; })}
+          >
+            Import JSON
+          </GlassButton>
+        </div>
+
         {isEmpty && <p className="text-gray-400 text-sm">{t('products.empty')}</p>}
 
         {sortedCategories.map((cat) => (
@@ -987,6 +1376,7 @@ export function ProductsPage() {
               <ProductTable
                 products={byCategory.get(cat.id)!}
                 onSelect={setSelectedProductId}
+                shopId={shopId!}
               />
             </GlassCard>
           </section>
@@ -998,7 +1388,7 @@ export function ProductsPage() {
               {t('products.uncategorized')}
             </h2>
             <GlassCard>
-              <ProductTable products={uncategorized} onSelect={setSelectedProductId} />
+              <ProductTable products={uncategorized} onSelect={setSelectedProductId} shopId={shopId!} />
             </GlassCard>
           </section>
         )}
@@ -1019,6 +1409,8 @@ export function ProductsPage() {
           onClose={closeAddModal}
         />
       )}
+
+      {showImportModal && <BulkImportModal shopId={shopId!} onClose={closeImportModal} />}
     </>
   );
 }
