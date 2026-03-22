@@ -94,13 +94,14 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const resolvedIndustry =
+      form.industry === 'Other' ? industryOther.trim() : form.industry;
+    if (!resolvedIndustry) return;
     try {
-      const resolvedIndustry =
-        form.industry === 'Other' ? industryOther.trim() : form.industry;
       const shop = await createShop({
         createShopRequest: {
           ...form,
-          industry: resolvedIndustry || undefined,
+          industry: resolvedIndustry,
         } as CreateShopRequest,
       }).unwrap();
       toast.success(t('shops.created'));
@@ -153,6 +154,7 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Industry</label>
                 <select
+                  required
                   value={form.industry ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
                   className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
