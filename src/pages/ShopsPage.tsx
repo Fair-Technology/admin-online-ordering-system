@@ -6,8 +6,9 @@ import {
   useGetMyShopsQuery,
   useGetShopSubscriptionQuery,
   useCreateShopMutation,
+  useUpdateShopMutation,
 } from '../services/api';
-import type { CreateShopRequest } from '../services/api';
+import type { CreateShopRequest, ShopResponse } from '../services/api';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassInput } from '../components/ui/GlassInput';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
@@ -207,6 +208,40 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function ShopAvailabilityToggle({ shop }: { shop: ShopResponse }) {
+  const [updateShop, { isLoading }] = useUpdateShopMutation();
+  const [isPaused, setIsPaused] = useState(shop.isPaused ?? true);
+  const isOn = !isPaused;
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = !isPaused;
+    setIsPaused(next);
+    try {
+      await updateShop({
+        shopId: shop.id!,
+        updateShopRequest: { isPaused: next },
+      }).unwrap();
+    } catch {
+      setIsPaused(isPaused);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={isLoading}
+      title={isOn ? 'Shop is live — click to pause' : 'Shop is paused — click to go live'}
+      className="flex-shrink-0 focus:outline-none disabled:opacity-50"
+    >
+      <span className={`relative flex items-center w-9 h-5 rounded-full transition-colors duration-200 ${isOn ? 'bg-emerald-500' : 'bg-gray-200'}`}>
+        <span className={`absolute w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 ${isOn ? 'translate-x-4' : 'translate-x-0.5'}`} />
+      </span>
+    </button>
+  );
+}
+
 function ShopPlanBadge({ shopId }: { shopId: string }) {
   const { data } = useGetShopSubscriptionQuery({ shopId });
   const navigate = useNavigate();
@@ -224,7 +259,7 @@ function ShopPlanBadge({ shopId }: { shopId: string }) {
         e.stopPropagation();
         navigate(`/shops/${shopId}/subscription`);
       }}
-      className={`mt-1.5 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors ${
+      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-colors ${
         isActive
           ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
           : 'bg-gray-100 border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600'
@@ -274,7 +309,10 @@ export function ShopsPage() {
               </div>
               <div className="p-3">
                 <p className="font-medium text-gray-900 text-sm leading-snug truncate">{shop.name}</p>
-                <ShopPlanBadge shopId={shop.id!} />
+                <div className="flex items-center justify-between mt-1.5">
+                  <ShopPlanBadge shopId={shop.id!} />
+                  <ShopAvailabilityToggle shop={shop} />
+                </div>
               </div>
             </Link>
           ))}

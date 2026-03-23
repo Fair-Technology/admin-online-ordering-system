@@ -21,11 +21,6 @@ export function ShopLayout() {
 
   return (
     <ShopRoleContext.Provider value={role}>
-      {shop.isPaused && (
-        <div className="bg-red-600 text-white text-sm font-medium px-4 py-2.5 text-center">
-          {t('shops.shopPausedBanner')}
-        </div>
-      )}
       <Outlet />
     </ShopRoleContext.Provider>
   );
