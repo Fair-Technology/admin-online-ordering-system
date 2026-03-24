@@ -98,6 +98,7 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
     const resolvedIndustry =
       form.industry === 'Other' ? industryOther.trim() : form.industry;
     if (!resolvedIndustry) return;
+    if (form.name.trim().length < 3) return;
     try {
       const shop = await createShop({
         createShopRequest: {
@@ -147,6 +148,7 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
                 label={t('shops.shopName')}
                 type="text"
                 required
+                minLength={3}
                 placeholder={t('shops.shopNamePlaceholder')}
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
