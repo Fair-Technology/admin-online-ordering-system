@@ -13,6 +13,8 @@ import {
   useCreateShopRoleMutation,
   useUpdateShopRoleMutation,
   useDeleteShopRoleMutation,
+  useRequestShopNameChangeMutation,
+  useCancelShopNameChangeMutation,
 } from '../services/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
@@ -40,16 +42,6 @@ function buildInitialHours(shopHours: Record<string, unknown> | undefined): Open
   return result;
 }
 
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 const inputClass = 'w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400';
 
 export function ShopSettingsPage() {
@@ -70,6 +62,8 @@ export function ShopSettingsPage() {
   const [createShopRole] = useCreateShopRoleMutation();
   const [updateShopRole] = useUpdateShopRoleMutation();
   const [deleteShopRole] = useDeleteShopRoleMutation();
+  const [requestShopNameChange] = useRequestShopNameChangeMutation();
+  const [cancelShopNameChange] = useCancelShopNameChangeMutation();
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -98,11 +92,14 @@ export function ShopSettingsPage() {
   const [colorsError, setColorsError] = useState<string | null>(null);
 
   const [detailsState, setDetailsState] = useState<{
-    name: string;
     minOrderAmountCents: number;
   } | null>(null);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
+
+  const [nameChangeState, setNameChangeState] = useState<{ requestedName: string } | null>(null);
+  const [isRequestingNameChange, setIsRequestingNameChange] = useState(false);
+  const [nameChangeError, setNameChangeError] = useState<string | null>(null);
 
   const [addressState, setAddressState] = useState<{
     street: string;
@@ -167,7 +164,6 @@ export function ShopSettingsPage() {
   };
 
   const currentDetails = detailsState ?? {
-    name: shop.name ?? '',
     minOrderAmountCents: shop.minOrderAmountCents ?? 0,
   };
 
@@ -292,7 +288,6 @@ export function ShopSettingsPage() {
       await updateShop({
         shopId: shopId!,
         updateShopRequest: {
-          name: currentDetails.name || undefined,
           ...(cents != null && { minOrderAmountCents: cents }),
         },
       }).unwrap();
@@ -302,6 +297,38 @@ export function ShopSettingsPage() {
       setDetailsError(t('shops.detailsFailedToSave'));
     } finally {
       setIsSavingDetails(false);
+    }
+  };
+
+  const handleRequestNameChange = async () => {
+    if (!nameChangeState || nameChangeState.requestedName.trim().length < 3) {
+      setNameChangeError(t('shops.nameChangeMinLength'));
+      return;
+    }
+    setIsRequestingNameChange(true);
+    setNameChangeError(null);
+    try {
+      await requestShopNameChange({
+        shopId: shopId!,
+        requestedName: nameChangeState.requestedName.trim(),
+      }).unwrap();
+      setNameChangeState(null);
+      toast.success(t('shops.nameChangeSubmitted'));
+      refetch();
+    } catch (err: any) {
+      setNameChangeError(err?.data?.error ?? t('shops.nameChangeFailed'));
+    } finally {
+      setIsRequestingNameChange(false);
+    }
+  };
+
+  const handleCancelNameChange = async () => {
+    try {
+      await cancelShopNameChange({ shopId: shopId! }).unwrap();
+      toast.success(t('shops.nameChangeCancelled'));
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.data?.error ?? t('shops.nameChangeCancelFailed'));
     }
   };
 
@@ -447,9 +474,7 @@ export function ShopSettingsPage() {
     }
   };
 
-  const previewSlug = detailsState
-    ? toSlug(detailsState.name) || shop.slug
-    : shop.slug;
+  const previewSlug = shop.slug;
 
   const shopUrl = `${import.meta.env.VITE_SHOP_BASE_URL ?? 'https://www.example.com'}/shops/${previewSlug}`;
 
@@ -514,12 +539,70 @@ export function ShopSettingsPage() {
           {t('shops.detailsTitle')}
         </p>
         <div className="space-y-3">
-          <GlassInput
-            label={t('shops.detailsName')}
-            value={currentDetails.name}
-            placeholder={t('shops.detailsName')}
-            onChange={(e) => setDetailsState({ ...currentDetails, name: e.target.value })}
-          />
+          {/* Shop name — read-only; changes require a request */}
+          <div>
+            <p className="text-xs text-gray-500 mb-1">{t('shops.detailsName')}</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-gray-900 font-medium">{shop.name}</p>
+              {!shop.pendingNameChange && !nameChangeState && (
+                <GlassButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setNameChangeState({ requestedName: '' })}
+                >
+                  {t('shops.nameChangeRequest')}
+                </GlassButton>
+              )}
+            </div>
+          </div>
+
+          {/* Pending name change banner */}
+          {shop.pendingNameChange && (
+            <div className="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3 flex items-start justify-between gap-3">
+              <p className="text-sm text-yellow-800">
+                {t('shops.nameChangePending', { name: shop.pendingNameChange.requestedName })}
+              </p>
+              <GlassButton
+                variant="ghost"
+                size="sm"
+                onClick={handleCancelNameChange}
+              >
+                {t('shops.nameChangeCancelRequest')}
+              </GlassButton>
+            </div>
+          )}
+
+          {/* Inline name change request form */}
+          {nameChangeState && !shop.pendingNameChange && (
+            <div className="space-y-2 rounded-lg border border-gray-200 p-3">
+              <GlassInput
+                label={t('shops.nameChangeRequestedName')}
+                value={nameChangeState.requestedName}
+                placeholder={t('shops.detailsName')}
+                onChange={(e) => {
+                  setNameChangeState({ requestedName: e.target.value });
+                  setNameChangeError(null);
+                }}
+              />
+              {nameChangeError && <p className="text-sm text-red-600">{nameChangeError}</p>}
+              <div className="flex gap-2">
+                <GlassButton
+                  onClick={handleRequestNameChange}
+                  disabled={isRequestingNameChange || nameChangeState.requestedName.trim().length < 3}
+                >
+                  {isRequestingNameChange ? t('shops.nameChangeSubmitting') : t('shops.nameChangeSubmit')}
+                </GlassButton>
+                <GlassButton
+                  variant="ghost"
+                  onClick={() => { setNameChangeState(null); setNameChangeError(null); }}
+                  disabled={isRequestingNameChange}
+                >
+                  {t('shops.detailsCancel')}
+                </GlassButton>
+              </div>
+            </div>
+          )}
+
           <div>
             <p className="text-xs text-gray-500 mb-1">{t('shops.detailsCurrency')}</p>
             <p className="text-sm text-gray-700">{shop.currency ?? '—'}</p>

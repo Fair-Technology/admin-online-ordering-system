@@ -236,6 +236,22 @@ const injectedRtkApi = api.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    requestShopNameChange: build.mutation<
+      { id: string; pendingNameChange: { requestedName: string; requestedSlug: string; requestedBy: string; requestedAt: string } },
+      { shopId: string; requestedName: string }
+    >({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/name-change-request`,
+        method: 'POST',
+        body: { requestedName: queryArg.requestedName },
+      }),
+    }),
+    cancelShopNameChange: build.mutation<{ id: string; updatedAt: string }, { shopId: string }>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/name-change-request`,
+        method: 'DELETE',
+      }),
+    }),
     getVisiblePlans: build.query<GetVisiblePlansApiResponse, void>({
       query: () => ({ url: '/plans' }),
       providesTags: ['Plans'],
@@ -609,6 +625,13 @@ export type ShopResponse = {
   industry?: string;
   /** Shop branding configuration, or null if not configured. */
   branding?: ShopBranding;
+  /** Pending name change request submitted by the owner and awaiting superadmin approval. */
+  pendingNameChange?: {
+    requestedName: string;
+    requestedSlug: string;
+    requestedBy: string;
+    requestedAt: string;
+  } | null;
   /** Shop opening hours per day of the week. */
   openingHours?: {
     mon?: {
@@ -745,8 +768,6 @@ export type CreateShopRequest = {
   branding?: ShopBranding;
 };
 export type UpdateShopRequest = {
-  /** Shop name */
-  name?: string;
   /** Whether shop is accepting orders */
   acceptingOrders?: boolean;
   /** Whether shop is paused */
@@ -1247,6 +1268,8 @@ export const {
   useCreateShopRoleMutation,
   useUpdateShopRoleMutation,
   useDeleteShopRoleMutation,
+  useRequestShopNameChangeMutation,
+  useCancelShopNameChangeMutation,
   useGetVisiblePlansQuery,
   useGetShopSubscriptionQuery,
   useGetPlanPricingQuery,
