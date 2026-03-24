@@ -49,7 +49,18 @@
     "loadError": "Abonnement konnte nicht geladen werden.",
     "upgradeError": "Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
     "upgrading": "Weiterleitung zum Checkout...",
-    "downgrade": "Downgrade"
+    "downgrade": "Downgrade",
+    "cancelSubscription": "Abonnement kündigen",
+    "cancelScheduled": "Ihr Abonnement wird am {{date}} gekündigt. Danach wechseln Sie zum kostenlosen Tarif.",
+    "keepPlan": "Plan behalten",
+    "resuming": "Wird fortgesetzt…",
+    "cancellingSubscription": "Wird gekündigt…",
+    "cancelSuccess": "Abonnement zur Kündigung vorgemerkt.",
+    "resumeSuccess": "Kündigung zurückgezogen. Ihr Plan verlängert sich wie gewohnt.",
+    "deactivatedBanner": "Ihr Shop wurde deaktiviert, da Ihre aktiven Produkte das Limit des kostenlosen Plans überschreiten. Deaktivieren Sie Produkte, um unter das Limit zu kommen, und klicken Sie dann auf Reaktivieren.",
+    "reactivate": "Shop reaktivieren",
+    "reactivating": "Wird reaktiviert…",
+    "reactivateSuccess": "Shop erfolgreich reaktiviert."
   },
   "auth": {
     "adminPortal": "Admin-Portal",

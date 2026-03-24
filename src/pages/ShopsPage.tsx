@@ -293,7 +293,7 @@ export function ShopsPage() {
           <p className="text-gray-400 text-sm">{t('shops.empty')}</p>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
           {data?.shops.map((shop) => (
             <Link
               key={shop.id}

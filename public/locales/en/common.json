@@ -49,7 +49,18 @@
     "loadError": "Failed to load subscription.",
     "upgradeError": "Failed to start checkout. Please try again.",
     "upgrading": "Redirecting to checkout...",
-    "downgrade": "Downgrade"
+    "downgrade": "Downgrade",
+    "cancelSubscription": "Cancel Subscription",
+    "cancelScheduled": "Your subscription cancels on {{date}}. You'll revert to Free after that.",
+    "keepPlan": "Keep Plan",
+    "resuming": "Resuming…",
+    "cancellingSubscription": "Cancelling…",
+    "cancelSuccess": "Subscription scheduled for cancellation.",
+    "resumeSuccess": "Cancellation reversed. Your plan will renew as usual.",
+    "deactivatedBanner": "Your shop has been deactivated because your active products exceed the free plan limit. Deactivate products to get back under the limit, then click Reactivate.",
+    "reactivate": "Reactivate Shop",
+    "reactivating": "Reactivating…",
+    "reactivateSuccess": "Shop reactivated successfully."
   },
   "auth": {
     "adminPortal": "Admin Portal",

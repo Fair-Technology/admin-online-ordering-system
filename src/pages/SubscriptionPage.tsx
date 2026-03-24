@@ -9,6 +9,8 @@ import {
   useGetVisiblePlansQuery,
   useGetPlanPricingQuery,
   useCreateSubscriptionCheckoutMutation,
+  useCancelShopSubscriptionMutation,
+  useResumeShopSubscriptionMutation,
 } from '../services/api';
 import type { PlanResponse } from '../services/api';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
@@ -55,24 +57,28 @@ interface PlanCardProps {
   plan: PlanResponse;
   index: number;
   currency: string;
-  billingInterval: 'monthly' | 'yearly';
   isCurrentPlan: boolean;
   isDowngrade: boolean;
+  isCancelPending: boolean;
   isOwner: boolean;
   onUpgrade: (planId: string) => void;
+  onDowngrade: (planId: string) => void;
   isUpgrading: boolean;
+  isDowngrading: boolean;
 }
 
 function PlanCard({
   plan,
   index,
   currency,
-  billingInterval,
   isCurrentPlan,
   isDowngrade,
+  isCancelPending,
   isOwner,
   onUpgrade,
+  onDowngrade,
   isUpgrading,
+  isDowngrading,
 }: PlanCardProps) {
   const { t } = useTranslation();
   const { data: pricingList } = useGetPlanPricingQuery({ planId: plan.id });
@@ -91,11 +97,10 @@ function PlanCard({
   if (isFree) {
     priceDisplay = t('subscription.free');
   } else if (pricing) {
-    const amount =
-      billingInterval === 'monthly' ? pricing.monthlyAmountCents : pricing.yearlyAmountCents;
+    const amount = pricing.monthlyAmountCents;
     if (amount > 0) {
       priceDisplay = formatPrice(amount, currency);
-      periodLabel = billingInterval === 'monthly' ? t('subscription.perMonth') : t('subscription.perYear');
+      periodLabel = t('subscription.perMonth');
       hasPrice = true;
     }
   }
@@ -159,12 +164,15 @@ function PlanCard({
           <div className="w-full py-2.5 rounded-xl text-sm font-medium bg-gray-100 border border-gray-200 text-gray-400 text-center cursor-default select-none">
             {t('subscription.currentPlanBadge')}
           </div>
-        ) : isDowngrade && isOwner ? (
+        ) : isDowngrade && isOwner && !isCancelPending ? (
           <button
-            onClick={() => onUpgrade(plan.id)}
-            className="w-full py-3 rounded-xl text-sm font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all duration-150"
+            disabled={isDowngrading}
+            onClick={() => onDowngrade(plan.id)}
+            className="w-full py-3 rounded-xl text-sm font-semibold bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {`${t('subscription.downgrade')} to ${plan.name}`}
+            {isDowngrading
+              ? t('subscription.cancellingSubscription')
+              : `${t('subscription.downgrade')} to ${plan.name}`}
           </button>
         ) : isOwner && !isFree ? (
           <button
@@ -185,9 +193,11 @@ export function SubscriptionPage() {
   const { t } = useTranslation();
   const { accounts } = useMsal();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradingPlanId, setUpgradingPlanId] = useState<string | null>(null);
+  const [isDowngrading, setIsDowngrading] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const currentUserId = accounts[0]?.localAccountId;
 
@@ -198,6 +208,8 @@ export function SubscriptionPage() {
   );
   const { data: plansData, isLoading: plansLoading } = useGetVisiblePlansQuery();
   const [createSubscriptionCheckout] = useCreateSubscriptionCheckoutMutation();
+  const [cancelShopSubscription] = useCancelShopSubscriptionMutation();
+  const [resumeShopSubscription] = useResumeShopSubscriptionMutation();
 
   const paymentParam = searchParams.get('payment');
 
@@ -219,11 +231,39 @@ export function SubscriptionPage() {
     setUpgradeError(null);
     setUpgradingPlanId(planId);
     try {
-      const result = await createSubscriptionCheckout({ shopId, planId, billingInterval }).unwrap();
+      const result = await createSubscriptionCheckout({ shopId, planId, billingInterval: 'monthly' }).unwrap();
       window.location.href = result.url;
     } catch {
       setUpgradeError(t('subscription.upgradeError'));
       setUpgradingPlanId(null);
+    }
+  }
+
+  async function handleDowngrade() {
+    if (!shopId) return;
+    setIsDowngrading(true);
+    setActionMessage(null);
+    try {
+      await cancelShopSubscription({ shopId }).unwrap();
+      setActionMessage({ type: 'success', text: t('subscription.cancelSuccess') });
+    } catch {
+      setActionMessage({ type: 'error', text: t('subscription.upgradeError') });
+    } finally {
+      setIsDowngrading(false);
+    }
+  }
+
+  async function handleResume() {
+    if (!shopId) return;
+    setIsResuming(true);
+    setActionMessage(null);
+    try {
+      await resumeShopSubscription({ shopId }).unwrap();
+      setActionMessage({ type: 'success', text: t('subscription.resumeSuccess') });
+    } catch {
+      setActionMessage({ type: 'error', text: t('subscription.upgradeError') });
+    } finally {
+      setIsResuming(false);
     }
   }
 
@@ -233,6 +273,8 @@ export function SubscriptionPage() {
 
   const currency = shop?.currency ?? 'USD';
   const plans = plansData?.plans ?? [];
+  const isCancelPending = subscription?.cancelAtPeriodEnd === true;
+  const currentPlan = plans.find((p) => p.id === subscription?.planId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -260,31 +302,42 @@ export function SubscriptionPage() {
         </div>
       )}
 
-      {/* Billing interval toggle */}
-      <div className="flex justify-end">
-        <div className="flex items-center p-1 rounded-xl bg-gray-100 border border-gray-200 shrink-0">
+      {/* Action feedback banner */}
+      {actionMessage && (
+        <div className={`flex items-center justify-between gap-4 px-4 py-3 rounded-xl border text-sm ${
+          actionMessage.type === 'success'
+            ? 'bg-gray-50 border-gray-200 text-gray-700'
+            : 'bg-red-50 border-red-200 text-red-700'
+        }`}>
+          <span>{actionMessage.text}</span>
           <button
-            onClick={() => setBillingInterval('monthly')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 ${
-              billingInterval === 'monthly'
-                ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
+            onClick={() => setActionMessage(null)}
+            className="text-gray-400 hover:text-gray-700 text-lg leading-none"
           >
-            {t('subscription.monthly')}
-          </button>
-          <button
-            onClick={() => setBillingInterval('yearly')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all duration-150 ${
-              billingInterval === 'yearly'
-                ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {t('subscription.yearly')}
+            ×
           </button>
         </div>
-      </div>
+      )}
+
+      {/* Cancel-at-period-end banner */}
+      {isCancelPending && subscription?.currentPeriodEnd && (
+        <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+          <span>
+            {t('subscription.cancelScheduled', {
+              date: new Date(subscription.currentPeriodEnd).toLocaleDateString(),
+            })}
+          </span>
+          {isOwner && (
+            <button
+              disabled={isResuming}
+              onClick={handleResume}
+              className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 text-yellow-900 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isResuming ? t('subscription.resuming') : t('subscription.keepPlan')}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Plan cards */}
       {plans.length > 0 && (
@@ -295,12 +348,18 @@ export function SubscriptionPage() {
               plan={plan}
               index={index}
               currency={currency}
-              billingInterval={billingInterval}
               isCurrentPlan={subscription?.planId === plan.id}
-              isDowngrade={plan.internalKey === 'free' && subscription?.status !== 'free' && subscription?.status !== undefined}
+              isDowngrade={
+                currentPlan !== undefined &&
+                plan.sortOrder < currentPlan.sortOrder &&
+                !isCancelPending
+              }
+              isCancelPending={isCancelPending}
               isOwner={isOwner}
               onUpgrade={handleUpgrade}
+              onDowngrade={handleDowngrade}
               isUpgrading={upgradingPlanId === plan.id}
+              isDowngrading={isDowngrading}
             />
           ))}
         </div>
