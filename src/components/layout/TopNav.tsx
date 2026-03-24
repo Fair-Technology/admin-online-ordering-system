@@ -111,9 +111,9 @@ export function TopNav() {
 
   const shopLogo = shopId && currentShop ? (
     <div className="px-4 pt-4 pb-2 border-b border-gray-100 flex justify-center">
-      {currentShop.logoUrl ? (
+      {currentShop.branding?.logoUrl ? (
         <img
-          src={currentShop.logoUrl}
+          src={currentShop.branding?.logoUrl}
           alt={currentShop.name}
           className="w-11 h-11 rounded-lg object-cover"
         />
@@ -175,9 +175,9 @@ export function TopNav() {
           <Menu size={20} />
         </button>
         {shopId && currentShop ? (
-          currentShop.logoUrl ? (
+          currentShop.branding?.logoUrl ? (
             <img
-              src={currentShop.logoUrl}
+              src={currentShop.branding?.logoUrl}
               alt={currentShop.name}
               className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
             />
@@ -207,9 +207,9 @@ export function TopNav() {
           <div className="lg:hidden fixed inset-y-0 left-0 w-64 bg-white z-50 shadow-xl flex flex-col overflow-hidden">
             <div className="flex items-center justify-between px-4 h-14 border-b border-gray-200 flex-shrink-0">
               {shopId && currentShop ? (
-                currentShop.logoUrl ? (
+                currentShop.branding?.logoUrl ? (
                   <img
-                    src={currentShop.logoUrl}
+                    src={currentShop.branding?.logoUrl}
                     alt={currentShop.name}
                     className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
                   />
