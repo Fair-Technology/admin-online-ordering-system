@@ -98,7 +98,7 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
     const resolvedIndustry =
       form.industry === 'Other' ? industryOther.trim() : form.industry;
     if (!resolvedIndustry) return;
-    if (form.name.trim().length < 3) return;
+    if (!form.name || form.name.trim().length < 3) return;
     try {
       const shop = await createShop({
         createShopRequest: {
