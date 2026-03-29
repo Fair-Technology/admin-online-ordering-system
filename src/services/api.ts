@@ -510,6 +510,10 @@ export type ProductSchedule = {
   startTime?: string | null;
   endTime?: string | null;
   daysOfWeek?: number[];
+  /** Discounted price in cents during this window; must be less than the product base price */
+  offerPrice?: number | null;
+  /** Optional label shown during the offer window (e.g. "Happy Hour") */
+  offerLabel?: string | null;
 };
 export type ShopMembersResponse = {
   members: {

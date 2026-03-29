@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { ProductSchedule } from '../services/api';
 import {
   useGetProductByIdQuery,
   useGetShopByIdQuery,
@@ -20,8 +19,8 @@ import { getCurrencySymbol } from '../utils/currency';
 import { useToast } from '../contexts/ToastContext';
 import {
   type VariantGroup, type VariantOption, type AddonGroup, type AddonOption,
-  type StepNum, type ScheduleState, type SpecialInfoItem,
-  StepIndicator, Step1Basics, Step2SpecialInfo, Step3Categories, Step4Customise, Step5Schedule, Step6Review,
+  type StepNum, type SpecialInfoItem,
+  StepIndicator, Step1Basics, Step2SpecialInfo, Step3Categories, Step4Customise, Step6Review,
 } from './ProductWizardSteps';
 
 export function EditProductPage() {
@@ -52,7 +51,7 @@ export function EditProductPage() {
   const [step, setStep] = useState<StepNum>(1);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
 
-  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 5, 6];
+  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 6];
   const isFirstStep = step === stepSequence[0];
   const isLastStep = step === stepSequence[stepSequence.length - 1];
 
@@ -75,11 +74,6 @@ export function EditProductPage() {
   const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
   const [addonGroups, setAddonGroups] = useState<AddonGroup[]>([]);
-  const [scheduleEnabled, setScheduleEnabled] = useState(false);
-  const [noEndDate, setNoEndDate] = useState(false);
-  const [schedule, setSchedule] = useState<ScheduleState>({
-    startDate: '', endDate: '', startTime: '', endTime: '', daysOfWeek: [],
-  });
   const [isUploading, setIsUploading] = useState(false);
 
   // ── Danger zone ───────────────────────────────────────────────────
@@ -91,7 +85,6 @@ export function EditProductPage() {
   const [descError, setDescError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
-  const [scheduleError, setScheduleError] = useState(false);
 
   // ── Populate form from loaded product ─────────────────────────────
   useEffect(() => {
@@ -132,17 +125,6 @@ export function EditProductPage() {
           })),
         }))
       );
-      if (product.schedule) {
-        setScheduleEnabled(true);
-        setNoEndDate(!product.schedule.endDate);
-        setSchedule({
-          startDate: product.schedule.startDate ?? '',
-          endDate: product.schedule.endDate ?? '',
-          startTime: product.schedule.startTime ?? '',
-          endTime: product.schedule.endTime ?? '',
-          daysOfWeek: product.schedule.daysOfWeek ?? [],
-        });
-      }
     }
   }, [product]);
 
@@ -204,13 +186,6 @@ export function EditProductPage() {
       setTaxRateError(hasNoTax);
       return !hasNoCategory && !hasNoTax;
     }
-    if (s === 5 && scheduleEnabled) {
-      const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
-      const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
-      const invalid = !!(endDateInvalid || endTimeInvalid);
-      setScheduleError(invalid);
-      return !invalid;
-    }
     return true;
   }
 
@@ -232,17 +207,6 @@ export function EditProductPage() {
 
   // ── Submit ────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    let schedulePayload: ProductSchedule | null = null;
-    if (scheduleEnabled) {
-      schedulePayload = {
-        startDate: schedule.startDate,
-        endDate: noEndDate ? null : (schedule.endDate || null),
-        startTime: schedule.startTime || null,
-        endTime: schedule.endTime || null,
-        daysOfWeek: schedule.daysOfWeek.length > 0 ? schedule.daysOfWeek : undefined,
-      };
-    }
-
     try {
       await updateProduct({
         productId: productId!,
@@ -256,7 +220,6 @@ export function EditProductPage() {
           variantGroups,
           addonGroups,
           taxRateId: selectedTaxRateId,
-          schedule: schedulePayload,
         },
       }).unwrap();
 
@@ -314,7 +277,6 @@ export function EditProductPage() {
     2: t('products.wizardStep2Subtitle'),
     3: t('products.wizardStep3Subtitle'),
     4: t('products.wizardStep4Subtitle'),
-    5: t('products.wizardStep5Subtitle'),
     6: t('products.wizardStep6Subtitle'),
   };
 
@@ -398,14 +360,6 @@ export function EditProductPage() {
               updateAddonOption={updateAddonOption}
             />
           )}
-          {step === 5 && (
-            <Step5Schedule
-              scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled}
-              noEndDate={noEndDate} setNoEndDate={setNoEndDate}
-              schedule={schedule} setSchedule={setSchedule}
-              scheduleError={scheduleError}
-            />
-          )}
           {step === 6 && (
             <Step6Review
               form={form} imageFile={imageFile} existingImageUrl={existingImageUrl}
@@ -414,7 +368,6 @@ export function EditProductPage() {
               taxRates={taxRatesList}
               selectedTaxRateId={selectedTaxRateId}
               variantGroups={variantGroups} addonGroups={addonGroups}
-              scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule}
               currencySymbol={currencySymbol}
               specialInfo={specialInfo}
             />
@@ -437,7 +390,7 @@ export function EditProductPage() {
           <>
             <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />
-            {mode === 'extended' && (step === 2 || step === 4 || step === 5) && (
+            {mode === 'extended' && (step === 2 || step === 4) && (
               <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
             )}
             <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>

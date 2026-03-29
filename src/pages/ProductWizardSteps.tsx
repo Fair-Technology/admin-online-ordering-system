@@ -18,7 +18,7 @@ export type VariantOption = { id: string; name: string; priceDelta: number; isAv
 export type VariantGroup  = { id: string; name: string; options: VariantOption[] };
 export type AddonOption   = { id: string; name: string; priceDelta: number; isAvailable: boolean };
 export type AddonGroup    = { id: string; name: string; minSelectable: number; maxSelectable: number; options: AddonOption[] };
-export type StepNum = 1 | 2 | 3 | 4 | 5 | 6;
+export type StepNum = 1 | 2 | 3 | 4 | 6;
 
 export interface ScheduleState {
   startDate: string;
@@ -26,6 +26,9 @@ export interface ScheduleState {
   startTime: string;
   endTime: string;
   daysOfWeek: number[];
+  offerEnabled: boolean;
+  offerPrice: number; // cents
+  offerLabel: string;
 }
 
 // ── Step Indicator ────────────────────────────────────────────────────────────
@@ -36,14 +39,13 @@ interface StepIndicatorProps {
   stepSequence?: StepNum[];
 }
 
-export function StepIndicator({ currentStep, onJump, stepSequence = [1, 2, 3, 4, 5, 6] }: StepIndicatorProps) {
+export function StepIndicator({ currentStep, onJump, stepSequence = [1, 2, 3, 4, 6] }: StepIndicatorProps) {
   const { t } = useTranslation();
   const STEP_LABELS: Record<StepNum, string> = {
     1: t('products.wizardStep1'),
     2: t('products.wizardStep2'),
     3: t('products.wizardStep3'),
     4: t('products.wizardStep4'),
-    5: t('products.wizardStep5'),
     6: t('products.wizardStep6'),
   };
 
@@ -804,16 +806,13 @@ interface Step6Props {
   selectedTaxRateId: string | null;
   variantGroups: VariantGroup[];
   addonGroups: AddonGroup[];
-  scheduleEnabled: boolean;
-  noEndDate: boolean;
-  schedule: ScheduleState;
   currencySymbol: string;
   specialInfo: SpecialInfoItem[];
 }
 
 export function Step6Review({
   form, imageFile, existingImageUrl, selectedCategoryIds, categories, taxRates, selectedTaxRateId,
-  variantGroups, addonGroups, scheduleEnabled, noEndDate, schedule, currencySymbol, specialInfo,
+  variantGroups, addonGroups, currencySymbol, specialInfo,
 }: Step6Props) {
   const { t } = useTranslation();
 
@@ -825,22 +824,6 @@ export function Step6Review({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-
-  const scheduleLabel = () => {
-    if (!scheduleEnabled) return t('products.wizardReviewAlwaysAvailable');
-    const parts: string[] = [];
-    if (schedule.startDate) parts.push(schedule.startDate);
-    if (!noEndDate && schedule.endDate) parts.push(`→ ${schedule.endDate}`);
-    else if (noEndDate) parts.push('→ ∞');
-    if (schedule.startTime || schedule.endTime) {
-      parts.push(`${schedule.startTime || '?'} – ${schedule.endTime || '?'}`);
-    }
-    if (schedule.daysOfWeek.length > 0) {
-      const keys = ['scheduleSun','scheduleMon','scheduleTue','scheduleWed','scheduleThu','scheduleFri','scheduleSat'];
-      parts.push(schedule.daysOfWeek.map(d => t(`products.${keys[d]}`)).join(', '));
-    }
-    return parts.join(' · ') || t('products.wizardReviewAlwaysAvailable');
-  };
 
   return (
     <div className="space-y-4">
@@ -887,9 +870,6 @@ export function Step6Review({
           {addonGroups.length > 0
             ? t('products.wizardReviewAddons', { count: addonGroups.length })
             : <span className="text-gray-400">{t('products.wizardReviewNone')}</span>}
-        </ReviewRow>
-        <ReviewRow label={t('products.scheduleTitle')}>
-          <span className="text-right text-xs text-gray-600 max-w-[200px]">{scheduleLabel()}</span>
         </ReviewRow>
         {specialInfo.length > 0 && (
           <ReviewRow label="Special Info">

@@ -318,7 +318,18 @@
     "detailDescription": "Description",
     "detailCategories": "Categories",
     "detailPrice": "Price",
-    "detailStatus": "Status"
+    "detailStatus": "Status",
+    "scheduleModalTitle": "Schedule & Special Price",
+    "scheduleModalSubtitle": "Set when this product is available, and optionally offer a special price during that window.",
+    "offerPriceToggle": "Set a special price during this window",
+    "offerPrice": "Special Price ({{symbol}})",
+    "offerLabel": "Offer Label",
+    "offerLabelPlaceholder": "e.g. Happy Hour, Weekend Special",
+    "offerPriceRequired": "Special price must be greater than zero.",
+    "offerPriceMustBeLess": "Special price must be less than the regular price.",
+    "offerBadge": "Special price",
+    "addSchedule": "Add schedule / special price",
+    "editSchedule": "Edit schedule / special price"
   },
   "variants": {
     "title": "Variants",

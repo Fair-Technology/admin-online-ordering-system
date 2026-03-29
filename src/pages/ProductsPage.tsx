@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { ProductResponse, ProductSchedule } from '../services/api';
+import type { ProductResponse } from '../services/api';
 import {
   useGetProductsByShopQuery,
   useGetProductByIdQuery,
@@ -312,7 +312,7 @@ function ProductEditView({
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [initialized, setInitialized] = useState(false);
 
-  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 5, 6];
+  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 6];
   const isFirstStep = step === stepSequence[0];
   const isLastStep = step === stepSequence[stepSequence.length - 1];
 
@@ -322,11 +322,6 @@ function ProductEditView({
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
   const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
   const [addonGroups, setAddonGroups] = useState<AddonGroup[]>([]);
-  const [scheduleEnabled, setScheduleEnabled] = useState(false);
-  const [noEndDate, setNoEndDate] = useState(false);
-  const [schedule, setSchedule] = useState<ScheduleState>({
-    startDate: '', endDate: '', startTime: '', endTime: '', daysOfWeek: [],
-  });
   const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -334,7 +329,6 @@ function ProductEditView({
   const [descError, setDescError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
-  const [scheduleError, setScheduleError] = useState(false);
 
   const modeInitialized = useRef(false);
   useEffect(() => {
@@ -382,17 +376,6 @@ function ProductEditView({
           })),
         })),
       );
-      if (product.schedule) {
-        setScheduleEnabled(true);
-        setNoEndDate(!product.schedule.endDate);
-        setSchedule({
-          startDate: product.schedule.startDate ?? '',
-          endDate: product.schedule.endDate ?? '',
-          startTime: product.schedule.startTime ?? '',
-          endTime: product.schedule.endTime ?? '',
-          daysOfWeek: product.schedule.daysOfWeek ?? [],
-        });
-      }
       setSpecialInfo(
         (product.specialInfo ?? []).map((si) => ({ icon: si.icon, name: si.name })),
       );
@@ -429,13 +412,6 @@ function ProductEditView({
       setCategoryError(hasNoCategory); setTaxRateError(hasNoTax);
       return !hasNoCategory && !hasNoTax;
     }
-    if (s === 5 && scheduleEnabled) {
-      const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
-      const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
-      const invalid = !!(endDateInvalid || endTimeInvalid);
-      setScheduleError(invalid);
-      return !invalid;
-    }
     return true;
   }
 
@@ -453,16 +429,6 @@ function ProductEditView({
   function jumpTo(n: StepNum) { setDirection(n < step ? 'back' : 'forward'); setStep(n); }
 
   const handleSubmit = async () => {
-    let schedulePayload: ProductSchedule | null = null;
-    if (scheduleEnabled) {
-      schedulePayload = {
-        startDate: schedule.startDate,
-        endDate: noEndDate ? null : (schedule.endDate || null),
-        startTime: schedule.startTime || null,
-        endTime: schedule.endTime || null,
-        daysOfWeek: schedule.daysOfWeek.length > 0 ? schedule.daysOfWeek : undefined,
-      };
-    }
     try {
       await updateProduct({
         productId,
@@ -475,7 +441,6 @@ function ProductEditView({
           variantGroups,
           addonGroups,
           taxRateId: selectedTaxRateId,
-          schedule: schedulePayload,
           specialInfo: specialInfo.length > 0 ? specialInfo : undefined,
         },
       }).unwrap();
@@ -516,7 +481,6 @@ function ProductEditView({
     2: t('products.wizardStep2Subtitle'),
     3: t('products.wizardStep3Subtitle'),
     4: t('products.wizardStep4Subtitle'),
-    5: t('products.wizardStep5Subtitle'),
     6: t('products.wizardStep6Subtitle'),
   };
 
@@ -585,11 +549,8 @@ function ProductEditView({
           {step === 4 && (
             <Step4Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />
           )}
-          {step === 5 && (
-            <Step5Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />
-          )}
           {step === 6 && (
-            <Step6Review form={form} imageFile={imageFile} existingImageUrl={existingImageUrl} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />
+            <Step6Review form={form} imageFile={imageFile} existingImageUrl={existingImageUrl} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} currencySymbol={currencySymbol} specialInfo={specialInfo} />
           )}
         </div>
       </div>
@@ -607,7 +568,7 @@ function ProductEditView({
           <>
             <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />
-            {mode === 'extended' && (step === 2 || step === 4 || step === 5) && (
+            {mode === 'extended' && (step === 2 || step === 4) && (
               <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
             )}
             <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
@@ -615,7 +576,7 @@ function ProductEditView({
         )}
         {isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+            <GlassButton type="button" variant="secondary" onClick={onBack}>← {t('products.wizardBack')}</GlassButton>
             <div className="flex-1" />
             <GlassButton type="button" disabled={isBusy} onClick={handleSubmit}>{submitLabel}</GlassButton>
           </>
@@ -717,7 +678,7 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   const [step, setStep] = useState<StepNum>(1);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
 
-  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 5, 6];
+  const stepSequence: StepNum[] = mode === 'simple' ? [1, 3, 6] : [1, 2, 3, 4, 6];
   const isFirstStep = step === stepSequence[0];
   const isLastStep = step === stepSequence[stepSequence.length - 1];
 
@@ -727,9 +688,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   const [selectedTaxRateId, setSelectedTaxRateId] = useState<string | null>(null);
   const [variantGroups, setVariantGroups] = useState<VariantGroup[]>([]);
   const [addonGroups, setAddonGroups] = useState<AddonGroup[]>([]);
-  const [scheduleEnabled, setScheduleEnabled] = useState(false);
-  const [noEndDate, setNoEndDate] = useState(false);
-  const [schedule, setSchedule] = useState<ScheduleState>({ startDate: '', endDate: '', startTime: '', endTime: '', daysOfWeek: [] });
   const [specialInfo, setSpecialInfo] = useState<SpecialInfoItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -737,7 +695,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   const [descError, setDescError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
-  const [scheduleError, setScheduleError] = useState(false);
 
   useEffect(() => {
     if (mode === 'simple') {
@@ -777,13 +734,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
       setCategoryError(hasNoCategory); setTaxRateError(hasNoTax);
       return !hasNoCategory && !hasNoTax;
     }
-    if (s === 5 && scheduleEnabled) {
-      const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
-      const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
-      const invalid = !!(endDateInvalid || endTimeInvalid);
-      setScheduleError(invalid);
-      return !invalid;
-    }
     return true;
   }
 
@@ -801,16 +751,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
   function jumpTo(n: StepNum) { setDirection(n < step ? 'back' : 'forward'); setStep(n); }
 
   const handleSubmit = async () => {
-    let schedulePayload: ProductSchedule | null = null;
-    if (scheduleEnabled) {
-      schedulePayload = {
-        startDate: schedule.startDate,
-        endDate: noEndDate ? null : (schedule.endDate || null),
-        startTime: schedule.startTime || null,
-        endTime: schedule.endTime || null,
-        daysOfWeek: schedule.daysOfWeek.length > 0 ? schedule.daysOfWeek : undefined,
-      };
-    }
     try {
       const product = await createProduct({
         createProductRequest: {
@@ -822,7 +762,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
           taxRateId: selectedTaxRateId,
           variantGroups: variantGroups.length > 0 ? variantGroups : undefined,
           addonGroups: addonGroups.length > 0 ? addonGroups : undefined,
-          schedule: schedulePayload,
           specialInfo: specialInfo.length > 0 ? specialInfo : undefined,
         },
       }).unwrap();
@@ -861,7 +800,6 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
     2: t('products.wizardStep2Subtitle'),
     3: t('products.wizardStep3Subtitle'),
     4: t('products.wizardStep4Subtitle'),
-    5: t('products.wizardStep5Subtitle'),
     6: t('products.wizardStep6Subtitle'),
   };
 
@@ -915,8 +853,7 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
               {step === 2 && <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />}
               {step === 3 && <Step3Categories shopId={shopId} categories={categoriesList} selectedCategoryIds={selectedCategoryIds} setSelectedCategoryIds={setSelectedCategoryIds} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} setSelectedTaxRateId={setSelectedTaxRateId} categoryError={categoryError} taxRateError={taxRateError} hideTaxRate={mode === 'simple'} />}
               {step === 4 && <Step4Customise variantGroups={variantGroups} addVariantGroup={addVariantGroup} removeVariantGroup={removeVariantGroup} updateVariantGroupName={updateVariantGroupName} addVariantOption={addVariantOption} removeVariantOption={removeVariantOption} updateVariantOption={updateVariantOption} addonGroups={addonGroups} addAddonGroup={addAddonGroup} removeAddonGroup={removeAddonGroup} updateAddonGroup={updateAddonGroup} addAddonOption={addAddonOption} removeAddonOption={removeAddonOption} updateAddonOption={updateAddonOption} />}
-              {step === 5 && <Step5Schedule scheduleEnabled={scheduleEnabled} setScheduleEnabled={setScheduleEnabled} noEndDate={noEndDate} setNoEndDate={setNoEndDate} schedule={schedule} setSchedule={setSchedule} scheduleError={scheduleError} />}
-              {step === 6 && <Step6Review form={form} imageFile={imageFile} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} scheduleEnabled={scheduleEnabled} noEndDate={noEndDate} schedule={schedule} currencySymbol={currencySymbol} specialInfo={specialInfo} />}
+              {step === 6 && <Step6Review form={form} imageFile={imageFile} selectedCategoryIds={selectedCategoryIds} categories={categoriesList} taxRates={taxRatesList} selectedTaxRateId={selectedTaxRateId} variantGroups={variantGroups} addonGroups={addonGroups} currencySymbol={currencySymbol} specialInfo={specialInfo} />}
             </div>
           </div>
 
@@ -933,7 +870,7 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
               <>
                 <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
                 <div className="flex-1" />
-                {mode === 'extended' && (step === 2 || step === 4 || step === 5) && (
+                {mode === 'extended' && (step === 2 || step === 4) && (
                   <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
                 )}
                 <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
@@ -1179,16 +1116,184 @@ function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => v
   );
 }
 
+// ── Schedule + Offer modal ─────────────────────────────────────────────────────
+
+function ScheduleOfferModal({
+  product,
+  currencySymbol,
+  onClose,
+}: {
+  product: ProductResponse;
+  currencySymbol: string;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
+
+  const [scheduleEnabled, setScheduleEnabled] = useState(!!product.schedule);
+  const [noEndDate, setNoEndDate] = useState(!product.schedule?.endDate);
+  const [schedule, setSchedule] = useState<ScheduleState>({
+    startDate: product.schedule?.startDate ?? '',
+    endDate: product.schedule?.endDate ?? '',
+    startTime: product.schedule?.startTime ?? '',
+    endTime: product.schedule?.endTime ?? '',
+    daysOfWeek: product.schedule?.daysOfWeek ?? [],
+    offerEnabled: !!(product.schedule?.offerPrice),
+    offerPrice: product.schedule?.offerPrice ?? 0,
+    offerLabel: product.schedule?.offerLabel ?? '',
+  });
+  const [scheduleError, setScheduleError] = useState(false);
+  const [offerError, setOfferError] = useState<string | null>(null);
+
+  const validate = () => {
+    let valid = true;
+    if (scheduleEnabled) {
+      const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
+      const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
+      if (endDateInvalid || endTimeInvalid) { setScheduleError(true); valid = false; }
+      else setScheduleError(false);
+    } else {
+      setScheduleError(false);
+    }
+    if (scheduleEnabled && schedule.offerEnabled) {
+      if (schedule.offerPrice <= 0) { setOfferError(t('products.offerPriceRequired')); valid = false; }
+      else if (schedule.offerPrice >= (product.price ?? 0)) { setOfferError(t('products.offerPriceMustBeLess')); valid = false; }
+      else setOfferError(null);
+    } else {
+      setOfferError(null);
+    }
+    return valid;
+  };
+
+  const handleSave = async () => {
+    if (!validate()) return;
+    const schedulePayload = scheduleEnabled ? {
+      startDate: schedule.startDate,
+      endDate: noEndDate ? null : (schedule.endDate || null),
+      startTime: schedule.startTime || null,
+      endTime: schedule.endTime || null,
+      daysOfWeek: schedule.daysOfWeek.length > 0 ? schedule.daysOfWeek : undefined,
+      offerPrice: schedule.offerEnabled ? schedule.offerPrice : null,
+      offerLabel: schedule.offerEnabled ? (schedule.offerLabel || null) : null,
+    } : null;
+    try {
+      await updateProduct({
+        productId: product.id!,
+        updateProductRequest: { shopId: product.shopId!, schedule: schedulePayload },
+      }).unwrap();
+      toast.success(t('products.saved'));
+      onClose();
+    } catch {
+      // error shown via toast by RTK middleware
+    }
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          {/* Header */}
+          <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-200">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">{t('products.scheduleModalTitle')}</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{product.name}</p>
+            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <p className="text-xs text-gray-400 mb-4">{t('products.scheduleModalSubtitle')}</p>
+            <Step5Schedule
+              scheduleEnabled={scheduleEnabled}
+              setScheduleEnabled={setScheduleEnabled}
+              noEndDate={noEndDate}
+              setNoEndDate={setNoEndDate}
+              schedule={schedule}
+              setSchedule={setSchedule}
+              scheduleError={scheduleError}
+            />
+
+            {/* Special Price section */}
+            {scheduleEnabled && (
+              <div className="mt-4 border border-gray-200 rounded-xl p-4 space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={schedule.offerEnabled}
+                    onChange={(e) => setSchedule((s) => ({ ...s, offerEnabled: e.target.checked }))}
+                    className="accent-gray-900"
+                  />
+                  <span className="text-sm font-medium text-gray-700">{t('products.offerPriceToggle')}</span>
+                </label>
+                {schedule.offerEnabled && (
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                        {t('products.offerPrice', { symbol: currencySymbol })}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={(schedule.offerPrice / 100).toFixed(2)}
+                        onChange={(e) => setSchedule((s) => ({ ...s, offerPrice: Math.round(parseFloat(e.target.value || '0') * 100) }))}
+                        className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">
+                        {t('products.offerLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        value={schedule.offerLabel}
+                        onChange={(e) => setSchedule((s) => ({ ...s, offerLabel: e.target.value }))}
+                        placeholder={t('products.offerLabelPlaceholder')}
+                        maxLength={50}
+                        className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                      />
+                    </div>
+                    {offerError && <p className="text-xs text-red-500">{offerError}</p>}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200">
+            <GlassButton type="button" variant="secondary" onClick={onClose}>{t('products.cancel')}</GlassButton>
+            <div className="flex-1" />
+            <GlassButton type="button" disabled={isSaving} onClick={handleSave}>
+              {isSaving ? t('products.saving') : t('products.saveChanges')}
+            </GlassButton>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Products table ─────────────────────────────────────────────────────────────
 
 function ProductTable({
   products,
   onSelect,
   shopId,
+  onScheduleClick,
+  currencySymbol,
 }: {
   products: ProductResponse[];
   onSelect: (id: string) => void;
   shopId: string;
+  onScheduleClick: (product: ProductResponse) => void;
+  currencySymbol: string;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -1247,17 +1352,46 @@ function ProductTable({
               )}
             </div>
 
-            {/* Name */}
+            {/* Name + schedule indicators */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-sm font-medium text-gray-900 truncate">{product.name}</span>
-                {product.schedule && <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+                {product.schedule ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onScheduleClick(product); }}
+                      title={t('products.editSchedule')}
+                      className="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                    </button>
+                    {product.schedule.offerPrice != null && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onScheduleClick(product); }}
+                        className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full flex-shrink-0 hover:bg-emerald-100 transition-colors"
+                      >
+                        {product.schedule.offerLabel || t('products.offerBadge')} · {currencySymbol}{(product.schedule.offerPrice / 100).toFixed(2)}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onScheduleClick(product); }}
+                    title={t('products.addSchedule')}
+                    className="p-0.5 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Price */}
             <span className="text-sm text-gray-500 flex-shrink-0 w-20 text-right">
-              ${((product.price ?? 0) / 100).toFixed(2)}
+              {currencySymbol}{((product.price ?? 0) / 100).toFixed(2)}
             </span>
 
             {/* Availability toggle */}
@@ -1290,8 +1424,11 @@ export function ProductsPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: products, isLoading, isError } = useGetProductsByShopQuery({ shopId: shopId! });
+  const { data: shop } = useGetShopByIdQuery({ shopId: shopId! });
+  const currencySymbol = shop?.currency ? getCurrencySymbol(shop.currency) : '$';
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [scheduleModalProduct, setScheduleModalProduct] = useState<ProductResponse | null>(null);
   const showAddModal = searchParams.get('addProduct') === '1';
   const closeAddModal = () => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('addProduct'); return n; });
   const showImportModal = searchParams.get('importProducts') === '1';
@@ -1364,6 +1501,8 @@ export function ProductsPage() {
                 products={byCategory.get(cat.id)!}
                 onSelect={setSelectedProductId}
                 shopId={shopId!}
+                onScheduleClick={setScheduleModalProduct}
+                currencySymbol={currencySymbol}
               />
             </GlassCard>
           </section>
@@ -1375,7 +1514,13 @@ export function ProductsPage() {
               {t('products.uncategorized')}
             </h2>
             <GlassCard>
-              <ProductTable products={uncategorized} onSelect={setSelectedProductId} shopId={shopId!} />
+              <ProductTable
+                products={uncategorized}
+                onSelect={setSelectedProductId}
+                shopId={shopId!}
+                onScheduleClick={setScheduleModalProduct}
+                currencySymbol={currencySymbol}
+              />
             </GlassCard>
           </section>
         )}
@@ -1398,6 +1543,14 @@ export function ProductsPage() {
       )}
 
       {showImportModal && <BulkImportModal shopId={shopId!} onClose={closeImportModal} />}
+
+      {scheduleModalProduct && (
+        <ScheduleOfferModal
+          product={scheduleModalProduct}
+          currencySymbol={currencySymbol}
+          onClose={() => setScheduleModalProduct(null)}
+        />
+      )}
     </>
   );
 }

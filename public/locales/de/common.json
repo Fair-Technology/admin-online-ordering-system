@@ -318,7 +318,18 @@
     "detailDescription": "Beschreibung",
     "detailCategories": "Kategorien",
     "detailPrice": "Preis",
-    "detailStatus": "Status"
+    "detailStatus": "Status",
+    "scheduleModalTitle": "Zeitplan & Sonderpreis",
+    "scheduleModalSubtitle": "Legen Sie fest, wann dieses Produkt verfügbar ist, und bieten Sie optional einen Sonderpreis in diesem Zeitfenster an.",
+    "offerPriceToggle": "Sonderpreis in diesem Zeitfenster festlegen",
+    "offerPrice": "Sonderpreis ({{symbol}})",
+    "offerLabel": "Angebotsbezeichnung",
+    "offerLabelPlaceholder": "z.B. Happy Hour, Wochenend-Special",
+    "offerPriceRequired": "Sonderpreis muss größer als null sein.",
+    "offerPriceMustBeLess": "Sonderpreis muss kleiner als der reguläre Preis sein.",
+    "offerBadge": "Sonderpreis",
+    "addSchedule": "Zeitplan / Sonderpreis hinzufügen",
+    "editSchedule": "Zeitplan / Sonderpreis bearbeiten"
   },
   "variants": {
     "title": "Varianten",
