@@ -16,6 +16,7 @@ import {
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { getCurrencySymbol } from '../utils/currency';
 import { Calendar, Pencil, Trash2, X } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
@@ -1275,17 +1276,10 @@ function ScheduleOfferModal({
                 {schedule.offerEnabled && (
                   <div className="space-y-3 pt-1">
                     <div>
-                      <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">
-                        {t('products.offerPrice', { symbol: currencySymbol })}
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={(schedule.offerPrice / 100).toFixed(2)}
-                        onChange={(e) => setSchedule((s) => ({ ...s, offerPrice: Math.round(parseFloat(e.target.value || '0') * 100) }))}
-                        className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
-                        placeholder="0.00"
+                      <CurrencyInput
+                        label={t('products.offerPrice', { symbol: currencySymbol })}
+                        valueCents={schedule.offerPrice}
+                        onChange={(cents) => setSchedule((s) => ({ ...s, offerPrice: cents }))}
                       />
                     </div>
                     <div>
