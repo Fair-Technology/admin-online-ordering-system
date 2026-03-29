@@ -167,6 +167,59 @@ function ProductDetailView({
           </p>
         </div>
 
+        {/* Schedule & Special Price */}
+        {product.schedule && (
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              {t('products.scheduleModalTitle')}
+            </p>
+            <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+              {/* Date range */}
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-xs text-gray-500">{t('products.scheduleStartDate')}</span>
+                <span className="text-xs font-medium text-gray-800">{product.schedule.startDate}</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-xs text-gray-500">{t('products.scheduleEndDate')}</span>
+                <span className="text-xs font-medium text-gray-800">
+                  {product.schedule.endDate ?? t('products.scheduleNoEndDate')}
+                </span>
+              </div>
+              {/* Time window */}
+              {(product.schedule.startTime || product.schedule.endTime) && (
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="text-xs text-gray-500">{t('products.scheduleStartTime')} / {t('products.scheduleEndTime')}</span>
+                  <span className="text-xs font-medium text-gray-800">
+                    {product.schedule.startTime ?? '00:00'} – {product.schedule.endTime ?? '23:59'}
+                  </span>
+                </div>
+              )}
+              {/* Days of week */}
+              {(product.schedule.daysOfWeek?.length ?? 0) > 0 && (
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="text-xs text-gray-500">{t('products.scheduleDaysOfWeek')}</span>
+                  <span className="text-xs font-medium text-gray-800">
+                    {product.schedule.daysOfWeek!
+                      .map((d) => t(`products.schedule${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}`))
+                      .join(', ')}
+                  </span>
+                </div>
+              )}
+              {/* Special price */}
+              {product.schedule.offerPrice != null && (
+                <div className="flex items-center justify-between px-3 py-2 bg-emerald-50">
+                  <span className="text-xs text-emerald-700 font-medium">
+                    {product.schedule.offerLabel || t('products.offerBadge')}
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-700">
+                    {currencySymbol}{(product.schedule.offerPrice / 100).toFixed(2)}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Categories */}
         {(product.categories?.length ?? 0) > 0 && (
           <div>
@@ -329,17 +382,6 @@ function ProductEditView({
   const [descError, setDescError] = useState(false);
   const [categoryError, setCategoryError] = useState(false);
   const [taxRateError, setTaxRateError] = useState(false);
-
-  const modeInitialized = useRef(false);
-  useEffect(() => {
-    if (!modeInitialized.current) { modeInitialized.current = true; return; }
-    if (mode === 'simple') {
-      setSelectedTaxRateId(taxRatesList[0]?.id ?? null);
-    } else {
-      setSelectedTaxRateId(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
 
   useEffect(() => {
     if (product && !initialized) {

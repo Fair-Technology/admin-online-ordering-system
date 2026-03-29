@@ -1,7 +1,7 @@
 /**
  * Shared step components for the Create / Edit product wizards.
  */
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -219,8 +219,18 @@ interface Step2Props {
 export function Step2SpecialInfo({ specialInfo, setSpecialInfo }: Step2Props) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const remaining = ICON_NAMES.filter(n => !specialInfo.find(i => i.icon === n));
+
+  const openDropdown = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownStyle({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    }
+    setDropdownOpen(true);
+  };
 
   const addIcon = (iconName: string) => {
     if (!iconName) return;
@@ -277,10 +287,11 @@ export function Step2SpecialInfo({ specialInfo, setSpecialInfo }: Step2Props) {
       )}
 
       {remaining.length > 0 && (
-        <div className="relative">
+        <div>
           <button
+            ref={triggerRef}
             type="button"
-            onClick={() => setDropdownOpen(o => !o)}
+            onClick={openDropdown}
             className="w-full flex items-center justify-between border border-gray-200 rounded-lg bg-white text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
           >
             <span>{specialInfo.length === 0 ? 'Select a tag…' : 'Add another tag…'}</span>
@@ -288,8 +299,11 @@ export function Step2SpecialInfo({ specialInfo, setSpecialInfo }: Step2Props) {
           </button>
           {dropdownOpen && (
             <>
-              <div className="fixed inset-0 z-[9]" onClick={() => setDropdownOpen(false)} />
-              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-md max-h-48 overflow-y-auto">
+              <div className="fixed inset-0 z-[49]" onClick={() => setDropdownOpen(false)} />
+              <div
+                className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-md max-h-48 overflow-y-auto"
+                style={{ top: dropdownStyle.top, left: dropdownStyle.left, width: dropdownStyle.width }}
+              >
                 {remaining.map((name) => (
                   <button
                     key={name}

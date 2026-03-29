@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -55,16 +55,6 @@ export function EditProductPage() {
   const isFirstStep = step === stepSequence[0];
   const isLastStep = step === stepSequence[stepSequence.length - 1];
 
-  const modeInitialized = useRef(false);
-  useEffect(() => {
-    if (!modeInitialized.current) { modeInitialized.current = true; return; }
-    if (mode === 'simple') {
-      setSelectedTaxRateId(taxRatesList[0]?.id ?? null);
-    } else {
-      setSelectedTaxRateId(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
 
   // ── Form state ────────────────────────────────────────────────────
   const [form, setForm] = useState({ name: '', description: '', price: 0 });
@@ -326,9 +316,6 @@ export function EditProductPage() {
             />
           )}
           {step === 2 && (
-            <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
-          )}
-          {step === 3 && (
             <Step3Categories
               shopId={shopId!}
               categories={categoriesList}
@@ -341,6 +328,9 @@ export function EditProductPage() {
               taxRateError={taxRateError}
               hideTaxRate={mode === 'simple'}
             />
+          )}
+          {step === 3 && (
+            <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
           )}
           {step === 4 && (
             <Step4Customise

@@ -251,9 +251,6 @@ export function CreateProductPage() {
             />
           )}
           {step === 2 && (
-            <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
-          )}
-          {step === 3 && (
             <Step3Categories
               shopId={shopId!}
               categories={categoriesList}
@@ -266,6 +263,9 @@ export function CreateProductPage() {
               taxRateError={taxRateError}
               hideTaxRate={mode === 'simple'}
             />
+          )}
+          {step === 3 && (
+            <Step2SpecialInfo specialInfo={specialInfo} setSpecialInfo={setSpecialInfo} />
           )}
           {step === 4 && (
             <Step4Customise
