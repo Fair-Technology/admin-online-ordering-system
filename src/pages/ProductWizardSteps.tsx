@@ -68,7 +68,7 @@ export function StepIndicator({ currentStep, onJump, stepSequence = [1, 2, 3, 4,
 
         return (
           <div key={n} className="flex items-center flex-1 min-w-0">
-            <div className="flex flex-col items-center gap-1 min-w-0">
+            <div className="flex flex-col items-center gap-1 min-w-0 self-start">
               <button
                 type="button"
                 className={`${circleBase} ${circleClass}`}
@@ -79,7 +79,7 @@ export function StepIndicator({ currentStep, onJump, stepSequence = [1, 2, 3, 4,
                 {isCompleted ? '✓' : i + 1}
               </button>
               <span
-                className={`text-[10px] font-medium leading-tight text-center truncate max-w-[52px] transition-colors duration-200 ${
+                className={`min-h-[2rem] max-w-[74px] text-[11px] font-medium leading-snug text-center whitespace-normal break-words transition-colors duration-200 ${
                   isCompleted ? 'text-emerald-500' : isActive ? 'text-gray-900' : 'text-gray-300'
                 }`}
               >
@@ -88,7 +88,7 @@ export function StepIndicator({ currentStep, onJump, stepSequence = [1, 2, 3, 4,
             </div>
             {!isLast && (
               <div
-                className={`flex-1 h-px mx-1 mb-4 transition-colors duration-200 ${
+                className={`flex-1 h-px mx-1 mt-3 transition-colors duration-200 ${
                   isCompleted ? 'bg-emerald-500' : 'bg-gray-200'
                 }`}
               />
