@@ -8,8 +8,8 @@ import {
   useAddProductImageMutation,
   useGetShopByIdQuery,
 } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { getCurrencySymbol } from '../utils/currency';
 import { useToast } from '../contexts/ToastContext';
@@ -233,14 +233,14 @@ export function CreateProductPage() {
       <p className="text-sm text-gray-400">{stepSubtitles[step]}</p>
 
       {isError && (
-        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+        <MyCard className="p-4 !bg-red-50 !border-red-200">
           <p className="text-sm text-red-600">
             {(error as { data?: { error?: string } })?.data?.error ?? t('products.failedToCreate')}
           </p>
-        </GlassCard>
+        </MyCard>
       )}
 
-      <GlassCard className="p-6 overflow-hidden">
+      <MyCard className="p-6 overflow-hidden">
         <div key={step} className={direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left'}>
           {step === 1 && (
             <Step1Basics
@@ -298,36 +298,36 @@ export function CreateProductPage() {
             />
           )}
         </div>
-      </GlassCard>
+      </MyCard>
 
       {/* Navigation footer */}
       <div className="flex items-center gap-2">
         {isFirstStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={() => navigate(`/shops/${shopId}`)}>
+            <MyButton type="button" variant="secondary" onClick={() => navigate(`/shops/${shopId}`)}>
               {t('products.cancel')}
-            </GlassButton>
+            </MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+            <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
           </>
         )}
         {!isFirstStep && !isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
             <div className="flex-1" />
             {mode === 'extended' && (step === 2 || step === 4) && (
-              <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+              <MyButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</MyButton>
             )}
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+            <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
           </>
         )}
         {isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" disabled={isBusy} onClick={handleSubmit}>
+            <MyButton type="button" disabled={isBusy} onClick={handleSubmit}>
               {submitLabel}
-            </GlassButton>
+            </MyButton>
           </>
         )}
       </div>

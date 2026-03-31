@@ -24,10 +24,10 @@ import {
   useCreateCategoryMutation,
 } from '../services/api';
 import type { GetCategoriesByShopApiResponse } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput } from '../components/ui/GlassInput';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput } from '../components/ui/MyInput';
+import { MySpinner } from '../components/ui/MySpinner';
 import { useToast } from '../contexts/ToastContext';
 
 type Category = NonNullable<GetCategoriesByShopApiResponse>[number];
@@ -94,7 +94,7 @@ function CreateCategoryModal({
               )}
               <div className="flex items-center gap-2">
                 <IconPickerInline value={icon} onChange={setIcon} />
-                <GlassInput
+                <MyInput
                   type="text"
                   required
                   placeholder={t('categories.namePlaceholder')}
@@ -107,12 +107,12 @@ function CreateCategoryModal({
 
             {/* Footer */}
             <div className="flex items-center gap-2 px-6 pb-5">
-              <GlassButton type="submit" disabled={isLoading} className="flex-1">
+              <MyButton type="submit" disabled={isLoading} className="flex-1">
                 {isLoading ? t('categories.creating') : t('categories.create')}
-              </GlassButton>
-              <GlassButton type="button" variant="secondary" onClick={onClose}>
+              </MyButton>
+              <MyButton type="button" variant="secondary" onClick={onClose}>
                 {t('products.cancel')}
-              </GlassButton>
+              </MyButton>
             </div>
           </form>
         </div>
@@ -244,19 +244,19 @@ export function CategoriesPage() {
   const showModal = searchParams.get('addCategory') === '1';
   const closeModal = () => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('addCategory'); return n; });
 
-  if (isLoading) return <GlassSpinner label={t('categories.loading')} />;
+  if (isLoading) return <MySpinner label={t('categories.loading')} />;
   if (isError) return <p className="text-red-500">{t('categories.loadError')}</p>;
 
   return (
     <>
       <div className="space-y-4">
         {reorderError && (
-          <GlassCard className="p-4 !bg-red-50 !border-red-200">
+          <MyCard className="p-4 !bg-red-50 !border-red-200">
             <p className="text-sm text-red-600">{t('categories.failedToReorder')}</p>
-          </GlassCard>
+          </MyCard>
         )}
 
-        <GlassCard>
+        <MyCard>
           {orderedCategories.length === 0 && !isLoading && (
             <p className="p-5 text-gray-400 text-sm">{t('categories.empty')}</p>
           )}
@@ -278,7 +278,7 @@ export function CategoriesPage() {
               </SortableContext>
             </DndContext>
           )}
-        </GlassCard>
+        </MyCard>
       </div>
 
       {showModal && (

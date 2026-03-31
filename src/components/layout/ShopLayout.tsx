@@ -2,7 +2,7 @@ import { useParams, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMsal } from '@azure/msal-react';
 import { useGetShopByIdQuery, useReactivateShopMutation } from '../../services/api';
-import { GlassSpinner } from '../ui/GlassSpinner';
+import { MySpinner } from '../ui/MySpinner';
 import { ShopRoleContext } from '../../features/shops/ShopRoleContext';
 import { useState } from 'react';
 
@@ -16,7 +16,7 @@ export function ShopLayout() {
   const [reactivateError, setReactivateError] = useState<string | null>(null);
   const [isReactivating, setIsReactivating] = useState(false);
 
-  if (isLoading) return <GlassSpinner label={t('shops.loadingShop')} />;
+  if (isLoading) return <MySpinner label={t('shops.loadingShop')} />;
   if (isError || !shop) return <p className="text-red-500">{t('shops.failedToLoadShop')}</p>;
 
   const role = (shop.members ?? []).find(

@@ -5,9 +5,16 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Menu, X,
   Package, ClipboardList, Tag, CreditCard, Settings, Store,
+  Circle,
 } from 'lucide-react';
-import { useGetShopByIdQuery, useGetMyInvitationsQuery } from '../../services/api';
+import {
+  useGetShopByIdQuery,
+  useGetMyInvitationsQuery,
+  useLazyGetGoLiveStatusQuery,
+  useUpdateShopMutation,
+} from '../../services/api';
 import { AccountSettingsModal } from './AccountSettingsModal';
+import { GoLiveCriteriaModal, PauseShopModal } from '../shop/GoLiveModal';
 
 export function TopNav() {
   const { shopId } = useParams<{ shopId?: string }>();
@@ -17,6 +24,10 @@ export function TopNav() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [goLiveModal, setGoLiveModal] = useState<'criteria' | 'pause' | null>(null);
+  const [fetchGoLiveStatus, { data: goLiveStatus, isFetching: goLiveChecking }] =
+    useLazyGetGoLiveStatusQuery();
+  const [updateShop, { isLoading: goingOnline }] = useUpdateShopMutation();
 
   const { data: currentShop } = useGetShopByIdQuery(
     { shopId: shopId! },
@@ -77,6 +88,35 @@ export function TopNav() {
             <Settings size={16} className="flex-shrink-0" />
             {t('nav.settings')}
           </NavLink>
+          {divider}
+          <button
+            type="button"
+            disabled={goLiveChecking || goingOnline}
+            onClick={async () => {
+              if (currentShop?.isPaused === false) {
+                setGoLiveModal('pause');
+              } else {
+                const result = await fetchGoLiveStatus({ shopId: shopId! }).unwrap();
+                if (result.allMet) {
+                  await updateShop({
+                    shopId: shopId!,
+                    updateShopRequest: { isPaused: false },
+                  });
+                } else {
+                  setGoLiveModal('criteria');
+                }
+              }
+            }}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors w-full
+              disabled:opacity-50
+              text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          >
+            <Circle
+              size={10}
+              className={`shrink-0 fill-current ${currentShop?.isPaused === false ? 'text-emerald-500' : 'text-red-400'}`}
+            />
+            {currentShop?.isPaused === false ? t('nav.shopOnline') : t('nav.shopOffline')}
+          </button>
         </>
       )}
     </>
@@ -240,6 +280,22 @@ export function TopNav() {
       {/* ── Account settings modal ───────────────────────────────────────── */}
       {accountOpen && user && (
         <AccountSettingsModal user={user} onClose={() => setAccountOpen(false)} />
+      )}
+
+      {/* ── Go-live modals ───────────────────────────────────────────────── */}
+      {goLiveModal === 'criteria' && goLiveStatus && shopId && (
+        <GoLiveCriteriaModal
+          shopId={shopId}
+          status={goLiveStatus}
+          onClose={() => setGoLiveModal(null)}
+        />
+      )}
+      {goLiveModal === 'pause' && shopId && (
+        <PauseShopModal
+          shopId={shopId}
+          onClose={() => setGoLiveModal(null)}
+          onSuccess={() => setGoLiveModal(null)}
+        />
       )}
     </>
   );

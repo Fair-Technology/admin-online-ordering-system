@@ -13,9 +13,9 @@ import {
   useGenerateUploadUrlMutation,
   useAddProductImageMutation,
 } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MySpinner } from '../components/ui/MySpinner';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { getCurrencySymbol } from '../utils/currency';
 import { Calendar, Pencil, Trash2, X } from 'lucide-react';
@@ -530,7 +530,7 @@ function ProductEditView({
   if (productLoading || !initialized) {
     return (
       <div className="flex-1 flex items-center justify-center p-10">
-        <GlassSpinner label={t('products.loadingProduct')} />
+        <MySpinner label={t('products.loadingProduct')} />
       </div>
     );
   }
@@ -602,26 +602,26 @@ function ProductEditView({
       <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200 flex-shrink-0">
         {isFirstStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={onBack}>← {t('products.cancel')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={onBack}>← {t('products.cancel')}</MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+            <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
           </>
         )}
         {!isFirstStep && !isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
             <div className="flex-1" />
             {mode === 'extended' && (step === 2 || step === 4) && (
-              <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+              <MyButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</MyButton>
             )}
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+            <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
           </>
         )}
         {isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={onBack}>← {t('products.wizardBack')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={onBack}>← {t('products.wizardBack')}</MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" disabled={isBusy} onClick={handleSubmit}>{submitLabel}</GlassButton>
+            <MyButton type="button" disabled={isBusy} onClick={handleSubmit}>{submitLabel}</MyButton>
           </>
         )}
       </div>
@@ -665,7 +665,7 @@ function ProductModal({
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
           {productLoading || !fullProduct ? (
             <div className="flex-1 flex items-center justify-center p-10">
-              <GlassSpinner label={t('products.loadingProduct')} />
+              <MySpinner label={t('products.loadingProduct')} />
             </div>
           ) : mode === 'view' ? (
             <ProductDetailView
@@ -904,26 +904,26 @@ function AddProductModal({ shopId, onClose }: AddProductModalProps) {
           <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200 flex-shrink-0">
             {isFirstStep && (
               <>
-                <GlassButton type="button" variant="secondary" onClick={onClose}>{t('products.cancel')}</GlassButton>
+                <MyButton type="button" variant="secondary" onClick={onClose}>{t('products.cancel')}</MyButton>
                 <div className="flex-1" />
-                <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+                <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
               </>
             )}
             {!isFirstStep && !isLastStep && (
               <>
-                <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+                <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
                 <div className="flex-1" />
                 {mode === 'extended' && (step === 2 || step === 4) && (
-                  <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+                  <MyButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</MyButton>
                 )}
-                <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+                <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
               </>
             )}
             {isLastStep && (
               <>
-                <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+                <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
                 <div className="flex-1" />
-                <GlassButton type="button" disabled={isBusy} onClick={handleSubmit}>{submitLabel}</GlassButton>
+                <MyButton type="button" disabled={isBusy} onClick={handleSubmit}>{submitLabel}</MyButton>
               </>
             )}
           </div>
@@ -1114,7 +1114,7 @@ function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => v
             {/* Importing step */}
             {step === 'importing' && (
               <div className="flex flex-col items-center justify-center gap-4 py-10">
-                <GlassSpinner label={`Creating product ${progress} of ${rows.length}…`} />
+                <MySpinner label={`Creating product ${progress} of ${rows.length}…`} />
               </div>
             )}
 
@@ -1140,16 +1140,16 @@ function BulkImportModal({ shopId, onClose }: { shopId: string; onClose: () => v
           {/* Footer */}
           {step === 'preview' && (
             <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200 flex-shrink-0">
-              <GlassButton variant="secondary" onClick={() => setStep('upload')}>← Back</GlassButton>
+              <MyButton variant="secondary" onClick={() => setStep('upload')}>← Back</MyButton>
               <div className="flex-1" />
-              <GlassButton disabled={!canImport} onClick={handleImport}>
+              <MyButton disabled={!canImport} onClick={handleImport}>
                 Import {rows.length} products
-              </GlassButton>
+              </MyButton>
             </div>
           )}
           {step === 'done' && (
             <div className="flex justify-end px-6 py-4 border-t border-gray-200 flex-shrink-0">
-              <GlassButton onClick={onClose}>Close</GlassButton>
+              <MyButton onClick={onClose}>Close</MyButton>
             </div>
           )}
 
@@ -1175,6 +1175,9 @@ function ScheduleOfferModal({
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
 
   const [scheduleEnabled, setScheduleEnabled] = useState(!!product.schedule);
+  const [timeWindowEnabled, setTimeWindowEnabled] = useState(
+    !!(product.schedule?.startTime || product.schedule?.endTime),
+  );
   const [noEndDate, setNoEndDate] = useState(!product.schedule?.endDate);
   const [schedule, setSchedule] = useState<ScheduleState>({
     startDate: product.schedule?.startDate ?? '',
@@ -1186,18 +1189,23 @@ function ScheduleOfferModal({
     offerPrice: product.schedule?.offerPrice ?? 0,
     offerLabel: product.schedule?.offerLabel ?? '',
   });
-  const [scheduleError, setScheduleError] = useState(false);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [offerError, setOfferError] = useState<string | null>(null);
 
   const validate = () => {
     let valid = true;
     if (scheduleEnabled) {
       const endDateInvalid = !noEndDate && schedule.endDate && schedule.endDate < schedule.startDate;
-      const endTimeInvalid = schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
-      if (endDateInvalid || endTimeInvalid) { setScheduleError(true); valid = false; }
-      else setScheduleError(false);
+      const endTimeInvalid = timeWindowEnabled && schedule.startTime && schedule.endTime && schedule.endTime <= schedule.startTime;
+      if (schedule.daysOfWeek.length === 0) {
+        setScheduleError(t('products.scheduleDaysRequired'));
+        valid = false;
+      } else if (endDateInvalid || endTimeInvalid) {
+        setScheduleError(t('products.scheduleInvalid'));
+        valid = false;
+      } else setScheduleError(null);
     } else {
-      setScheduleError(false);
+      setScheduleError(null);
     }
     if (scheduleEnabled && schedule.offerEnabled) {
       if (schedule.offerPrice <= 0) { setOfferError(t('products.offerPriceRequired')); valid = false; }
@@ -1214,9 +1222,9 @@ function ScheduleOfferModal({
     const schedulePayload = scheduleEnabled ? {
       startDate: schedule.startDate,
       endDate: noEndDate ? null : (schedule.endDate || null),
-      startTime: schedule.startTime || null,
-      endTime: schedule.endTime || null,
-      daysOfWeek: schedule.daysOfWeek.length > 0 ? schedule.daysOfWeek : undefined,
+      startTime: timeWindowEnabled ? (schedule.startTime || null) : null,
+      endTime: timeWindowEnabled ? (schedule.endTime || null) : null,
+      daysOfWeek: schedule.daysOfWeek,
       offerPrice: schedule.offerEnabled ? schedule.offerPrice : null,
       offerLabel: schedule.offerEnabled ? (schedule.offerLabel || null) : null,
     } : null;
@@ -1254,6 +1262,8 @@ function ScheduleOfferModal({
             <Step5Schedule
               scheduleEnabled={scheduleEnabled}
               setScheduleEnabled={setScheduleEnabled}
+              timeWindowEnabled={timeWindowEnabled}
+              setTimeWindowEnabled={setTimeWindowEnabled}
               noEndDate={noEndDate}
               setNoEndDate={setNoEndDate}
               schedule={schedule}
@@ -1304,11 +1314,11 @@ function ScheduleOfferModal({
 
           {/* Footer */}
           <div className="flex items-center gap-2 px-6 py-4 border-t border-gray-200">
-            <GlassButton type="button" variant="secondary" onClick={onClose}>{t('products.cancel')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={onClose}>{t('products.cancel')}</MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" disabled={isSaving} onClick={handleSave}>
+            <MyButton type="button" disabled={isSaving} onClick={handleSave}>
               {isSaving ? t('products.saving') : t('products.saveChanges')}
-            </GlassButton>
+            </MyButton>
           </div>
         </div>
       </div>
@@ -1335,24 +1345,31 @@ function ProductTable({
   const toast = useToast();
   const [updateProduct] = useUpdateProductMutation();
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [optimisticAvailability, setOptimisticAvailability] = useState<Record<string, boolean>>({});
 
   const handleToggle = async (e: React.MouseEvent, product: ProductResponse) => {
     e.stopPropagation();
     const id = product.id!;
     if (togglingIds.has(id)) return;
+    const currentAvailability = optimisticAvailability[id] ?? (product.isAvailable !== false);
+    const nextAvailability = !currentAvailability;
 
     // Block turning ON if product has no categories
-    if (product.isAvailable === false && !product.categories?.length) {
+    if (nextAvailability && !product.categories?.length) {
       toast.error(t('products.availabilityRequiresCategory'));
       return;
     }
 
+    setOptimisticAvailability((prev) => ({ ...prev, [id]: nextAvailability }));
     setTogglingIds(prev => new Set(prev).add(id));
     try {
       await updateProduct({
         productId: id,
-        updateProductRequest: { shopId, isAvailable: product.isAvailable === false },
+        updateProductRequest: { shopId, isAvailable: nextAvailability },
       }).unwrap();
+    } catch {
+      setOptimisticAvailability((prev) => ({ ...prev, [id]: currentAvailability }));
+      toast.error(t('products.failedToUpdate'));
     } finally {
       setTogglingIds(prev => { const s = new Set(prev); s.delete(id); return s; });
     }
@@ -1361,6 +1378,7 @@ function ProductTable({
   return (
     <div className="divide-y divide-gray-200">
       {products.map((product) => {
+        const isAvailable = optimisticAvailability[product.id!] ?? (product.isAvailable !== false);
         const imageUrl = product.images?.length
           ? product.images[product.images.length - 1].url
           : undefined;
@@ -1371,7 +1389,7 @@ function ProductTable({
             onClick={() => onSelect(product.id!)}
             className="relative flex items-center gap-4 px-4 py-3 hover:bg-gray-50 cursor-pointer group transition-colors"
           >
-            {product.isAvailable === false && (
+            {!isAvailable && (
               <div className="absolute inset-0 bg-white/60 pointer-events-none rounded" />
             )}
 
@@ -1437,12 +1455,12 @@ function ProductTable({
                 disabled={togglingIds.has(product.id!)}
                 onClick={(e) => handleToggle(e, product)}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                  product.isAvailable !== false ? 'bg-emerald-500' : 'bg-gray-200'
+                  isAvailable ? 'bg-emerald-500' : 'bg-gray-200'
                 } ${togglingIds.has(product.id!) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                aria-label={product.isAvailable !== false ? t('products.available') : t('products.unavailable')}
+                aria-label={isAvailable ? t('products.available') : t('products.unavailable')}
               >
                 <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                  product.isAvailable !== false ? 'translate-x-4' : 'translate-x-0.5'
+                  isAvailable ? 'translate-x-4' : 'translate-x-0.5'
                 }`} />
               </button>
             </div>
@@ -1482,7 +1500,7 @@ export function ProductsPage() {
   }
   const stableIndex = (p: ProductResponse) => stableSortRef.current?.get(p.id!) ?? Infinity;
 
-  if (isLoading) return <GlassSpinner label={t('products.loading')} />;
+  if (isLoading) return <MySpinner label={t('products.loading')} />;
   if (isError) return <p className="text-red-500">{t('products.loadError')}</p>;
 
   // Group by category
@@ -1517,12 +1535,12 @@ export function ProductsPage() {
     <>
       <div className="space-y-6">
         <div className="flex justify-end">
-          <GlassButton
+          <MyButton
             variant="secondary"
             onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p); n.set('importProducts', '1'); return n; })}
           >
             Import JSON
-          </GlassButton>
+          </MyButton>
         </div>
 
         {isEmpty && <p className="text-gray-400 text-sm">{t('products.empty')}</p>}
@@ -1532,7 +1550,7 @@ export function ProductsPage() {
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 px-1">
               {cat.name}
             </h2>
-            <GlassCard>
+            <MyCard>
               <ProductTable
                 products={byCategory.get(cat.id)!}
                 onSelect={setSelectedProductId}
@@ -1540,7 +1558,7 @@ export function ProductsPage() {
                 onScheduleClick={setScheduleModalProduct}
                 currencySymbol={currencySymbol}
               />
-            </GlassCard>
+            </MyCard>
           </section>
         ))}
 
@@ -1549,7 +1567,7 @@ export function ProductsPage() {
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 px-1">
               {t('products.uncategorized')}
             </h2>
-            <GlassCard>
+            <MyCard>
               <ProductTable
                 products={uncategorized}
                 onSelect={setSelectedProductId}
@@ -1557,7 +1575,7 @@ export function ProductsPage() {
                 onScheduleClick={setScheduleModalProduct}
                 currencySymbol={currencySymbol}
               />
-            </GlassCard>
+            </MyCard>
           </section>
         )}
       </div>

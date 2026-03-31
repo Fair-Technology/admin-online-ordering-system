@@ -4,9 +4,9 @@ import {
   useAcceptShopInvitationMutation,
   useDeclineShopInvitationMutation,
 } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MySpinner } from '../components/ui/MySpinner';
 import { useToast } from '../contexts/ToastContext';
 
 export function InvitationsPage() {
@@ -36,7 +36,7 @@ export function InvitationsPage() {
     }
   };
 
-  if (isLoading) return <GlassSpinner label={t('invitations.loading')} />;
+  if (isLoading) return <MySpinner label={t('invitations.loading')} />;
   if (isError) return <p className="text-red-500">{t('invitations.loadError')}</p>;
 
   const invitations = data?.invitations ?? [];
@@ -45,11 +45,11 @@ export function InvitationsPage() {
     <div className="max-w-lg space-y-4">
       <h1 className="text-lg font-semibold text-gray-900">{t('invitations.title')}</h1>
       {invitations.length === 0 ? (
-        <GlassCard className="p-5">
+        <MyCard className="p-5">
           <p className="text-sm text-gray-400">{t('invitations.empty')}</p>
-        </GlassCard>
+        </MyCard>
       ) : (
-        <GlassCard className="p-5 space-y-0">
+        <MyCard className="p-5 space-y-0">
           {invitations.map((invite, i) => (
             <div
               key={invite.shopId}
@@ -64,24 +64,24 @@ export function InvitationsPage() {
                 </p>
               </div>
               <div className="flex gap-2 ml-4 shrink-0">
-                <GlassButton
+                <MyButton
                   variant="primary"
                   size="sm"
                   onClick={() => handleAccept(invite.shopId)}
                 >
                   {t('invitations.accept')}
-                </GlassButton>
-                <GlassButton
+                </MyButton>
+                <MyButton
                   variant="ghost"
                   size="sm"
                   onClick={() => handleDecline(invite.shopId)}
                 >
                   {t('invitations.decline')}
-                </GlassButton>
+                </MyButton>
               </div>
             </div>
           ))}
-        </GlassCard>
+        </MyCard>
       )}
     </div>
   );

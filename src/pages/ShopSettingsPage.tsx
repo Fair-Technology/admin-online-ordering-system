@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -16,12 +16,13 @@ import {
   useRequestShopNameChangeMutation,
   useCancelShopNameChangeMutation,
 } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput } from '../components/ui/GlassInput';
+import { MyCard } from '../components/ui/MyCard';
+import { MySpinner } from '../components/ui/MySpinner';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput } from '../components/ui/MyInput';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { useToast } from '../contexts/ToastContext';
+import { PaymentsCard } from '../components/shop/PaymentsCard';
 
 type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 type TimeSlot = { open: string; close: string };
@@ -54,6 +55,14 @@ export function ShopSettingsPage() {
     { shopId: shopId! },
     { refetchOnMountOrArgChange: true },
   );
+
+  useEffect(() => {
+    if (!shop) return;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [shop]);
   const [generateShopLogoUploadUrl] = useGenerateShopLogoUploadUrlMutation();
   const [setShopLogo] = useSetShopLogoMutation();
   const [updateShop] = useUpdateShopMutation();
@@ -129,7 +138,7 @@ export function ShopSettingsPage() {
   const [roleSaveError, setRoleSaveError] = useState<string | null>(null);
   const [roleDeleteError, setRoleDeleteError] = useState<string | null>(null);
 
-  if (isLoading) return <GlassSpinner label={t('shops.loadingSettings')} />;
+  if (isLoading) return <MySpinner label={t('shops.loadingSettings')} />;
   if (isError || !shop) return <p className="text-red-500">{t('shops.failedToLoadShop')}</p>;
 
   const members = shop.members ?? [];
@@ -140,9 +149,9 @@ export function ShopSettingsPage() {
   if (!isCurrentUserOwner) {
     return (
       <div className="max-w-lg">
-        <GlassCard className="p-5">
+        <MyCard className="p-5">
           <p className="text-sm text-gray-600">{t('shops.membersAccessDenied')}</p>
-        </GlassCard>
+        </MyCard>
       </div>
     );
   }
@@ -502,7 +511,7 @@ export function ShopSettingsPage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <GlassCard>
+      <MyCard>
         {infoRows.map((row, i) => (
           <div
             key={row.label}
@@ -516,9 +525,9 @@ export function ShopSettingsPage() {
             </span>
           </div>
         ))}
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-5 flex flex-col items-center gap-3">
+      <MyCard className="p-5 flex flex-col items-center gap-3">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide self-start">
           QR Code
         </p>
@@ -529,12 +538,12 @@ export function ShopSettingsPage() {
           marginSize={1}
         />
         <p className="text-xs text-gray-400 font-mono break-all text-center">{shopUrl}</p>
-        <GlassButton type="button" variant="secondary" size="sm" onClick={handleDownloadQr}>
+        <MyButton type="button" variant="secondary" size="sm" onClick={handleDownloadQr}>
           Download PNG
-        </GlassButton>
-      </GlassCard>
+        </MyButton>
+      </MyCard>
 
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.detailsTitle')}
         </p>
@@ -545,13 +554,13 @@ export function ShopSettingsPage() {
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-gray-900 font-medium">{shop.name}</p>
               {!shop.pendingNameChange && !nameChangeState && (
-                <GlassButton
+                <MyButton
                   variant="ghost"
                   size="sm"
                   onClick={() => setNameChangeState({ requestedName: '' })}
                 >
                   {t('shops.nameChangeRequest')}
-                </GlassButton>
+                </MyButton>
               )}
             </div>
           </div>
@@ -562,20 +571,20 @@ export function ShopSettingsPage() {
               <p className="text-sm text-yellow-800">
                 {t('shops.nameChangePending', { name: shop.pendingNameChange.requestedName })}
               </p>
-              <GlassButton
+              <MyButton
                 variant="ghost"
                 size="sm"
                 onClick={handleCancelNameChange}
               >
                 {t('shops.nameChangeCancelRequest')}
-              </GlassButton>
+              </MyButton>
             </div>
           )}
 
           {/* Inline name change request form */}
           {nameChangeState && !shop.pendingNameChange && (
             <div className="space-y-2 rounded-lg border border-gray-200 p-3">
-              <GlassInput
+              <MyInput
                 label={t('shops.nameChangeRequestedName')}
                 value={nameChangeState.requestedName}
                 placeholder={t('shops.detailsName')}
@@ -586,19 +595,19 @@ export function ShopSettingsPage() {
               />
               {nameChangeError && <p className="text-sm text-red-600">{nameChangeError}</p>}
               <div className="flex gap-2">
-                <GlassButton
+                <MyButton
                   onClick={handleRequestNameChange}
                   disabled={isRequestingNameChange || nameChangeState.requestedName.trim().length < 3}
                 >
                   {isRequestingNameChange ? t('shops.nameChangeSubmitting') : t('shops.nameChangeSubmit')}
-                </GlassButton>
-                <GlassButton
+                </MyButton>
+                <MyButton
                   variant="ghost"
                   onClick={() => { setNameChangeState(null); setNameChangeError(null); }}
                   disabled={isRequestingNameChange}
                 >
                   {t('shops.detailsCancel')}
-                </GlassButton>
+                </MyButton>
               </div>
             </div>
           )}
@@ -620,21 +629,21 @@ export function ShopSettingsPage() {
         {detailsError && <p className="text-sm text-red-600">{detailsError}</p>}
         <div className="border-t border-gray-200 pt-4 flex gap-2">
           {detailsState && (
-            <GlassButton
+            <MyButton
               variant="ghost"
               onClick={() => { setDetailsState(null); setDetailsError(null); }}
               disabled={isSavingDetails}
             >
               {t('shops.detailsCancel')}
-            </GlassButton>
+            </MyButton>
           )}
-          <GlassButton onClick={handleSaveDetails} disabled={isSavingDetails}>
+          <MyButton onClick={handleSaveDetails} disabled={isSavingDetails}>
             {isSavingDetails ? t('shops.detailsSaving') : t('shops.detailsSave')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.logo')}
         </p>
@@ -666,13 +675,13 @@ export function ShopSettingsPage() {
             />
             {logoFile && <p className="text-xs text-gray-400">{logoFile.name}</p>}
           </div>
-          <GlassButton type="submit" disabled={!logoFile || isUploading}>
+          <MyButton type="submit" disabled={!logoFile || isUploading}>
             {isUploading ? t('shops.uploadingLogo') : t('shops.uploadLogo')}
-          </GlassButton>
+          </MyButton>
         </form>
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.colorsTitle')}
         </p>
@@ -710,38 +719,38 @@ export function ShopSettingsPage() {
         </div>
         {colorsError && <p className="text-sm text-red-600">{colorsError}</p>}
         <div className="border-t border-gray-200 pt-4">
-          <GlassButton onClick={handleSaveColors} disabled={isSavingColors}>
+          <MyButton onClick={handleSaveColors} disabled={isSavingColors}>
             {isSavingColors ? t('shops.colorsSaving') : t('shops.colorsSave')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.addressTitle')}
         </p>
         <div className="space-y-3">
-          <GlassInput
+          <MyInput
             label={t('shops.addressStreet')}
             value={currentAddress.street}
             onChange={(e) => setAddressState({ ...currentAddress, street: e.target.value })}
           />
-          <GlassInput
+          <MyInput
             label={t('shops.addressCity')}
             value={currentAddress.city}
             onChange={(e) => setAddressState({ ...currentAddress, city: e.target.value })}
           />
-          <GlassInput
+          <MyInput
             label={t('shops.addressState')}
             value={currentAddress.state}
             onChange={(e) => setAddressState({ ...currentAddress, state: e.target.value })}
           />
-          <GlassInput
+          <MyInput
             label={t('shops.addressPostcode')}
             value={currentAddress.postcode}
             onChange={(e) => setAddressState({ ...currentAddress, postcode: e.target.value })}
           />
-          <GlassInput
+          <MyInput
             label={t('shops.addressCountry')}
             value={currentAddress.country}
             onChange={(e) => setAddressState({ ...currentAddress, country: e.target.value })}
@@ -749,14 +758,17 @@ export function ShopSettingsPage() {
         </div>
         {addressError && <p className="text-sm text-red-600">{addressError}</p>}
         <div className="border-t border-gray-200 pt-4">
-          <GlassButton onClick={handleSaveAddress} disabled={isSavingAddress}>
+          <MyButton onClick={handleSaveAddress} disabled={isSavingAddress}>
             {isSavingAddress ? t('shops.addressSaving') : t('shops.addressSave')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
+
+      {/* Payments card */}
+      <PaymentsCard shop={shop} onRefetch={refetch} />
 
       {/* Tax Rates card */}
-      <GlassCard className="p-5 space-y-3">
+      <MyCard className="p-5 space-y-3">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.taxRatesTitle')}
         </p>
@@ -782,9 +794,9 @@ export function ShopSettingsPage() {
             {t('shops.taxRatesNote', { country: shop.countryCode })}
           </p>
         )}
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.statusTitle')}
         </p>
@@ -792,24 +804,24 @@ export function ShopSettingsPage() {
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">{t('shops.statusPaused')}</span>
             <div className="flex gap-1.5">
-              <GlassButton
+              <MyButton
                 variant={currentStatus.isPaused ? 'primary' : 'ghost'}
                 onClick={() => setStatusState({ ...currentStatus, isPaused: true })}
               >
                 {t('shops.statusYes')}
-              </GlassButton>
-              <GlassButton
+              </MyButton>
+              <MyButton
                 variant={!currentStatus.isPaused ? 'primary' : 'ghost'}
                 onClick={() => setStatusState({ ...currentStatus, isPaused: false })}
               >
                 {t('shops.statusNo')}
-              </GlassButton>
+              </MyButton>
             </div>
           </div>
           {currentStatus.isPaused && (
             <div className="space-y-1.5">
               <span className="text-sm text-gray-600">{t('shops.statusPauseMessage')}</span>
-              <GlassInput
+              <MyInput
                 value={currentStatus.pausedMessage}
                 placeholder={t('shops.statusPauseMessagePlaceholder')}
                 onChange={(e) => setStatusState({ ...currentStatus, pausedMessage: e.target.value })}
@@ -819,13 +831,13 @@ export function ShopSettingsPage() {
         </div>
         {statusError && <p className="text-sm text-red-600">{statusError}</p>}
         <div className="border-t border-gray-200 pt-4">
-          <GlassButton onClick={handleSaveStatus} disabled={isSavingStatus}>
+          <MyButton onClick={handleSaveStatus} disabled={isSavingStatus}>
             {isSavingStatus ? t('shops.statusSaving') : t('shops.statusSave')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-5">
+      <MyCard className="p-5">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
           {t('shops.openingHours')}
         </p>
@@ -893,14 +905,14 @@ export function ShopSettingsPage() {
         </div>
         {hoursError && <p className="text-sm text-red-600 mt-2">{hoursError}</p>}
         <div className="mt-4 border-t border-gray-200 pt-4">
-          <GlassButton onClick={handleSaveHours} disabled={isSavingHours}>
+          <MyButton onClick={handleSaveHours} disabled={isSavingHours}>
             {isSavingHours ? t('shops.ohSavingHours') : t('shops.ohSaveHours')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
 
       {/* Roles card */}
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.rolesTitle')}
         </p>
@@ -920,7 +932,7 @@ export function ShopSettingsPage() {
               >
                 {isEditing ? (
                   <div className="space-y-3">
-                    <GlassInput
+                    <MyInput
                       label={t('shops.detailsName')}
                       value={editRoleName}
                       onChange={(e) => setEditRoleName(e.target.value)}
@@ -949,12 +961,12 @@ export function ShopSettingsPage() {
                     </div>
                     {roleSaveError && <p className="text-sm text-red-600">{roleSaveError}</p>}
                     <div className="flex gap-2">
-                      <GlassButton onClick={handleSaveRole} disabled={isSavingRole}>
+                      <MyButton onClick={handleSaveRole} disabled={isSavingRole}>
                         {isSavingRole ? t('shops.rolesAdding') : t('shops.rolesSave')}
-                      </GlassButton>
-                      <GlassButton variant="ghost" onClick={() => setEditingRoleId(null)}>
+                      </MyButton>
+                      <MyButton variant="ghost" onClick={() => setEditingRoleId(null)}>
                         {t('shops.detailsCancel')}
-                      </GlassButton>
+                      </MyButton>
                     </div>
                   </div>
                 ) : (
@@ -971,16 +983,16 @@ export function ShopSettingsPage() {
                       ))}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <GlassButton variant="ghost" onClick={() => startEditRole(role)}>
+                      <MyButton variant="ghost" onClick={() => startEditRole(role)}>
                         Edit
-                      </GlassButton>
-                      <GlassButton
+                      </MyButton>
+                      <MyButton
                         variant="ghost"
                         disabled={membersUsingRole > 0}
                         onClick={() => handleDeleteRole(role.id ?? '')}
                       >
                         {t('shops.rolesDelete')}
-                      </GlassButton>
+                      </MyButton>
                     </div>
                   </div>
                 )}
@@ -991,7 +1003,7 @@ export function ShopSettingsPage() {
         {roleDeleteError && <p className="text-sm text-red-600">{roleDeleteError}</p>}
         <div className="border-t border-gray-200 pt-4 space-y-3">
           <p className="text-xs text-gray-400 uppercase tracking-wide">{t('shops.rolesAdd')}</p>
-          <GlassInput
+          <MyInput
             label={t('shops.detailsName')}
             value={newRoleName}
             placeholder="e.g. Kitchen"
@@ -1023,17 +1035,17 @@ export function ShopSettingsPage() {
             </div>
           </div>
           {roleCreateError && <p className="text-sm text-red-600">{roleCreateError}</p>}
-          <GlassButton
+          <MyButton
             onClick={handleCreateRole}
             disabled={isCreatingRole || !newRoleName.trim()}
           >
             {isCreatingRole ? t('shops.rolesAdding') : t('shops.rolesAdd')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
 
       {/* Members card */}
-      <GlassCard className="p-5 space-y-4">
+      <MyCard className="p-5 space-y-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {t('shops.membersTitle')}
         </p>
@@ -1077,13 +1089,13 @@ export function ShopSettingsPage() {
                     </span>
                   )}
                 </div>
-                <GlassButton
+                <MyButton
                   variant="ghost"
                   disabled={isLastActiveOwner}
                   onClick={() => handleRemoveMember(member.userId!)}
                 >
                   {t('shops.membersRemove')}
-                </GlassButton>
+                </MyButton>
               </div>
             );
           })}
@@ -1093,7 +1105,7 @@ export function ShopSettingsPage() {
           <p className="text-xs text-gray-400 uppercase tracking-wide">
             {t('shops.membersAddTitle')}
           </p>
-          <GlassInput
+          <MyInput
             label={t('shops.membersEmail')}
             type="email"
             value={newMemberEmail}
@@ -1118,18 +1130,18 @@ export function ShopSettingsPage() {
             </select>
           </div>
           {memberAddError && <p className="text-sm text-red-600">{memberAddError}</p>}
-          <GlassButton onClick={handleAddMember} disabled={isAddingMember}>
+          <MyButton onClick={handleAddMember} disabled={isAddingMember}>
             {isAddingMember ? t('shops.membersAdding') : t('shops.membersAdd')}
-          </GlassButton>
+          </MyButton>
         </div>
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-4">
+      <MyCard className="p-4">
         <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Debug</p>
         <pre className="text-gray-500 text-xs whitespace-pre-wrap">
           {JSON.stringify(shop, null, 2)}
         </pre>
-      </GlassCard>
+      </MyCard>
     </div>
   );
 }

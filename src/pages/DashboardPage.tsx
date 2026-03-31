@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { useTranslation } from 'react-i18next';
 import { useGetMyShopsQuery, useGetOrdersByShopQuery } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyCard } from '../components/ui/MyCard';
+import { MySpinner } from '../components/ui/MySpinner';
 
 function ShopOrdersLoader({
   shopId,
@@ -38,7 +38,7 @@ export function DashboardPage() {
   const ordersLoaded = shops.length > 0 && shops.every((s) => totalsMap[s.id!] !== undefined);
 
   if (isFetching) {
-    return <GlassSpinner label={t('dashboard.loading')} />;
+    return <MySpinner label={t('dashboard.loading')} />;
   }
 
   return (
@@ -57,21 +57,21 @@ export function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4">
-        <GlassCard className="p-5">
+        <MyCard className="p-5">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
             {t('dashboard.totalShops')}
           </p>
           <p className="text-4xl font-semibold text-gray-900">{shopCount}</p>
-        </GlassCard>
+        </MyCard>
 
-        <GlassCard className="p-5">
+        <MyCard className="p-5">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
             {t('dashboard.totalOrders')}
           </p>
           <p className="text-4xl font-semibold text-gray-900">
             {ordersLoaded ? totalOrders : '—'}
           </p>
-        </GlassCard>
+        </MyCard>
       </div>
     </div>
   );

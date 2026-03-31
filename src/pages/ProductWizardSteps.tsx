@@ -4,9 +4,9 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronDown } from 'lucide-react';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput, GlassTextarea } from '../components/ui/GlassInput';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput, MyTextarea } from '../components/ui/MyInput';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { LucideIconByName, ICON_NAMES, ICON_DEFAULT_LABELS } from '../components/ui/IconPicker';
 import { useCreateCategoryMutation } from '../services/api';
@@ -118,7 +118,7 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
   return (
     <div className="space-y-4">
       <div>
-        <GlassInput
+        <MyInput
           label={t('products.name')}
           type="text"
           placeholder={t('products.namePlaceholder')}
@@ -130,7 +130,7 @@ export function Step1Basics({ form, setForm, imageFile, setImageFile, currencySy
         )}
       </div>
       <div>
-        <GlassTextarea
+        <MyTextarea
           label={t('products.description')}
           placeholder={t('products.descriptionPlaceholder')}
           rows={3}
@@ -463,9 +463,9 @@ export function Step3Categories({
                 onChange={(e) => setNewName(e.target.value)}
                 className="flex-1 border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
               />
-              <GlassButton type="submit" disabled={isCreating || !newName.trim()} className="shrink-0 text-sm py-2">
+              <MyButton type="submit" disabled={isCreating || !newName.trim()} className="shrink-0 text-sm py-2">
                 {isCreating ? 'Creating…' : 'Create'}
-              </GlassButton>
+              </MyButton>
               <button
                 type="button"
                 onClick={() => { setShowCreate(false); setNewName(''); setCreateError(''); }}
@@ -542,16 +542,16 @@ export function Step4Customise({
   return (
     <div className="space-y-4">
       {/* Variant Groups */}
-      <GlassCard className="p-4 space-y-3">
+      <MyCard className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700">{t('variants.title')}</span>
-          <GlassButton type="button" variant="secondary" size="sm" onClick={addVariantGroup}>
+          <MyButton type="button" variant="secondary" size="sm" onClick={addVariantGroup}>
             {t('variants.addGroup')}
-          </GlassButton>
+          </MyButton>
         </div>
         {variantGroups.map(group => (
           <div key={group.id} className="border border-gray-200 rounded-xl p-3 space-y-3">
-            <GlassInput
+            <MyInput
               placeholder={t('variants.groupNamePlaceholder')}
               value={group.name}
               onChange={(e) => updateVariantGroupName(group.id, e.target.value)}
@@ -559,7 +559,7 @@ export function Step4Customise({
             <div className="space-y-2">
               {group.options.map(option => (
                 <div key={option.id} className="flex items-center gap-2">
-                  <GlassInput
+                  <MyInput
                     placeholder={t('variants.optionNamePlaceholder')}
                     value={option.name}
                     onChange={(e) => updateVariantOption(group.id, option.id, { name: e.target.value })}
@@ -579,9 +579,9 @@ export function Step4Customise({
                     />
                     {t('variants.available')}
                   </label>
-                  <GlassButton type="button" variant="ghost" size="sm" onClick={() => removeVariantOption(group.id, option.id)}>
+                  <MyButton type="button" variant="ghost" size="sm" onClick={() => removeVariantOption(group.id, option.id)}>
                     ×
-                  </GlassButton>
+                  </MyButton>
                 </div>
               ))}
             </div>
@@ -593,41 +593,41 @@ export function Step4Customise({
               >
                 {t('variants.addOption')}
               </button>
-              <GlassButton
+              <MyButton
                 type="button" variant="ghost" size="sm"
                 onClick={() => removeVariantGroup(group.id)}
                 className="text-red-500 hover:text-red-600"
               >
                 {t('variants.removeGroup')}
-              </GlassButton>
+              </MyButton>
             </div>
           </div>
         ))}
-      </GlassCard>
+      </MyCard>
 
       {/* Addon Groups */}
-      <GlassCard className="p-4 space-y-3">
+      <MyCard className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700">{t('addons.title')}</span>
-          <GlassButton type="button" variant="secondary" size="sm" onClick={addAddonGroup}>
+          <MyButton type="button" variant="secondary" size="sm" onClick={addAddonGroup}>
             {t('addons.addGroup')}
-          </GlassButton>
+          </MyButton>
         </div>
         {addonGroups.map(group => (
           <div key={group.id} className="border border-gray-200 rounded-xl p-3 space-y-3">
-            <GlassInput
+            <MyInput
               placeholder={t('addons.groupNamePlaceholder')}
               value={group.name}
               onChange={(e) => updateAddonGroup(group.id, { name: e.target.value })}
             />
             <div className="flex gap-3">
-              <GlassInput
+              <MyInput
                 label={t('addons.min')} type="number" min="0"
                 value={group.minSelectable}
                 onChange={(e) => updateAddonGroup(group.id, { minSelectable: parseInt(e.target.value || '0', 10) })}
                 className="flex-1"
               />
-              <GlassInput
+              <MyInput
                 label={t('addons.max')} type="number" min="0"
                 value={group.maxSelectable}
                 onChange={(e) => updateAddonGroup(group.id, { maxSelectable: parseInt(e.target.value || '0', 10) })}
@@ -637,7 +637,7 @@ export function Step4Customise({
             <div className="space-y-2">
               {group.options.map(option => (
                 <div key={option.id} className="flex items-center gap-2">
-                  <GlassInput
+                  <MyInput
                     placeholder={t('addons.optionNamePlaceholder')}
                     value={option.name}
                     onChange={(e) => updateAddonOption(group.id, option.id, { name: e.target.value })}
@@ -657,9 +657,9 @@ export function Step4Customise({
                     />
                     {t('addons.available')}
                   </label>
-                  <GlassButton type="button" variant="ghost" size="sm" onClick={() => removeAddonOption(group.id, option.id)}>
+                  <MyButton type="button" variant="ghost" size="sm" onClick={() => removeAddonOption(group.id, option.id)}>
                     ×
-                  </GlassButton>
+                  </MyButton>
                 </div>
               ))}
             </div>
@@ -671,17 +671,17 @@ export function Step4Customise({
               >
                 {t('addons.addOption')}
               </button>
-              <GlassButton
+              <MyButton
                 type="button" variant="ghost" size="sm"
                 onClick={() => removeAddonGroup(group.id)}
                 className="text-red-500 hover:text-red-600"
               >
                 {t('addons.removeGroup')}
-              </GlassButton>
+              </MyButton>
             </div>
           </div>
         ))}
-      </GlassCard>
+      </MyCard>
     </div>
   );
 }
@@ -691,22 +691,25 @@ export function Step4Customise({
 interface Step5Props {
   scheduleEnabled: boolean;
   setScheduleEnabled: (v: boolean) => void;
+  timeWindowEnabled: boolean;
+  setTimeWindowEnabled: (v: boolean) => void;
   noEndDate: boolean;
   setNoEndDate: (v: boolean) => void;
   schedule: ScheduleState;
   setSchedule: React.Dispatch<React.SetStateAction<ScheduleState>>;
-  scheduleError: boolean;
+  scheduleError: string | null;
 }
 
 export function Step5Schedule({
   scheduleEnabled, setScheduleEnabled,
+  timeWindowEnabled, setTimeWindowEnabled,
   noEndDate, setNoEndDate,
   schedule, setSchedule,
   scheduleError,
 }: Step5Props) {
   const { t } = useTranslation();
   return (
-    <GlassCard className="p-4 space-y-3">
+    <MyCard className="p-4 space-y-3">
       <label className="flex items-center gap-2 cursor-pointer">
         <input
           type="checkbox"
@@ -750,26 +753,47 @@ export function Step5Schedule({
             />
             {t('products.scheduleNoEndDate')}
           </label>
-          <div className="flex gap-3">
-            <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleStartTime')}</label>
-              <input
-                type="time"
-                value={schedule.startTime}
-                onChange={(e) => setSchedule((s) => ({ ...s, startTime: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
-              />
+          <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={timeWindowEnabled}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setTimeWindowEnabled(checked);
+                if (checked) {
+                  setSchedule((s) => ({
+                    ...s,
+                    startTime: s.startTime || '00:00',
+                    endTime: s.endTime || '23:59',
+                  }));
+                }
+              }}
+              className="accent-gray-900"
+            />
+            {t('products.scheduleSpecificTimes')}
+          </label>
+          {timeWindowEnabled && (
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleStartTime')}</label>
+                <input
+                  type="time"
+                  value={schedule.startTime}
+                  onChange={(e) => setSchedule((s) => ({ ...s, startTime: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                />
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleEndTime')}</label>
+                <input
+                  type="time"
+                  value={schedule.endTime}
+                  onChange={(e) => setSchedule((s) => ({ ...s, endTime: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
+                />
+              </div>
             </div>
-            <div className="flex flex-col gap-1 flex-1">
-              <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleEndTime')}</label>
-              <input
-                type="time"
-                value={schedule.endTime}
-                onChange={(e) => setSchedule((s) => ({ ...s, endTime: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg bg-white text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400"
-              />
-            </div>
-          </div>
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-500 uppercase tracking-wide">{t('products.scheduleDaysOfWeek')}</label>
             <div className="flex flex-wrap gap-1.5">
@@ -800,11 +824,11 @@ export function Step5Schedule({
             </div>
           </div>
           {scheduleError && (
-            <p className="text-xs text-red-500">{t('products.scheduleInvalid')}</p>
+            <p className="text-xs text-red-500">{scheduleError}</p>
           )}
         </div>
       )}
-    </GlassCard>
+    </MyCard>
   );
 }
 

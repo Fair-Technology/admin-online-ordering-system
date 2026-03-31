@@ -9,9 +9,9 @@ import {
   useUpdateShopMutation,
 } from '../services/api';
 import type { CreateShopRequest, ShopResponse } from '../services/api';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput } from '../components/ui/GlassInput';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput } from '../components/ui/MyInput';
+import { MySpinner } from '../components/ui/MySpinner';
 import { useToast } from '../contexts/ToastContext';
 
 const COUNTRY_OPTIONS = [
@@ -144,7 +144,7 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              <GlassInput
+              <MyInput
                 label={t('shops.shopName')}
                 type="text"
                 required
@@ -196,12 +196,12 @@ function CreateShopModal({ onClose }: { onClose: () => void }) {
 
             {/* Footer */}
             <div className="flex items-center gap-2 px-6 pb-5">
-              <GlassButton type="submit" disabled={isLoading} className="flex-1">
+              <MyButton type="submit" disabled={isLoading} className="flex-1">
                 {isLoading ? t('shops.creating') : t('shops.create')}
-              </GlassButton>
-              <GlassButton type="button" variant="secondary" onClick={onClose}>
+              </MyButton>
+              <MyButton type="button" variant="secondary" onClick={onClose}>
                 {t('products.cancel')}
-              </GlassButton>
+              </MyButton>
             </div>
           </form>
         </div>
@@ -281,7 +281,7 @@ export function ShopsPage() {
   const showModal = searchParams.get('addShop') === '1';
   const closeModal = () => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete('addShop'); return n; });
 
-  if (isLoading) return <GlassSpinner label={t('shops.loading')} />;
+  if (isLoading) return <MySpinner label={t('shops.loading')} />;
   if (isError) return <p className="text-red-500">{t('shops.loadError')}</p>;
 
   return (

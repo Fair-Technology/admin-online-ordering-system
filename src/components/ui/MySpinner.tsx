@@ -1,8 +1,8 @@
-interface GlassSpinnerProps {
+interface MySpinnerProps {
   label?: string;
 }
 
-export function GlassSpinner({ label }: GlassSpinnerProps) {
+export function MySpinner({ label }: MySpinnerProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 flex-1 min-h-48">
       <div className="w-10 h-10 rounded-full border-2 border-gray-200 border-t-gray-600 animate-spin" />

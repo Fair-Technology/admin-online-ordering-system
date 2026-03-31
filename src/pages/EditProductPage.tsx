@@ -10,10 +10,10 @@ import {
   useUpdateProductMutation,
   useGetCategoriesByShopQuery,
 } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput } from '../components/ui/GlassInput';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput } from '../components/ui/MyInput';
+import { MySpinner } from '../components/ui/MySpinner';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { getCurrencySymbol } from '../utils/currency';
 import { useToast } from '../contexts/ToastContext';
@@ -118,7 +118,7 @@ export function EditProductPage() {
     }
   }, [product]);
 
-  if (isLoading) return <GlassSpinner label={t('products.loadingProduct')} />;
+  if (isLoading) return <MySpinner label={t('products.loadingProduct')} />;
   if (isError || !product) return <p className="text-red-500">{t('products.failedToLoad')}</p>;
 
   const existingImageUrl = product.images?.find((img) => img.isPrimary)?.url ?? product.images?.[0]?.url ?? null;
@@ -299,12 +299,12 @@ export function EditProductPage() {
       <p className="text-sm text-gray-400">{stepSubtitles[step]}</p>
 
       {isUpdateError && (
-        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+        <MyCard className="p-4 !bg-red-50 !border-red-200">
           <p className="text-sm text-red-600">{t('products.failedToUpdate')}</p>
-        </GlassCard>
+        </MyCard>
       )}
 
-      <GlassCard className="p-6 overflow-hidden">
+      <MyCard className="p-6 overflow-hidden">
         <div key={step} className={direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left'}>
           {step === 1 && (
             <Step1Basics
@@ -363,53 +363,53 @@ export function EditProductPage() {
             />
           )}
         </div>
-      </GlassCard>
+      </MyCard>
 
       {/* Navigation footer */}
       <div className="flex items-center gap-2">
         {isFirstStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={() => navigate(-1)}>
+            <MyButton type="button" variant="secondary" onClick={() => navigate(-1)}>
               {t('products.cancel')}
-            </GlassButton>
+            </MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+            <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
           </>
         )}
         {!isFirstStep && !isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
             <div className="flex-1" />
             {mode === 'extended' && (step === 2 || step === 4) && (
-              <GlassButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</GlassButton>
+              <MyButton type="button" variant="ghost" onClick={goNext}>{t('products.wizardSkip')}</MyButton>
             )}
-            <GlassButton type="button" onClick={goNext}>{t('products.wizardNext')} →</GlassButton>
+            <MyButton type="button" onClick={goNext}>{t('products.wizardNext')} →</MyButton>
           </>
         )}
         {isLastStep && (
           <>
-            <GlassButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</GlassButton>
+            <MyButton type="button" variant="secondary" onClick={goBack}>← {t('products.wizardBack')}</MyButton>
             <div className="flex-1" />
-            <GlassButton type="button" disabled={isBusy} onClick={handleSubmit}>
+            <MyButton type="button" disabled={isBusy} onClick={handleSubmit}>
               {submitLabel}
-            </GlassButton>
+            </MyButton>
           </>
         )}
       </div>
 
       {/* Danger zone */}
       {isDeleteError && (
-        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+        <MyCard className="p-4 !bg-red-50 !border-red-200">
           <p className="text-sm text-red-600">{t('products.failedToDelete')}</p>
-        </GlassCard>
+        </MyCard>
       )}
-      <GlassCard className="p-6">
+      <MyCard className="p-6">
         <div className="space-y-3">
           <p className="text-sm font-medium text-gray-900">{t('products.dangerZone')}</p>
           <p className="text-xs text-gray-400">{t('products.deleteWarning')}</p>
           {confirmingDelete ? (
             <div className="space-y-3">
-              <GlassInput
+              <MyInput
                 label={t('products.deleteTypeToConfirm', { name: product.name })}
                 type="text"
                 value={deleteConfirmName}
@@ -417,29 +417,29 @@ export function EditProductPage() {
                 placeholder={product.name}
               />
               <div className="flex gap-2">
-                <GlassButton
+                <MyButton
                   variant="danger"
                   disabled={isDeleting || deleteConfirmName.toLowerCase() !== product.name?.toLowerCase()}
                   onClick={handleDelete}
                 >
                   {isDeleting ? t('products.deleting') : t('products.confirmDelete')}
-                </GlassButton>
-                <GlassButton
+                </MyButton>
+                <MyButton
                   variant="ghost"
                   disabled={isDeleting}
                   onClick={() => { setConfirmingDelete(false); setDeleteConfirmName(''); }}
                 >
                   {t('products.cancel')}
-                </GlassButton>
+                </MyButton>
               </div>
             </div>
           ) : (
-            <GlassButton variant="danger" onClick={() => setConfirmingDelete(true)}>
+            <MyButton variant="danger" onClick={() => setConfirmingDelete(true)}>
               {t('products.delete')}
-            </GlassButton>
+            </MyButton>
           )}
         </div>
-      </GlassCard>
+      </MyCard>
     </div>
   );
 }

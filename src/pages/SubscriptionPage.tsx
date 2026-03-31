@@ -13,7 +13,7 @@ import {
   useResumeShopSubscriptionMutation,
 } from '../services/api';
 import type { PlanResponse } from '../services/api';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MySpinner } from '../components/ui/MySpinner';
 
 // Taglines shown beneath each plan name, indexed by sort position
 const PLAN_TAGLINES = [
@@ -268,7 +268,7 @@ export function SubscriptionPage() {
   }
 
   if (shopLoading || subLoading || plansLoading) {
-    return <GlassSpinner label={t('subscription.loading')} />;
+    return <MySpinner label={t('subscription.loading')} />;
   }
 
   const currency = shop?.currency ?? 'USD';

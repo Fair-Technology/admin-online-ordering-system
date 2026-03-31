@@ -6,9 +6,9 @@ import {
   useCreateCategoryMutation,
   useGetCategoriesByShopQuery,
 } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput } from '../components/ui/GlassInput';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput } from '../components/ui/MyInput';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { useToast } from '../contexts/ToastContext';
 import { IconPickerInline } from '../components/ui/IconPicker';
@@ -49,18 +49,18 @@ export function CreateCategoryPage() {
       <h1 className="text-2xl font-semibold text-gray-900">{t('categories.createTitle')}</h1>
 
       {isError && (
-        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+        <MyCard className="p-4 !bg-red-50 !border-red-200">
           <p className="text-sm text-red-600">
             {(error as { data?: { error?: string } })?.data?.error ?? t('categories.failedToCreate')}
           </p>
-        </GlassCard>
+        </MyCard>
       )}
 
-      <GlassCard className="p-6">
+      <MyCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center gap-2">
             <IconPickerInline value={icon} onChange={setIcon} />
-            <GlassInput
+            <MyInput
               type="text"
               required
               placeholder={t('categories.namePlaceholder')}
@@ -69,11 +69,11 @@ export function CreateCategoryPage() {
               className="flex-1"
             />
           </div>
-          <GlassButton type="submit" disabled={isLoading} className="w-full">
+          <MyButton type="submit" disabled={isLoading} className="w-full">
             {isLoading ? t('categories.creating') : t('categories.create')}
-          </GlassButton>
+          </MyButton>
         </form>
-      </GlassCard>
+      </MyCard>
     </div>
   );
 }

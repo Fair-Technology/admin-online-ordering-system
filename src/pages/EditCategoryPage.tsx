@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGetShopByIdQuery } from '../services/api';
 import { useGetCategoryByIdQuery, useUpdateCategoryMutation, useDeleteCategoryMutation } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassButton } from '../components/ui/GlassButton';
-import { GlassInput } from '../components/ui/GlassInput';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
+import { MyCard } from '../components/ui/MyCard';
+import { MyButton } from '../components/ui/MyButton';
+import { MyInput } from '../components/ui/MyInput';
+import { MySpinner } from '../components/ui/MySpinner';
 import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { useToast } from '../contexts/ToastContext';
 
@@ -38,7 +38,7 @@ export function EditCategoryPage() {
     }
   }, [category]);
 
-  if (isLoading) return <GlassSpinner label={t('categories.loadingCategory')} />;
+  if (isLoading) return <MySpinner label={t('categories.loadingCategory')} />;
   if (isError || !category) return <p className="text-red-500">{t('categories.failedToLoad')}</p>;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,20 +77,20 @@ export function EditCategoryPage() {
       <h1 className="text-2xl font-semibold text-gray-900">{t('categories.editTitle')}</h1>
 
       {isUpdateError && (
-        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+        <MyCard className="p-4 !bg-red-50 !border-red-200">
           <p className="text-sm text-red-600">{t('categories.failedToUpdate')}</p>
-        </GlassCard>
+        </MyCard>
       )}
 
       {isDeleteError && (
-        <GlassCard className="p-4 !bg-red-50 !border-red-200">
+        <MyCard className="p-4 !bg-red-50 !border-red-200">
           <p className="text-sm text-red-600">{t('categories.failedToDelete')}</p>
-        </GlassCard>
+        </MyCard>
       )}
 
-      <GlassCard className="p-6">
+      <MyCard className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <GlassInput
+          <MyInput
             label={t('categories.name')}
             type="text"
             required
@@ -99,7 +99,7 @@ export function EditCategoryPage() {
             onChange={(e) => setName(e.target.value)}
           />
           <div className="flex gap-2">
-            <GlassButton
+            <MyButton
               type="button"
               variant="ghost"
               disabled={isUpdating}
@@ -107,21 +107,21 @@ export function EditCategoryPage() {
               onClick={() => navigate(`/shops/${shopId}/categories`)}
             >
               {t('categories.cancel')}
-            </GlassButton>
-            <GlassButton type="submit" disabled={isUpdating} className="flex-1">
+            </MyButton>
+            <MyButton type="submit" disabled={isUpdating} className="flex-1">
               {isUpdating ? t('categories.saving') : t('categories.saveChanges')}
-            </GlassButton>
+            </MyButton>
           </div>
         </form>
-      </GlassCard>
+      </MyCard>
 
-      <GlassCard className="p-6">
+      <MyCard className="p-6">
         <div className="space-y-3">
           <p className="text-sm font-medium text-gray-900">{t('categories.dangerZone')}</p>
           <p className="text-xs text-gray-400">{t('categories.deleteWarning')}</p>
           {confirmingDelete ? (
             <div className="space-y-3">
-              <GlassInput
+              <MyInput
                 label={t('categories.deleteTypeToConfirm', { name: category.name })}
                 type="text"
                 value={deleteConfirmName}
@@ -129,29 +129,29 @@ export function EditCategoryPage() {
                 placeholder={category.name}
               />
               <div className="flex gap-2">
-                <GlassButton
+                <MyButton
                   variant="danger"
                   disabled={isDeleting || deleteConfirmName !== category.name}
                   onClick={handleDelete}
                 >
                   {isDeleting ? t('categories.deleting') : t('categories.confirmDelete')}
-                </GlassButton>
-                <GlassButton
+                </MyButton>
+                <MyButton
                   variant="ghost"
                   disabled={isDeleting}
                   onClick={() => { setConfirmingDelete(false); setDeleteConfirmName(''); }}
                 >
                   {t('categories.cancel')}
-                </GlassButton>
+                </MyButton>
               </div>
             </div>
           ) : (
-            <GlassButton variant="danger" onClick={() => setConfirmingDelete(true)}>
+            <MyButton variant="danger" onClick={() => setConfirmingDelete(true)}>
               {t('categories.delete')}
-            </GlassButton>
+            </MyButton>
           )}
         </div>
-      </GlassCard>
+      </MyCard>
     </div>
   );
 }

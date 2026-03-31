@@ -3,9 +3,9 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGetOrdersByShopQuery } from '../services/api';
 import type { OrderResponse } from '../services/api';
-import { GlassCard } from '../components/ui/GlassCard';
-import { GlassSpinner } from '../components/ui/GlassSpinner';
-import { GlassButton } from '../components/ui/GlassButton';
+import { MyCard } from '../components/ui/MyCard';
+import { MySpinner } from '../components/ui/MySpinner';
+import { MyButton } from '../components/ui/MyButton';
 
 const PAGE_SIZE = 10;
 
@@ -112,7 +112,7 @@ export function OrdersPage() {
     pageSize: PAGE_SIZE,
   });
 
-  if (isLoading) return <GlassSpinner label={t('orders.loading')} />;
+  if (isLoading) return <MySpinner label={t('orders.loading')} />;
   if (isError) return <p className="text-red-500">{t('orders.loadError')}</p>;
 
   const orders = data?.orders ?? [];
@@ -121,7 +121,7 @@ export function OrdersPage() {
 
   return (
     <div className="space-y-4">
-      <GlassCard>
+      <MyCard>
         {orders.length === 0 ? (
           <p className="p-5 text-gray-400 text-sm">{t('orders.empty')}</p>
         ) : (
@@ -131,29 +131,29 @@ export function OrdersPage() {
             ))}
           </div>
         )}
-      </GlassCard>
+      </MyCard>
 
       {showPagination && (
         <div className="flex items-center justify-between mt-4">
-          <GlassButton
+          <MyButton
             variant="secondary"
             size="sm"
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
           >
             {t('orders.previousPage')}
-          </GlassButton>
+          </MyButton>
           <span className="text-sm text-gray-500">
             {t('orders.pageInfo', { page, total: totalPages })}
           </span>
-          <GlassButton
+          <MyButton
             variant="secondary"
             size="sm"
             disabled={page === totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
             {t('orders.nextPage')}
-          </GlassButton>
+          </MyButton>
         </div>
       )}
     </div>

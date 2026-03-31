@@ -333,6 +333,27 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/orders/by-payment-intent/${queryArg.paymentIntentId}`,
       }),
     }),
+    getGoLiveStatus: build.query<GetGoLiveStatusApiResponse, GetGoLiveStatusApiArg>({
+      query: (queryArg) => ({ url: `/shops/${queryArg.shopId}/go-live-status` }),
+      providesTags: (_r, _e, { shopId }) => [{ type: 'Shops' as const, id: `golive-${shopId}` }],
+    }),
+    createStripeAccountSession: build.mutation<
+      CreateStripeAccountSessionApiResponse,
+      CreateStripeAccountSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/stripe/account-session`,
+        method: 'POST',
+        body: { purpose: queryArg.purpose },
+      }),
+    }),
+    disconnectStripeAccount: build.mutation<void, DisconnectStripeAccountApiArg>({
+      query: (queryArg) => ({
+        url: `/shops/${queryArg.shopId}/stripe/account`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, { shopId }) => [{ type: 'Shops' as const, id: shopId }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -690,6 +711,11 @@ export type ShopResponse = {
       close?: string;
     }[];
   };
+  /** Stripe Connect fields */
+  stripe?: {
+    connectAccountId?: string | null;
+    connectOnboardingStatus?: 'not_started' | 'pending' | 'complete' | null;
+  } | null;
 };
 export type GetAllShopsResponse = {
   /** Array of shops */
@@ -1287,6 +1313,26 @@ export type ResumeShopSubscriptionApiArg = { shopId: string };
 export type ReactivateShopApiResponse = { id: string; isDeactivatedDueToLimits: boolean };
 export type ReactivateShopApiArg = { shopId: string };
 
+export type GoLiveCriterion = {
+  key: string;
+  met: boolean;
+  description: string;
+};
+export type GoLiveStatusResponse = {
+  allMet: boolean;
+  criteria: GoLiveCriterion[];
+};
+export type GetGoLiveStatusApiResponse = GoLiveStatusResponse;
+export type GetGoLiveStatusApiArg = { shopId: string };
+
+export type CreateStripeAccountSessionApiResponse = { clientSecret: string };
+export type CreateStripeAccountSessionApiArg = {
+  shopId: string;
+  purpose?: 'onboarding' | 'management';
+};
+
+export type DisconnectStripeAccountApiArg = { shopId: string };
+
 export const {
   useGetShopsQuery,
   useCreateShopMutation,
@@ -1330,4 +1376,8 @@ export const {
   useGetMyInvitationsQuery,
   useAcceptShopInvitationMutation,
   useDeclineShopInvitationMutation,
+  useGetGoLiveStatusQuery,
+  useLazyGetGoLiveStatusQuery,
+  useCreateStripeAccountSessionMutation,
+  useDisconnectStripeAccountMutation,
 } = injectedRtkApi;

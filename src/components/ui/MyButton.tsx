@@ -3,7 +3,7 @@ import { type ButtonHTMLAttributes } from 'react';
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
-interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface MyButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
 }
@@ -24,13 +24,13 @@ const sizeClasses: Record<Size, string> = {
 const BASE =
   'inline-flex items-center justify-center font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed';
 
-export function GlassButton({
+export function MyButton({
   variant = 'primary',
   size = 'md',
   className = '',
   children,
   ...props
-}: GlassButtonProps) {
+}: MyButtonProps) {
   return (
     <button
       className={`${BASE} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
@@ -41,8 +41,8 @@ export function GlassButton({
   );
 }
 
-/** Use this on <Link> elements to get GlassButton appearance without nesting button inside <a>. */
-export function glassButtonClass(
+/** Use this on <Link> elements to get MyButton appearance without nesting button inside <a>. */
+export function myButtonLinkClass(
   variant: Variant = 'primary',
   size: Size = 'md',
   extra = '',

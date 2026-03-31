@@ -7,7 +7,7 @@ import {
   useAcceptShopInvitationMutation,
   useDeclineShopInvitationMutation,
 } from '../../services/api';
-import { GlassButton } from '../ui/GlassButton';
+import { MyButton } from '../ui/MyButton';
 import { useToast } from '../../contexts/ToastContext';
 
 interface AccountSettingsModalProps {
@@ -108,20 +108,20 @@ export function AccountSettingsModal({ user, onClose }: AccountSettingsModalProp
                       <p className="text-xs text-gray-400 mt-0.5">{invite.role}</p>
                     </div>
                     <div className="flex gap-1.5 ml-3 shrink-0">
-                      <GlassButton
+                      <MyButton
                         variant="primary"
                         size="sm"
                         onClick={() => handleAccept(invite.shopId)}
                       >
                         {t('invitations.accept')}
-                      </GlassButton>
-                      <GlassButton
+                      </MyButton>
+                      <MyButton
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDecline(invite.shopId)}
                       >
                         {t('invitations.decline')}
-                      </GlassButton>
+                      </MyButton>
                     </div>
                   </div>
                 ))}
